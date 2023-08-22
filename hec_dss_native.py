@@ -152,9 +152,15 @@ class HecDssNative:
           c_dataType, 
           c_typeLength)
 
+        times.clear()
+        times.extend(list(c_times[:c_numberValuesRead.value]))
+        values.clear()
+        values.extend(list(c_values[:c_numberValuesRead.value]))
         units[0] = c_units.value.decode('utf-8')
         dataType[0] = c_dataType.value.decode('utf-8')
-        #times         
+        julianBaseDate[0] = c_julianBaseDate.value
+        timeGranularitySeconds[0] = c_timeGranularitySeconds.value
+
         return rval
 
 		

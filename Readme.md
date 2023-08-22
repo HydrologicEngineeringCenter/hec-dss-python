@@ -13,7 +13,7 @@ The HEC-DSS file database is a widely used data storage format for hydrological 
 - Cross-platform support: `hecdss.dll` for Windows and `hecdss.so` for Linux.
 - Potential for future storage backend expansion (e.g., SQLite, HDF5) without altering the API.
 - Language-agnostic approach similar to the .NET implementation ([hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet)).
-- No package installation required because the library is using pyton-ctypes to interact with the DLL.
+- No package installation required because the library is using python-ctypes to interact with the DLL.
 
 ## Getting Started
 

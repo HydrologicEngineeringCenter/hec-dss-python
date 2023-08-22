@@ -23,7 +23,7 @@ class HecDss:
         
         # tsRetrive
 
-        times=[]
+        times=[0,1]
         values=[]
         numberValuesRead=[0]
         quality=[]
@@ -43,7 +43,11 @@ class HecDss:
 
         print("units = "+units[0])
         print("datatype = "+dataType[0])
-
+        print("times: ")
+        print(times)
+        print(values)
+        print("julianBaseDate = "+str(julianBaseDate[0]))
+        print("timeGranularitySeconds = "+str(timeGranularitySeconds[0]))
 
     def recordCount(self):
         return self._native.hec_dss_record_count()

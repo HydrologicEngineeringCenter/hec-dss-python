@@ -19,3 +19,9 @@ The HEC-DSS file database is a widely used data storage format for hydrological 
 
 1. Clone this repository to your local machine.
 2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's root directory.
+
+
+
+## Contributing
+
+Contributions to this project are welcome! If you find any issues, have suggestions, or want to add new features, please open an issue or submit a pull request.

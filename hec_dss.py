@@ -1,5 +1,8 @@
 from hec_dss_native import HecDssNative
 from datetime import datetime
+from dateconverter import DateConverter
+from timeseries import TimeSeries
+
 class HecDss:
 
     def __init__(self,filename):
@@ -35,27 +38,34 @@ class HecDss:
 
 
         self._native.hec_dss_tsRetrieve(pathname, 
-        startDate, startTime, endDate, endTime, times,
-        values, numberValues[0],
-        numberValuesRead, quality, qualityElementSize[0], 
-        julianBaseDate, timeGranularitySeconds,
-        units, bufferLength, dataType, bufferLength)
+            startDate, startTime, endDate, endTime, times,
+            values, numberValues[0],
+            numberValuesRead, quality, qualityElementSize[0], 
+            julianBaseDate, timeGranularitySeconds,
+            units, bufferLength, dataType, bufferLength)
 
-        print("units = "+units[0])
-        print("datatype = "+dataType[0])
-        print("times: ")
-        print(times)
-        print(values)
+        #print("units = "+units[0])
+        #print("datatype = "+dataType[0])
+        #print("times: ")
+        #print(times)
+        #print(values)
         print("julianBaseDate = "+str(julianBaseDate[0]))
         print("timeGranularitySeconds = "+str(timeGranularitySeconds[0]))
+        ts = TimeSeries()
+        ts.times=DateConverter.date_times_from_julian_array(times,timeGranularitySeconds[0],julianBaseDate[0])
+        ts.values=values
+        ts.units=units[0]
+        ts.dataType=dataType[0]
+        ts.dsspath=pathname
+        return ts
 
     def recordCount(self):
         return self._native.hec_dss_record_count()
 			
 #import pdb;pdb.set_trace()
-print("hi")
 dss = HecDss("sample7.dss")
 print("record count = "+str(dss.recordCount()))
-t1 = datetime(1924, 1, 1)
-t2 = datetime(2005, 1 ,1)
+t1 = datetime(2005, 1, 1)
+t2 = datetime(2005, 1 ,4)
 tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)
+tsc.print_to_console()

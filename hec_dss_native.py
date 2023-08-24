@@ -133,6 +133,7 @@ class HecDssNative:
         c_julianBaseDate = c_int()
         c_timeGranularitySeconds = c_int()
 
+    # pathname = b'/a//////'
         rval = f(self.handle,
           pathname.encode('utf-8'), 
           startDate.encode('utf-8'),

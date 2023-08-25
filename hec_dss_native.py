@@ -4,10 +4,11 @@ from ctypes import c_char, c_double, c_int,byref, create_string_buffer
 
 class HecDssNative:
     def __init__(self):
-        x = r"C:\project\hec-dss\heclib\hecdss\x64\Release\hecdss.dll"
-        #self.dll = ctypes.CDLL("hecdss")
-        self.dll = ctypes.CDLL(x)
+        self.dll = ctypes.CDLL("hecdss")
     
+
+    
+
     def hec_dss_open(self,dss_filename):
         self.dll.hec_dss_open.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
         self.dll.hec_dss_open.restype = ctypes.c_int
@@ -30,6 +31,19 @@ class HecDssNative:
         f.argtypes = [ctypes.c_void_p()]
         f.restype = ctypes.c_int
         return f(self.handle)
+
+    # set a integer setting by name
+    def __hec_dss_set_value(self,name,value):
+        f = self.dll.hec_dss_set_value
+        f.argtypes = [ctypes.c_char_p,ctypes.c_int]
+        f.restype = ctypes.c_int
+        f(name.encode('utf-8'),value)
+
+    # set debug level (0-15)
+    # 0 - no output
+    # 15 - max output
+    def hec_dss_set_debug_level(self,value):
+        self.__hec_dss_set_value("mlvl",value)
 
     def hec_dss_export_to_file(self,path,outputFile,startDate,startTime,endDate,endTime):
         
@@ -165,39 +179,37 @@ class HecDssNative:
 
 		
 
+    def hec_dss_tsStoreRegular(self, pathname, startDate, startTime, valueArray, qualityArray,
+                                    saveAsFloat, units, dataType): 
 
-def hec_dss_tsStoreRegular(self, pathname, startDate, startTime, valueArray, qualityArray,
-                                   saveAsFloat, units, type): 
-    self.dll.hec_dss_tsStoreRegular.restype = ctypes.c_int
-    self.dll.hec_dss_tsStoreRegular.argtypes = [
-    ctypes.c_void_p,    # dss (void*)
-    ctypes.c_char_p,    # pathname (const char*)
-    ctypes.c_char_p,    # startDate (const char*)
-    ctypes.c_char_p,    # startTime (const char*)
-    ctypes.POINTER(ctypes.c_double),  # valueArray (double*)
-    ctypes.c_int,       # valueArraySize (int)
-    ctypes.POINTER(ctypes.c_int),     # qualityArray (int*)
-    ctypes.c_int,       # qualityArraySize (int)
-    ctypes.c_int,       # saveAsFloat (int)
-    ctypes.c_char_p,    # units (const char*)
-    ctypes.c_char_p    # type (const char*)
-    ]
+        self.dll.hec_dss_tsStoreRegular.restype = ctypes.c_int
+        self.dll.hec_dss_tsStoreRegular.argtypes = [
+        ctypes.c_void_p,    # dss (void*)
+        ctypes.c_char_p,    # pathname (const char*)
+        ctypes.c_char_p,    # startDate (const char*)
+        ctypes.c_char_p,    # startTime (const char*)
+        ctypes.POINTER(ctypes.c_double),  # valueArray (double*)
+        ctypes.c_int,       # valueArraySize (int)
+        ctypes.POINTER(ctypes.c_int),     # qualityArray (int*)
+        ctypes.c_int,       # qualityArraySize (int)
+        ctypes.c_int,       # saveAsFloat (int)
+        ctypes.c_char_p,    # units (const char*)
+        ctypes.c_char_p    # type (const char*)
+        ]
 
-    # Convert Python strings to C-style strings
-    pathname_c = ctypes.c_char_p(pathname.encode("utf-8"))
-    startDate_c = ctypes.c_char_p(startDate.encode("utf-8"))
-    startTime_c = ctypes.c_char_p(startTime.encode("utf-8"))
-    units_c = ctypes.c_char_p(units.encode("utf-8"))
-    type_c = ctypes.c_char_p(type.encode("utf-8"))
-    
-    # Convert Python lists to C arrays
-    valueArray_c = (ctypes.c_double * len(valueArray))(*valueArray)
-    qualityArray_c = (ctypes.c_int * len(qualityArray))(*qualityArray)
-    
-    # Call the C function
-    return dll.hec_dss_tsStoreRegular(dss, pathname_c, startDate_c, startTime_c,
-                                          valueArray_c, len(valueArray), qualityArray_c,
-                                          len(qualityArray), saveAsFloat, units_c, type_c)
+        pathname_c = ctypes.c_char_p(pathname.encode("utf-8"))
+        startDate_c = ctypes.c_char_p(startDate.encode("utf-8"))
+        startTime_c = ctypes.c_char_p(startTime.encode("utf-8"))
+        units_c = ctypes.c_char_p(units.encode("utf-8"))
+        type_c = ctypes.c_char_p(dataType.encode("utf-8"))
+        
+        print(valueArray)
+        valueArray_c = (ctypes.c_double * len(valueArray))(*valueArray)
+        qualityArray_c = (ctypes.c_int * len(qualityArray))(*qualityArray)
+        #import pdb;pdb.set_trace()
+        return self.dll.hec_dss_tsStoreRegular(self.handle, pathname_c, startDate_c, startTime_c,
+                                            valueArray_c, len(valueArray), qualityArray_c,
+                                            len(qualityArray), int(saveAsFloat), units_c, type_c)
 
 
 

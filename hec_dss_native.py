@@ -164,6 +164,43 @@ class HecDssNative:
         return rval
 
 		
+
+
+def hec_dss_tsStoreRegular(self, pathname, startDate, startTime, valueArray, qualityArray,
+                                   saveAsFloat, units, type): 
+    self.dll.hec_dss_tsStoreRegular.restype = ctypes.c_int
+    self.dll.hec_dss_tsStoreRegular.argtypes = [
+    ctypes.c_void_p,    # dss (void*)
+    ctypes.c_char_p,    # pathname (const char*)
+    ctypes.c_char_p,    # startDate (const char*)
+    ctypes.c_char_p,    # startTime (const char*)
+    ctypes.POINTER(ctypes.c_double),  # valueArray (double*)
+    ctypes.c_int,       # valueArraySize (int)
+    ctypes.POINTER(ctypes.c_int),     # qualityArray (int*)
+    ctypes.c_int,       # qualityArraySize (int)
+    ctypes.c_int,       # saveAsFloat (int)
+    ctypes.c_char_p,    # units (const char*)
+    ctypes.c_char_p    # type (const char*)
+    ]
+
+    # Convert Python strings to C-style strings
+    pathname_c = ctypes.c_char_p(pathname.encode("utf-8"))
+    startDate_c = ctypes.c_char_p(startDate.encode("utf-8"))
+    startTime_c = ctypes.c_char_p(startTime.encode("utf-8"))
+    units_c = ctypes.c_char_p(units.encode("utf-8"))
+    type_c = ctypes.c_char_p(type.encode("utf-8"))
+    
+    # Convert Python lists to C arrays
+    valueArray_c = (ctypes.c_double * len(valueArray))(*valueArray)
+    qualityArray_c = (ctypes.c_int * len(qualityArray))(*qualityArray)
+    
+    # Call the C function
+    return dll.hec_dss_tsStoreRegular(dss, pathname_c, startDate_c, startTime_c,
+                                          valueArray_c, len(valueArray), qualityArray_c,
+                                          len(qualityArray), saveAsFloat, units_c, type_c)
+
+
+
     def test():
         dss = HecDssNative()
         outputFile=b"output.txt"

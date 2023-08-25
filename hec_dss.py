@@ -59,6 +59,18 @@ class HecDss:
         ts.dsspath=pathname
         return ts
 
+    def put(self,ts):
+        # TO DO.. save other types besides regular interval.
+        # TO DO. check data type..
+        # TO Do. is timezone needed?
+        #def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
+        #                           saveAsFloat, units, type): 
+        startDate,startTime = DateConverter.dss_datetime_from_string(ts.times[0])
+        quality = []  # TO DO
+
+        #self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.type)
+
+
     def recordCount(self):
         return self._native.hec_dss_record_count()
 			
@@ -68,4 +80,6 @@ print("record count = "+str(dss.recordCount()))
 t1 = datetime(2005, 1, 1)
 t2 = datetime(2005, 1 ,4)
 tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)
-tsc.print_to_console()
+#tsc.print_to_console()
+tsc.pathname = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
+dss.put(tsc)

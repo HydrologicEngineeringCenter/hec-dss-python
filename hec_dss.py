@@ -2,6 +2,7 @@ from hec_dss_native import HecDssNative
 from datetime import datetime
 from dateconverter import DateConverter
 from timeseries import TimeSeries
+import os
 
 class HecDss:
 
@@ -9,6 +10,7 @@ class HecDss:
         self._native = HecDssNative()
         self._native.hec_dss_open(filename)
 	
+
     def get(self,pathname,startDateTime, endDateTime):
         # get sizes
         startDate = startDateTime.strftime('%d%b%Y')
@@ -68,13 +70,19 @@ class HecDss:
         startDate,startTime = DateConverter.dss_datetime_from_string(ts.times[0])
         quality = []  # TO DO
 
-        #self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.type)
+        #self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.dataType)
 
 
     def recordCount(self):
         return self._native.hec_dss_record_count()
+
+    def setDebugLevel(self,level):
+        return self._native.hec_dss_set_debug_level(level)
+
 			
 #import pdb;pdb.set_trace()
+os.environ["DSS_JNI_MESSAGE_LEVEL"] = '15'
+print(os.environ.get('DSS_JNI_MESSAGE_LEVEL'))
 dss = HecDss("sample7.dss")
 print("record count = "+str(dss.recordCount()))
 t1 = datetime(2005, 1, 1)
@@ -82,4 +90,5 @@ t2 = datetime(2005, 1 ,4)
 tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)
 #tsc.print_to_console()
 tsc.pathname = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
+dss.setDebugLevel(15)
 dss.put(tsc)

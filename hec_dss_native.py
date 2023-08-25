@@ -37,7 +37,7 @@ class HecDssNative:
         f = self.dll.hec_dss_set_value
         f.argtypes = [ctypes.c_char_p,ctypes.c_int]
         f.restype = ctypes.c_int
-        f(name.encode('utf-8'),c_int(value))
+        f(name.encode('utf-8'),value)
 
     # set debug level (0-15)
     # 0 - no output
@@ -197,21 +197,19 @@ class HecDssNative:
         ctypes.c_char_p    # type (const char*)
         ]
 
-        # Convert Python strings to C-style strings
         pathname_c = ctypes.c_char_p(pathname.encode("utf-8"))
         startDate_c = ctypes.c_char_p(startDate.encode("utf-8"))
         startTime_c = ctypes.c_char_p(startTime.encode("utf-8"))
         units_c = ctypes.c_char_p(units.encode("utf-8"))
         type_c = ctypes.c_char_p(dataType.encode("utf-8"))
         
-        # Convert Python lists to C arrays
+        print(valueArray)
         valueArray_c = (ctypes.c_double * len(valueArray))(*valueArray)
         qualityArray_c = (ctypes.c_int * len(qualityArray))(*qualityArray)
-        
-        # Call the C function
+        #import pdb;pdb.set_trace()
         return self.dll.hec_dss_tsStoreRegular(self.handle, pathname_c, startDate_c, startTime_c,
                                             valueArray_c, len(valueArray), qualityArray_c,
-                                            len(qualityArray), saveAsFloat, units_c, type_c)
+                                            len(qualityArray), int(saveAsFloat), units_c, type_c)
 
 
 

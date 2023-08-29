@@ -68,6 +68,12 @@ class HecDssNative:
         return f()
 
     def hec_dss_catalog(self,filter=""):
+        """
+        retrieves a list of objects in a DSS database
+
+        returns a list of paths, and recordTypes
+
+        """
         count = self.hec_dss_record_count()
         pathBufferSize = self.hec_dss_CONSTANT_MAX_PATH_SIZE()
         self.dll.hec_dss_catalog.argtypes = [
@@ -87,8 +93,6 @@ class HecDssNative:
         pathNameList = []
         
         numRecords = self.dll.hec_dss_catalog(self.handle,c_rawCatalog, recordTypes, pathFilter, count, pathBufferSize)
-        print("numRecords = "+str(numRecords))
-        print("count = "+str(count))
         recordTypeArray =[]
         recordTypeArray.extend(list(recordTypes[:count]))
         for i in range(numRecords):
@@ -98,7 +102,7 @@ class HecDssNative:
             #print(f"str='{s}'")
             pathNameList.append(s)
         
-        return pathNameList
+        return pathNameList,recordTypeArray
 
 
     def hec_dss_tsGetSizes(self,pathname,

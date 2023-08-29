@@ -2,6 +2,7 @@ from hec_dss_native import HecDssNative
 from datetime import datetime
 from dateconverter import DateConverter
 from timeseries import TimeSeries
+from catalog import Catalog
 import os
 
 class HecDss:
@@ -73,7 +74,9 @@ class HecDss:
         self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.dataType)
 
     def getCatalog(self):
-        return self._native.hec_dss_catalog()
+        paths,recordTypes = self._native.hec_dss_catalog()
+        rval = Catalog(paths,recordTypes)
+        return paths
 
     def recordCount(self):
         return self._native.hec_dss_record_count()

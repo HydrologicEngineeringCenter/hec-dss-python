@@ -16,7 +16,7 @@ class Tests:
         for path in pathnames:
             print(f"reading {path}")
             tsc = dss.get(path,t1,t2)
-            print("len(tsc.values) = {len(tsc.values)}")
+            print(f"len(tsc.values) = {len(tsc.values)}")
             assert(len(tsc.values)>1)
 
 

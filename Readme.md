@@ -17,8 +17,9 @@ These are the driving design ideas and goals of the hec-dss-python project (subj
 |Easy transition from Jython|HEC products use an existing [Java/Jython API](https://www.hec.usace.army.mil/confluence/dssdocs/dssvueum/scripting/reading-and-writing-to-hec-dss-files).  We will loosely follow that design | simplify porting from Jython|
 | hec_dss_native.py | native binding layer   | isolate interactions with low level library(if performance is an issue this Ctypes layer can be replaced ) |
 | hec_dss.py | Programmer entry point ; Python API  | Hides interactions with hec_dss_native, seek to be simple user experience|
+|catalog.py|manage list of DSS objects (catalog) |create condensed catalog perspective|
 |Pandas_Series_Utilities.py [future](https://github.com/HydrologicEngineeringCenter/hec-dss-python/issues/8) |NumPy/pandas support |provide features such as dataframes, separate from hec-dss.py; can be developed by different/parallel developers|
-| Easy to get started |nothing to install, just copy python files and shared library   |require minimal privileges to install| 
+|Easy to get started |nothing to install, just copy python files and shared library   |require minimal privileges to install| 
 
 
 ## Features

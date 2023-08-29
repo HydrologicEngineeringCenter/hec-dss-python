@@ -72,6 +72,8 @@ class HecDss:
 
         self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.dataType)
 
+    def getCatalog(self):
+        return self._native.hec_dss_catalog()
 
     def recordCount(self):
         return self._native.hec_dss_record_count()
@@ -82,7 +84,11 @@ class HecDss:
 			
 #import pdb;pdb.set_trace()
 dss = HecDss("sample7.dss")
-print("record count = "+str(dss.recordCount()))
+#print("record count = "+str(dss.recordCount()))
+catalog = dss.getCatalog()
+print(catalog)
+
+
 t1 = datetime(2005, 1, 1)
 t2 = datetime(2005, 1 ,4)
 tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)

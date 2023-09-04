@@ -84,20 +84,11 @@ class HecDss:
     def setDebugLevel(self,level):
         return self._native.hec_dss_set_debug_level(level)
 
-			
-#import pdb;pdb.set_trace()
-dss = HecDss("sample7.dss")
-#print("record count = "+str(dss.recordCount()))
-catalog = dss.getCatalog()
-print(catalog)
 
+if __name__ == "__main__":
+    #import pdb;pdb.set_trace()
+    dss = HecDss("sample7.dss")
+    catalog = dss.getCatalog()
 
-t1 = datetime(2005, 1, 1)
-t2 = datetime(2005, 1 ,4)
-tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)
-tsc.print_to_console()
-tsc2 = dss.get("//SACRAMENTO/TEMP-MAX//1Day/OBS/",t1,t2)
-tsc2.print_to_console()
-tsc.pathname = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
-#dss.setDebugLevel(15)
-dss.put(tsc)
+    print(catalog[0:5])
+    #dss.setDebugLevel(15)

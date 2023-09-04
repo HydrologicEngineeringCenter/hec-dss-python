@@ -1,49 +1,45 @@
-from enum import Enum
-
-from enum import Enum
-
-class RecordType(Enum):
-    Unknown = 0
-    RegularTimeSeriesProfile = 1
-    RegularTimeSeries = 2
-    IrregularTimeSeries = 3
-    PairedData = 4
-    Text = 5
-    Grid = 6
-    Tin = 7
-    LocationInfo = 8
-
-def RecordTypeFromInt(recType):
-    rval = RecordType.Unknown
-
-    if 100 <= recType < 110:
-        if recType == 102 or recType == 107:
-            rval = RecordType.RegularTimeSeriesProfile
-        else:
-            rval = RecordType.RegularTimeSeries
-    elif 110 <= recType < 200:
-        rval = RecordType.IrregularTimeSeries
-    elif 200 <= recType < 300:
-        rval = RecordType.PairedData
-    elif 300 <= recType < 400:
-        rval = RecordType.Text
-    elif 400 <= recType < 450:
-        rval = RecordType.Grid
-    elif recType == 450:
-        rval = RecordType.Tin
-    elif recType == 20:
-        rval = RecordType.LocationInfo
-
-    return rval
+from record_type import RecordType
 
 class DssPath:
     """manage parts of DSS path /A/B/C/D/E/F/ 
     condenses D part for timeseries records
     """
 
-    def __init__(self,path,recordType=0):
+    _timeSeriesFamily = [ RecordType.IrregularTimeSeries, RecordType.RegularTimeSeries, RecordType.RegularTimeSeriesProfile ]
+
+
+    def __init__(self,path,recType):
+        """
+        path is raw dss pathname
+        recType is a RecordType , such as RecordType.RegularTimeSeries
+        """
+        if path[0]!='/' or path[-1]!= '/':
+            raise Exception("Invalid DSS Path: '"+path+"'")
+        path = path[1:-1]  # remove beginning and ending '/'
         self.rawPath= path
+        
         split_parts = path.split('/')
         if len(split_parts) >= 6:
             self.A, self.B, self.C, self.D, self.E, self.F = split_parts[:6]
-        self.RecordType = RecordTypeFromInt(recordType)
+        self.recType = recType
+        
+    def __str__(self):
+        return "/"+self.A+"/"+self.B+"/"+self.C+"/"+self.D+"/"+self.E+"/"+self.F+"/"
+    
+    def pathWithoutDate(self):
+        s = "/"+self.A+"/"+self.B+"/"+self.C+"//"+self.E+"/"+self.F+"/"
+        rval = DssPath(s,self.recType)
+        return rval
+    
+    def isTimeSeries(self):
+        return self.recType in DssPath._timeSeriesFamily
+    
+    def print(self):
+        print("a:"+self.path.A)
+        print("b:"+self.path.B)
+        print("c:"+self.path.C)
+        print("d:"+self.path.D)
+        print("e:"+self.path.E)
+        print("f:"+self.path.F)
+
+    

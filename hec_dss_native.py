@@ -1,14 +1,14 @@
 import ctypes
 from ctypes import c_char, c_double, c_int,byref, create_string_buffer
+import array
 
 
 class HecDssNative:
+    """Wrapper for Native method calls to hecdss.dll or libhecdss.so """
+
     def __init__(self):
         self.dll = ctypes.CDLL("hecdss")
     
-
-    
-
     def hec_dss_open(self,dss_filename):
         self.dll.hec_dss_open.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
         self.dll.hec_dss_open.restype = ctypes.c_int
@@ -45,6 +45,8 @@ class HecDssNative:
     def hec_dss_set_debug_level(self,value):
         self.__hec_dss_set_value("mlvl",value)
 
+    
+
     def hec_dss_export_to_file(self,path,outputFile,startDate,startTime,endDate,endTime):
         
         self.dll.hec_dss_export_to_file.argtypes = [
@@ -59,6 +61,49 @@ class HecDssNative:
         self.dll.hec_dss_export_to_file.restype = ctypes.c_int
 
         result = self.dll.hec_dss_export_to_file(self.handle,path, outputFile, startDate, startTime, endDate, endTime)
+
+    def hec_dss_CONSTANT_MAX_PATH_SIZE(self): 
+        f = self.dll.hec_dss_CONSTANT_MAX_PATH_SIZE
+        f.restype = ctypes.c_int
+        return f()
+
+    def hec_dss_catalog(self,filter=""):
+        """
+        retrieves a list of objects in a DSS database
+
+        returns a list of paths, and recordTypes
+
+        """
+        count = self.hec_dss_record_count()
+        pathBufferSize = self.hec_dss_CONSTANT_MAX_PATH_SIZE()
+        self.dll.hec_dss_catalog.argtypes = [
+            ctypes.c_void_p,        # dss (assuming it's a pointer)
+            ctypes.c_char_p,        # pathBuffer
+            ctypes.POINTER(ctypes.c_int),  # recordTypes
+            ctypes.c_char_p,        # pathFilter
+            ctypes.c_int,           # count
+            ctypes.c_int            # pathBufferItemSize
+        ]
+        self.dll.hec_dss_catalog.restype = ctypes.c_int
+
+        c_rawCatalog = create_string_buffer(count * pathBufferSize)
+        pathFilter = filter.encode("ascii")
+        recordTypes = (ctypes.c_int32 * count)()
+
+        pathNameList = []
+        
+        numRecords = self.dll.hec_dss_catalog(self.handle,c_rawCatalog, recordTypes, pathFilter, count, pathBufferSize)
+        recordTypeArray =[]
+        recordTypeArray.extend(list(recordTypes[:count]))
+        for i in range(numRecords):
+            start = i * pathBufferSize
+            end = start + pathBufferSize
+            s = c_rawCatalog[start:end].decode('ascii').replace('\x00','')
+            #print(f"str='{s}'")
+            pathNameList.append(s)
+        
+        return pathNameList,recordTypeArray
+
 
     def hec_dss_tsGetSizes(self,pathname,
                             startDate, startTime,

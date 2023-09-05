@@ -2,6 +2,7 @@ from hec_dss_native import HecDssNative
 from datetime import datetime
 from dateconverter import DateConverter
 from timeseries import TimeSeries
+from catalog import Catalog
 import os
 
 class HecDss:
@@ -72,6 +73,9 @@ class HecDss:
 
         self._native.hec_dss_tsStoreRegular(ts.pathname,startDate,startTime,ts.values,quality,False,ts.units,ts.dataType)
 
+    def getCatalog(self):
+        paths,recordTypes = self._native.hec_dss_catalog()
+        return Catalog(paths,recordTypes)
 
     def recordCount(self):
         return self._native.hec_dss_record_count()
@@ -79,16 +83,12 @@ class HecDss:
     def setDebugLevel(self,level):
         return self._native.hec_dss_set_debug_level(level)
 
-			
-#import pdb;pdb.set_trace()
-dss = HecDss("sample7.dss")
-print("record count = "+str(dss.recordCount()))
-t1 = datetime(2005, 1, 1)
-t2 = datetime(2005, 1 ,4)
-tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/",t1,t2)
-tsc.print_to_console()
-tsc2 = dss.get("//SACRAMENTO/TEMP-MAX//1Day/OBS/",t1,t2)
-tsc2.print_to_console()
-tsc.pathname = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
-#dss.setDebugLevel(15)
-dss.put(tsc)
+
+if __name__ == "__main__":
+    #import pdb;pdb.set_trace()
+    dss = HecDss("sample7.dss")
+    catalog = dss.getCatalog()
+    for p in catalog:
+        print(p)
+    #print(catalog[0:5])
+    #dss.setDebugLevel(15)

@@ -75,8 +75,7 @@ class HecDss:
 
     def getCatalog(self):
         paths,recordTypes = self._native.hec_dss_catalog()
-        rval = Catalog(paths,recordTypes)
-        return paths
+        return Catalog(paths,recordTypes)
 
     def recordCount(self):
         return self._native.hec_dss_record_count()
@@ -89,6 +88,7 @@ if __name__ == "__main__":
     #import pdb;pdb.set_trace()
     dss = HecDss("sample7.dss")
     catalog = dss.getCatalog()
-
-    print(catalog[0:5])
+    for p in catalog:
+        print(p)
+    #print(catalog[0:5])
     #dss.setDebugLevel(15)

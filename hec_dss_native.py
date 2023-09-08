@@ -1,13 +1,19 @@
 import ctypes
 from ctypes import c_char, c_double, c_int,byref, create_string_buffer
 import array
-
+import sys
 
 class HecDssNative:
     """Wrapper for Native method calls to hecdss.dll or libhecdss.so """
 
     def __init__(self):
-        self.dll = ctypes.CDLL("hecdss")
+        if sys.platform == "linux" or sys.platform == "darwin":
+            self.dll = ctypes.CDLL('./libhecdss.so')
+        elif sys.platform == "win32":
+            self.dll = ctypes.CDLL('hecdss')
+        else:
+            raise Exception("Unsupported platform")
+
     
     def hec_dss_open(self,dss_filename):
         self.dll.hec_dss_open.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]

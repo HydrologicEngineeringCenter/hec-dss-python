@@ -1,11 +1,12 @@
-from record_type import RecordType
+from .record_type import RecordType
+
 
 class DssPath:
-    """manage parts of DSS path /A/B/C/D/E/F/ 
+    """Manage parts of DSS path /A/B/C/D/E/F/ 
     condenses D part for timeseries records
     """
 
-    _timeSeriesFamily = [ RecordType.IrregularTimeSeries, RecordType.RegularTimeSeries, RecordType.RegularTimeSeriesProfile ]
+    _timeSeriesFamily = [RecordType.IrregularTimeSeries, RecordType.RegularTimeSeries, RecordType.RegularTimeSeriesProfile]
 
 
     def __init__(self,path,recType):

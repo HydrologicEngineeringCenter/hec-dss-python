@@ -1,9 +1,9 @@
 """Docstring for public module."""
 
-from hecdsspython.hec_dss_native import HecDssNative
-from hecdsspython.dateconverter import DateConverter
-from hecdsspython.timeseries import TimeSeries
-from hecdsspython.catalog import Catalog
+from hecdss.hec_dss_native import HecDssNative
+from hecdss.dateconverter import DateConverter
+from hecdss.timeseries import TimeSeries
+from hecdss.catalog import Catalog
 
 
 class HecDss:

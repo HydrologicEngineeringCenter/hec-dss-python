@@ -1,9 +1,10 @@
 """Pytest module."""
 
-from hecdsspython import Catalog, HecDss
+from hecdss import Catalog, HecDss
 from datetime import datetime
 
 TEST_FP = "tests/data/sample7.dss"
+
 
 def test_issue9():
     dss = HecDss(TEST_FP)

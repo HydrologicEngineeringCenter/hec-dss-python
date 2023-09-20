@@ -13,6 +13,6 @@ if sys.platform == "linux" or sys.platform == "darwin":
 else:
     os.add_dll_directory(shared_lib_dir)
 
-from hecdsspython.catalog import Catalog
-from hecdsspython.hec_dss import HecDss
-from hecdsspython.dsspath import DssPath
+from hecdss.catalog import Catalog
+from hecdss.hec_dss import HecDss
+from hecdss.dsspath import DssPath

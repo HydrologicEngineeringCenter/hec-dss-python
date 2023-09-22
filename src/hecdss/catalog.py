@@ -1,5 +1,5 @@
-from record_type import RecordType
-from dsspath import DssPath
+from .record_type import RecordType
+from .dsspath import DssPath
 from datetime import datetime
 
 class Catalog:

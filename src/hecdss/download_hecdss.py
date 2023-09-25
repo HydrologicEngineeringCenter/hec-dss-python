@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import shutil
+import sys
 import requests
 import zipfile
 import os
@@ -36,8 +37,11 @@ def download_and_unzip(url, zip_file, destination_dir):
         print(f"Failed to download zip file. Status code: {response.status_code}")
 
 
-destination_dir = Path(__file__).parent.joinpath("lib")
-zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-win-x86_64/hecdss-7-IS-win-x86_64.zip"
-download_and_unzip(zip_url, "hecdss-7-IS-win-x86_64.zip", destination_dir)
-zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-linux-x86_64/hecdss-7-IS-linux-x86_64.zip"
-download_and_unzip(zip_url, "hecdss-7-IS-linux-x86_64.zip", destination_dir)
+def run():
+    destination_dir = Path(__file__).parent.joinpath("lib")
+    if sys.platform == "linux" or sys.platform == "darwin":
+        zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-win-x86_64/hecdss-7-IS-win-x86_64.zip"
+        download_and_unzip(zip_url, "hecdss-7-IS-win-x86_64.zip", destination_dir)
+    elif sys.platform == "win32":
+        zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-linux-x86_64/hecdss-7-IS-linux-x86_64.zip"
+        download_and_unzip(zip_url, "hecdss-7-IS-linux-x86_64.zip", destination_dir)

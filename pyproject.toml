@@ -8,6 +8,13 @@ readme = "Readme.md"
 packages = [{ include = "hecdss", from = "src" }]
 # include = [{ path = "lib", format = ["sdist", "wheel"] }]
 
+# [tool.poetry.build]
+# generate-setup-file = false
+# script = "build.py"
+[tool.poetry.scripts]
+download_hecdss_libs = "hecdss.download_hecdss:run"
+
+
 [tool.poetry.dependencies]
 python = "^3.8"
 

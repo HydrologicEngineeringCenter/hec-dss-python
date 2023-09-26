@@ -38,11 +38,13 @@ def download_and_unzip(url, destination_dir):
 def run():
     """Downloads and extracts the binary shared library into the current python environment."""
     destination_dir = Path(hecdss.__file__).parent.joinpath("lib")
-    if sys.platform == "linux" or sys.platform == "darwin":
-        zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-win-x86_64/hecdss-7-IS-win-x86_64.zip"
-        download_and_unzip(zip_url, destination_dir)
-    elif sys.platform == "win32":
+    platform = sys.platform
+    print(f"Installing shared library for {platform!r} OS")
+    if platform == "linux" or platform == "darwin":
         zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-linux-x86_64/hecdss-7-IS-linux-x86_64.zip"
+        download_and_unzip(zip_url, destination_dir)
+    elif platform == "win32":
+        zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-win-x86_64/hecdss-7-IS-win-x86_64.zip"
         download_and_unzip(zip_url, destination_dir)
 
 

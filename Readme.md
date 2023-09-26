@@ -36,6 +36,25 @@ These are the driving design ideas and goals of the hec-dss-python project (subj
 1. Clone this repository to your local machine.
 2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's root directory.
 
+### Package Installation
+
+1. Install the package from github (not yet available on PyPy).
+   `pip install hec-dss-python@git+https://github.com/FlowMatric/hec-dss-python@v0.1.0`
+2. Use the installation script to download the required binary files:
+
+   On Windows:
+   ```PowerShell
+    > hecdss_get_libs.exe
+    ```
+   On Linux:
+   ```bash
+   $ hecdss_get_libs
+   ```
+
+On Linux it is also possible to specify the directory that contains the shared library (*libhecdss.so*) in the
+`LD_LIBRARY_PATH` environment variable.
+
+     
 ## Contributing
 
 Contributions to this project are welcome! If you find any issues, have suggestions, or want to add new features, please open an issue or submit a pull request.

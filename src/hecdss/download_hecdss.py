@@ -6,7 +6,7 @@ import sys
 import tempfile
 import zipfile
 import os
-
+import hecdss
 import urllib.request as request
 
 
@@ -37,7 +37,7 @@ def download_and_unzip(url, destination_dir):
 
 def run():
     """Downloads and extracts the binary shared library into the current python environment."""
-    destination_dir = Path(__file__).parent.joinpath("lib")
+    destination_dir = Path(hecdss.__file__).parent.joinpath("lib")
     if sys.platform == "linux" or sys.platform == "darwin":
         zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-win-x86_64/hecdss-7-IS-win-x86_64.zip"
         download_and_unzip(zip_url, destination_dir)

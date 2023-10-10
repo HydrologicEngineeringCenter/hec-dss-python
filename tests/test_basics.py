@@ -66,6 +66,6 @@ def test_new_catalog():
 
 if __name__ == "__main__":
     test_catalog()
-    #test_issue9()
-    #test_basic()
-    #test_new_catalog()
+    test_issue9()
+    test_basic()
+    test_new_catalog()

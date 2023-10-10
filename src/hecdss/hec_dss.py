@@ -90,7 +90,7 @@ class HecDss:
         quality = []  # TO DO
 
         self._native.hec_dss_tsStoreRegular(
-            ts.pathname,
+            ts.dsspath,
             startDate,
             startTime,
             ts.values,

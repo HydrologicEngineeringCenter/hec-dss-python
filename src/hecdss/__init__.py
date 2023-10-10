@@ -1,5 +1,6 @@
 import os
 import sys
+import ctypes
 from pathlib import Path
 
 
@@ -11,7 +12,7 @@ if sys.platform == "linux" or sys.platform == "darwin":
     except KeyError:
         os.environ["LD_LIBRARY_PATH"] = str(shared_lib_dir)
 else:
-    os.add_dll_directory(shared_lib_dir)
+    os.environ['PATH'] = f"{shared_lib_dir};{os.environ['PATH']}"
 
 from hecdss.catalog import Catalog
 from hecdss.hec_dss import HecDss

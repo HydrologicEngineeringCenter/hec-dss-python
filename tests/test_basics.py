@@ -1,7 +1,12 @@
 """Pytest module."""
 
+import sys
+sys.path.append(r'src')
+
 from hecdss import Catalog, HecDss
 from datetime import datetime
+
+
 
 TEST_FP = "tests/data/sample7.dss"
 
@@ -25,8 +30,6 @@ def test_issue9():
 def test_basic():
     dss = HecDss(TEST_FP)
     print("record count = " + str(dss.recordCount()))
-    catalog = dss.getCatalog()
-    print(catalog.items[0:5])
 
     t1 = datetime(2005, 1, 1)
     t2 = datetime(2005, 1, 4)
@@ -42,6 +45,11 @@ def test_basic():
     tsc3 = dss.get(tsc.dsspath, t1, t2)
     assert len(tsc3.values) == len(tsc.values)
 
+def test_catalog():
+    dss = HecDss(TEST_FP)
+    catalog = dss.getCatalog()
+    for ds in catalog:
+        print(ds.recType,ds)
 
 def test_new_catalog():
     rawPaths = [
@@ -57,6 +65,7 @@ def test_new_catalog():
 
 
 if __name__ == "__main__":
-    test_issue9()
-    test_basic()
-#     test_new_catalog()
+    test_catalog()
+    #test_issue9()
+    #test_basic()
+    #test_new_catalog()

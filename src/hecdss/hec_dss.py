@@ -1,6 +1,6 @@
 """Docstring for public module."""
 
-from hecdss.hec_dss_native import HecDssNative
+from hecdss.hec_dss_native import _HecDssNative
 from hecdss.dateconverter import DateConverter
 from hecdss.timeseries import TimeSeries
 from hecdss.catalog import Catalog
@@ -8,7 +8,7 @@ from hecdss.catalog import Catalog
 
 class HecDss:
     def __init__(self, filename):
-        self._native = HecDssNative()
+        self._native = _HecDssNative()
         self._native.hec_dss_open(filename)
 
     def get(self, pathname, startDateTime, endDateTime):

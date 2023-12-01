@@ -11,6 +11,9 @@ class HecDss:
         self._native = _HecDssNative()
         self._native.hec_dss_open(filename)
 
+    def close(self):
+        self._native.hec_dss_close()
+
     def get(self, pathname, startDateTime, endDateTime):
         # get sizes
         startDate = startDateTime.strftime("%d%b%Y")

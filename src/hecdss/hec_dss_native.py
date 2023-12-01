@@ -321,6 +321,71 @@ class HecDssNative:
             type_c,
         )
 
+    def hec_dss_gridRetrieve(dss, pathname, boolRetrieveData, type_, dataType, 
+                         lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
+                         numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
+                         isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
+                         srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
+                         timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
+                         nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
+                         rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength):
+    
+    # Define the argument types for the C function
+        self.dll.hec_dss_gridRetrieve.argtypes = [
+        ctypes.POINTER(dss),             # dss_file* dss
+        ctypes.c_char_p,                 # const char* pathname
+        ctypes.c_int,                    # int boolRetrieveData
+        ctypes.POINTER(ctypes.c_int),    # int* type
+        ctypes.POINTER(ctypes.c_int),    # int* dataType
+        ctypes.POINTER(ctypes.c_int),    # int* lowerLeftCellX
+        ctypes.POINTER(ctypes.c_int),    # int* lowerLeftCellY
+        ctypes.POINTER(ctypes.c_int),    # int* numberOfCellsX
+        ctypes.POINTER(ctypes.c_int),    # int* numberOfCellsY
+        ctypes.POINTER(ctypes.c_int),    # int* numberOfRanges
+        ctypes.POINTER(ctypes.c_int),    # int* srsDefinitionType
+        ctypes.POINTER(ctypes.c_int),    # int* timeZoneRawOffset
+        ctypes.POINTER(ctypes.c_int),    # int* isInterval
+        ctypes.POINTER(ctypes.c_int),    # int* isTimeStamped
+        ctypes.c_char_p,                 # char* dataUnits
+        ctypes.c_int,                    # const int dataUnitsLength
+        ctypes.c_char_p,                 # char* dataSource
+        ctypes.c_int,                    # const int dataSourceLength
+        ctypes.c_char_p,                 # char* srsName
+        ctypes.c_int,                    # const int srsNameLength
+        ctypes.c_char_p,                 # char* srsDefinition
+        ctypes.c_int,                    # const int srsDefinitionLength
+        ctypes.c_char_p,                 # char* timeZoneID
+        ctypes.c_int,                    # const int timeZoneIDLength
+        ctypes.POINTER(ctypes.c_float),  # float* cellSize
+        ctypes.POINTER(ctypes.c_float),  # float* xCoordOfGridCellZero
+        ctypes.POINTER(ctypes.c_float),  # float* yCoordOfGridCellZero
+        ctypes.POINTER(ctypes.c_float),  # float* nullValue
+        ctypes.POINTER(ctypes.c_float),  # float* maxDataValue
+        ctypes.POINTER(ctypes.c_float),  # float* minDataValue
+        ctypes.POINTER(ctypes.c_float),  # float* meanDataValue
+        ctypes.POINTER(ctypes.c_float),  # float* rangeLimitTable
+        ctypes.c_int,                    # const int rangeTablesLength
+        ctypes.POINTER(ctypes.c_int),    # int* numberEqualOrExceedingRangeLimit
+        ctypes.POINTER(ctypes.c_float),  # float* data
+        ctypes.c_int                     # const int dataLength
+        ]
+
+        # Define the return type for the C function
+        self.dll.hec_dss_gridRetrieve.restype = ctypes.c_int
+
+        # Call the C function
+        return dss_lib.hec_dss_gridRetrieve(
+        dss, pathname, boolRetrieveData, type_, dataType, 
+        lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
+        numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
+        isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
+        srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
+        timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
+        nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
+        rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength)
+
+        
+
     def test():
         dss = HecDssNative()
         outputFile = b"output.txt"

@@ -2,6 +2,16 @@
 
 This repository contains a Python wrapper for the HEC-DSS file database C library. The provided DLL (`hecdss.dll` on Windows and `hecdss.so` on Linux) enables interaction with HEC-DSS files while abstracting memory management between Python and C.
 
+## Getting Started
+
+1. Clone this repository to your local machine.
+2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's root directory.
+3. from the repo directory (hec-dss-python)
+   ```
+   C:\project\hec-dss-python>python tests\test_basics.py
+   ```
+
+
 ## Background
 
 The HEC-DSS file database is a widely used data storage format for hydrological and environmental data. This repository provides a Python interface to interact with the HEC-DSS files using the provided C DLL. The primary goal is to enable Python applications to read data from and write data to HEC-DSS files. 
@@ -31,10 +41,6 @@ These are the driving design ideas and goals of the hec-dss-python project (subj
 - Language-agnostic approach similar to the .NET implementation ([hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet)).
 - No package installation required because the library is using python-ctypes to interact with the DLL.
 
-## Getting Started
-
-1. Clone this repository to your local machine.
-2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's root directory.
 
 ## Contributing
 

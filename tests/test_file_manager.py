@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 import os
+import uuid
 
 class TestFileManager:
     def __init__(self, test_data_dir):
@@ -13,10 +14,16 @@ class TestFileManager:
         if not os.path.isfile(src):
             raise FileNotFoundError(f"No such file: {src}")
 
-        dest = os.path.join(self.temp_dir, filename)
+        basename, extension = os.path.splitext(filename)
+        unique_id = uuid.uuid4()
+
+        # Creating a unique filename
+        unique_filename = f"{basename}_{unique_id}{extension}"
+        dest = os.path.join(self.temp_dir, unique_filename)
+
         shutil.copy(src, dest)
         return dest
 
     def cleanup(self):
         """Deletes the temporary directory and its contents."""
-        #shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.temp_dir)

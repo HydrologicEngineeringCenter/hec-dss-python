@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import c_float, c_double, c_char_p, c_int, c_void_p,POINTER
+from ctypes import c_int32
 from ctypes import byref, create_string_buffer
 from ctypes.util import find_library
 import os
@@ -107,7 +108,7 @@ class _HecDssNative:
 
         c_rawCatalog = create_string_buffer(count * pathBufferSize)
         pathFilter = filter.encode("ascii")
-        recordTypes = (ctypes.c_int32 * count)()
+        recordTypes = (c_int32 * count)()
 
         pathNameList = []
 
@@ -204,7 +205,7 @@ class _HecDssNative:
             c_char_p,  # endDate
             c_char_p,  # endTime
             POINTER(c_int),  # timeArray
-            POINTER(ctypes.c_double),  # valueArray
+            POINTER(c_double),  # valueArray
             c_int,  # arraySize
             POINTER(c_int),  # numberValuesRead
             POINTER(c_int),  # quality
@@ -219,7 +220,7 @@ class _HecDssNative:
         f.restype = c_int
 
         c_arraySize = c_int(arraySize)
-        c_times = (ctypes.c_int32 * arraySize)()
+        c_times = (c_int32 * arraySize)()
         c_values = (c_double * arraySize)()
         c_numberValuesRead = c_int(0)
         size = qualityLength * arraySize
@@ -288,7 +289,7 @@ class _HecDssNative:
             c_char_p,  # pathname (const char*)
             c_char_p,  # startDate (const char*)
             c_char_p,  # startTime (const char*)
-            POINTER(ctypes.c_double),  # valueArray (double*)
+            POINTER(c_double),  # valueArray (double*)
             c_int,  # valueArraySize (int)
             POINTER(c_int),  # qualityArray (int*)
             c_int,  # qualityArraySize (int)
@@ -304,7 +305,7 @@ class _HecDssNative:
         type_c = c_char_p(dataType.encode("utf-8"))
 
         print(valueArray)
-        valueArray_c = (ctypes.c_double * len(valueArray))(*valueArray)
+        valueArray_c = (c_double * len(valueArray))(*valueArray)
         qualityArray_c = (c_int * len(qualityArray))(*qualityArray)
         # import pdb;pdb.set_trace()
         return self.dll.hec_dss_tsStoreRegular(
@@ -398,7 +399,7 @@ class _HecDssNative:
         numberValues = len(times)
         times_int = (c_int * numberValues)(*times)
         values = [0, 0, 0, 0, 0]
-        values_double = (ctypes.c_double * numberValues)(*values)
+        values_double = (c_double * numberValues)(*values)
 
         numberValuesRead = c_int()
         quality = []

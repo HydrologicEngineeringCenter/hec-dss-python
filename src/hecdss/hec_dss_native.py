@@ -22,15 +22,14 @@ class _HecDssNative:
             raise Exception("Unsupported platform")
 
     def hec_dss_open(self, dss_filename):
-        self.dll.hec_dss_open.argtypes = [
+        f = self.dll.hec_dss_open
+        f.argtypes = [
             ctypes.c_char_p,
             ctypes.POINTER(ctypes.c_void_p),
         ]
-        self.dll.hec_dss_open.restype = ctypes.c_int
+        f.restype = ctypes.c_int
         self.handle = ctypes.c_void_p()
-        rval = self.dll.hec_dss_open(
-            dss_filename.encode("utf-8"), ctypes.byref(self.handle)
-        )
+        rval = f(dss_filename.encode("utf-8"), ctypes.byref(self.handle))
         if rval == 0:
             print("DSS file opened successfully.")
         else:

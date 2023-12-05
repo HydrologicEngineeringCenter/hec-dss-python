@@ -5,7 +5,7 @@ from ctypes import byref, create_string_buffer
 from ctypes.util import find_library
 import os
 import sys
-
+from typing import List
 
 class _HecDssNative:
     """Wrapper for Native method calls to hecdss.dll or libhecdss.so"""
@@ -23,7 +23,7 @@ class _HecDssNative:
         else:
             raise Exception("Unsupported platform")
 
-    def hec_dss_open(self, dss_filename):
+    def hec_dss_open(self, dss_filename: str):
         f = self.dll.hec_dss_open
         f.argtypes = [
             c_char_p,
@@ -51,7 +51,7 @@ class _HecDssNative:
         return f(self.handle)
 
     # set a integer setting by name
-    def __hec_dss_set_value(self, name, value):
+    def __hec_dss_set_value(self, name:str, value:int):
         f = self.dll.hec_dss_set_value
         f.argtypes = [c_char_p, c_int]
         f.restype = c_int
@@ -60,11 +60,11 @@ class _HecDssNative:
     # set debug level (0-15)
     # 0 - no output
     # 15 - max output
-    def hec_dss_set_debug_level(self, value):
+    def hec_dss_set_debug_level(self, value:int):
         self.__hec_dss_set_value("mlvl", value)
 
     def hec_dss_export_to_file(
-        self, path, outputFile, startDate, startTime, endDate, endTime
+        self, path:str, outputFile:str, startDate:str, startTime:str, endDate:str, endTime:str
     ):
         f=self.dll.hec_dss_export_to_file
         f.argtypes = [
@@ -177,23 +177,23 @@ class _HecDssNative:
 
     def hec_dss_tsRetrieve(
         self,
-        pathname,
-        startDate,
-        startTime,
-        endDate,
-        endTime,
-        times,
-        values,
-        arraySize,
+        pathname:str,
+        startDate:str,
+        startTime:str,
+        endDate:str,
+        endTime:str,
+        times:List[int],
+        values:List[float],
+        arraySize:str,
         numberValuesRead,
         quality,
-        qualityLength,
-        julianBaseDate,
-        timeGranularitySeconds,
-        units,
-        unitsLength,
-        dataType,
-        typeLength,
+        qualityLength:int,
+        julianBaseDate:int,
+        timeGranularitySeconds:int,
+        units:List[str],
+        unitsLength:int,
+        dataType:List[str],
+        typeLength:int,
     ):
 
         f = self.dll.hec_dss_tsRetrieve

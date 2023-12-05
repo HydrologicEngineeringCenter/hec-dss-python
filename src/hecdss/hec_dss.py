@@ -36,7 +36,7 @@ class HecDss:
 
         # tsRetrive
 
-        times = [0, 1]
+        times = [0]
         values = []
         numberValuesRead = [0]
         quality = []

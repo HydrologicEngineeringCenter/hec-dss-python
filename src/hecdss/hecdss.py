@@ -1,6 +1,6 @@
 """Docstring for public module."""
 
-from hecdss.hec_dss_native import _HecDssNative
+from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
 from hecdss.timeseries import TimeSeries
 from hecdss.catalog import Catalog
@@ -8,7 +8,7 @@ from hecdss.catalog import Catalog
 
 class HecDss:
     def __init__(self, filename):
-        self._native = _HecDssNative()
+        self._native = _Native()
         self._native.hec_dss_open(filename)
 
     def close(self):
@@ -103,22 +103,22 @@ class HecDss:
             ts.dataType,
         )
 
-    def getCatalog(self):
+    def get_catalog(self):
         paths, recordTypes = self._native.hec_dss_catalog()
         return Catalog(paths, recordTypes)
 
-    def recordCount(self):
+    def record_count(self):
         return self._native.hec_dss_record_count()
 
-    def setDebugLevel(self, level):
+    def set_debug_level(self, level):
         return self._native.hec_dss_set_debug_level(level)
 
 
 if __name__ == "__main__":
     # import pdb;pdb.set_trace()
     dss = HecDss("sample7.dss")
-    catalog = dss.getCatalog()
+    catalog = dss.get_catalog()
     for p in catalog:
         print(p)
     # print(catalog[0:5])
-    # dss.setDebugLevel(15)
+    # dss.set_debug_level(15)

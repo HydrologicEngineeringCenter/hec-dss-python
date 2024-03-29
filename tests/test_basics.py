@@ -40,7 +40,7 @@ class TestBasics(unittest.TestCase):
 
     def test_basic(self):
         dss = HecDss(self.test_files.get_copy("sample7.dss"))
-        print("record count = " + str(dss.recordCount()))
+        print("record count = " + str(dss.record_count()))
 
         t1 = datetime(2005, 1, 1)
         t2 = datetime(2005, 1, 4)
@@ -59,7 +59,7 @@ class TestBasics(unittest.TestCase):
 
     def test_catalog(self):
         dss = HecDss(self.test_files.get_copy("sample7.dss"))
-        catalog = dss.getCatalog()
+        catalog = dss.get_catalog()
         for ds in catalog:
             print(ds.recType,ds)
 

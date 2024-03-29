@@ -22,10 +22,10 @@ class Catalog:
             rawPath = self.rawCatalog[i]
             recordType = RecordType.RecordTypeFromInt(self.rawRecordTypes[i])
             path = DssPath(rawPath,recordType)
-            cleanPath = str(path.pathWithoutDate())
+            cleanPath = str(path.path_without_date())
             self.recordTypeDict[cleanPath] = recordType 
             # if timeseries - accumulate dates within a dataset
-            if path.isTimeSeries():
+            if path.is_time_series():
                 tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)

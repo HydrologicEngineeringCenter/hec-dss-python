@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from hecdss.hec_dss import HecDss
-from hecdss.hec_dss import TimeSeries
+from hecdss.hecdss import HecDss
+from hecdss.hecdss import TimeSeries
 
 
 class DssWriter:
@@ -15,7 +15,7 @@ class DssWriter:
             raise ValueError("DataFrame should contain only one column of data.")
 
         dss = HecDss(self.filename)
-        print("record count = " + str(dss.recordCount()))
+        print("record count = " + str(dss.record_count()))
         tsc = TimeSeries()
         tsc.dsspath = path
         tsc.values = df[df.columns[0]].values.astype(float)

@@ -15,5 +15,5 @@ else:
     os.environ['PATH'] = f"{shared_lib_dir};{os.environ['PATH']}"
 
 from hecdss.catalog import Catalog
-from hecdss.hec_dss import HecDss
+from hecdss.hecdss import HecDss
 from hecdss.dsspath import DssPath

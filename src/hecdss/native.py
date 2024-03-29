@@ -7,7 +7,7 @@ import os
 import sys
 from typing import List
 
-class _HecDssNative:
+class _Native:
     """Wrapper for Native method calls to hecdss.dll or libhecdss.so"""
 
     def __init__(self):

@@ -27,12 +27,12 @@ class DssPath:
     def __str__(self):
         return "/"+self.A+"/"+self.B+"/"+self.C+"/"+self.D+"/"+self.E+"/"+self.F+"/"
     
-    def pathWithoutDate(self):
+    def path_without_date(self):
         s = "/"+self.A+"/"+self.B+"/"+self.C+"//"+self.E+"/"+self.F+"/"
         rval = DssPath(s,self.recType)
         return rval
     
-    def isTimeSeries(self):
+    def is_time_series(self):
         return self.recType in DssPath._timeSeriesFamily
     
     def print(self):

@@ -80,7 +80,7 @@ class HecDss:
         ts.values = values
         ts.units = units[0]
         ts.dataType = dataType[0]
-        ts.dsspath = pathname
+        ts.id = pathname
         return ts
 
     def put(self, ts):
@@ -93,7 +93,7 @@ class HecDss:
         quality = []  # TO DO
 
         self._native.hec_dss_tsStoreRegular(
-            ts.dsspath,
+            ts.id,
             startDate,
             startTime,
             ts.values,

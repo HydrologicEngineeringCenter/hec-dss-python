@@ -51,9 +51,9 @@ class TestBasics(unittest.TestCase):
         tsc2.print_to_console()
         assert len(tsc2.values) > 0
         # save to a new path
-        tsc.dsspath = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
+        tsc.id = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
         dss.put(tsc)
-        tsc3 = dss.get(tsc.dsspath, t1, t2)
+        tsc3 = dss.get(tsc.id, t1, t2)
         assert len(tsc3.values) == len(tsc.values)
         dss.close()
 

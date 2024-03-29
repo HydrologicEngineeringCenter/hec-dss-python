@@ -4,7 +4,7 @@ class TimeSeries:
         self.values = []
         self.units =""
         self.dataType =""
-        self.dsspath = ""
+        self.id = ""
 
     def add_data_point(self, date, value):
         self.times.append(date)
@@ -27,7 +27,7 @@ class TimeSeries:
         return len(self.times)
 
     def print_to_console(self):
-        print("dsspath='"+self.dsspath+"'")
+        print("dsspath='" + self.id + "'")
         print("units='"+self.units+"'")
         print("dataType='"+self.dataType+"'")
         for time, value in zip(self.times, self.values):

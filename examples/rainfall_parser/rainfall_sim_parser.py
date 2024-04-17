@@ -112,6 +112,7 @@ def condition_timeseries_to_precip(df):
 
 
 def interpolate_1minute_timeseries(df):
+    # df2 = df[~df.index.duplicated()]
     s = df.resample('1min').ffill()
     return s
 
@@ -123,6 +124,8 @@ def generate_1minute_precip(filename, siteid, plot_number, year, condition,dss_f
     series_name_min = 'Precipitation (mm/min)'
 
     data = pandas.read_csv(filename)
+    data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
     raw_ts = extract_raw_timeseries(data, siteid, year, plot_number, condition, series_name)
     # print(raw_ts.to_string())
     print(f"raw data has {raw_ts.size} rows")
@@ -146,7 +149,9 @@ def generate_1minute_precip(filename, siteid, plot_number, year, condition,dss_f
 
 f = 'rainfall_sim.csv'
 dssf = 'rain_sim.dss'
-generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='N',dss_filename=dssf)
-generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='B',dss_filename=dssf)
-generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='N',dss_filename=dssf)
-generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2006, condition='B',dss_filename=dssf)
+
+# generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='N',dss_filename=dssf)
+# generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='B',dss_filename=dssf)
+# generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='N',dss_filename=dssf)
+# generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='B',dss_filename=dssf)

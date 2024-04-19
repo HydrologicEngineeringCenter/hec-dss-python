@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import re
 
+write_debug_files = False
+
 def plot_data_frames(data_frames, labels, markers, title, ylabel):
     # Plot the data frames
     for df, label, marker in zip(data_frames, labels, markers):
@@ -49,8 +51,9 @@ def extract_raw_timeseries(df, site_id, year, plot_number, condition, column_nam
             delta_t = time - prev_row['Time']
         # minute_overflow = prev_row is not None and delta_t < 0
 
+
         if delta_t < 0:
-            extra_t = extra_t + 60
+            extra_t = extra_t +  abs((delta_t/60) -0.999)   # every 60 add on a minute
 
         date = datetime(year=int(year), month=int(month), day=int(day))
         t = date + timedelta(minutes=time + extra_t)
@@ -119,6 +122,7 @@ def interpolate_1minute_timeseries(df):
 
 def generate_1minute_precip(filename, siteid, plot_number, year, condition,dss_filename):
     output_filename = f"{siteid}_plot_{plot_number}_{year}_{condition}.csv"
+    print(output_filename)
     series_name = 'Precipitation (mm/hr)'
     units = re.findall(r'\((.*?)\)', series_name)[0]
     series_name_min = 'Precipitation (mm/min)'
@@ -127,17 +131,21 @@ def generate_1minute_precip(filename, siteid, plot_number, year, condition,dss_f
     data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
     raw_ts = extract_raw_timeseries(data, siteid, year, plot_number, condition, series_name)
-    # print(raw_ts.to_string())
+    if write_debug_files:
+        raw_ts.to_csv("raw_timeseries_debug.csv")
     print(f"raw data has {raw_ts.size} rows")
     # detect precipitation going off - (use previous precipitation one minute prior to zero )
     # insert values to enhance interpolation
     ts_conditioned = condition_timeseries_to_precip(raw_ts)
-    # ts_conditioned.to_csv('conditioned.csv')
+    if write_debug_files:
+        ts_conditioned.to_csv('conditioned_timeseries_debug.csv')
     # plot_data_frames([raw_ts, ts_conditioned],["raw","conditioned"],['o','x',],"tst")
     ts_1minute = interpolate_1minute_timeseries(ts_conditioned)
-    # print(ts_1minute.to_string())
+    if write_debug_files:
+        ts_1minute.to_csv("interpolated_1min_debug.csv")
+
     title = f"{siteid} {year} plot number:{plot_number} condition:{condition} "
-    plot_data_frames([raw_ts, ts_conditioned, ts_1minute], ["raw", "conditioned", "1minute"], ['o', 'x', '*'], title,units)
+    #plot_data_frames([raw_ts, ts_conditioned, ts_1minute], ["raw", "conditioned", "1minute"], ['o', 'x', '*'], title,units)
     # convert from mm/hour to mm/minute
     ts_1minute[series_name] = ts_1minute[series_name] / 60
     ts_1minute = ts_1minute.rename(columns={series_name: series_name_min})
@@ -149,9 +157,115 @@ def generate_1minute_precip(filename, siteid, plot_number, year, condition,dss_f
 
 f = 'rainfall_sim.csv'
 dssf = 'rain_sim.dss'
-generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2006, condition='B',dss_filename=dssf)
 
-# generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='N',dss_filename=dssf)
-# generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='B',dss_filename=dssf)
-# generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='N',dss_filename=dssf)
-# generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='B',dss_filename=dssf)
+# write_debug_files=True
+
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2009, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=2, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=2, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=2, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=2, year=2009, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=3, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=3, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=3, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=3, year=2009, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=4, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=4, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=4, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='ER3', plot_number=4, year=2009, condition='B',dss_filename=dssf)
+
+
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2007, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=2, year=2007, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=3, year=2007, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=4, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=4, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=4, year=2003, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=4, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ab', plot_number=4, year=2007, condition='B',dss_filename=dssf)
+#
+#
+generate_1minute_precip(filename=f, siteid='SA', plot_number=1, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=1, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=1, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=1, year=2009, condition='B',dss_filename=dssf)
+#
+generate_1minute_precip(filename=f, siteid='SA', plot_number=2, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=2, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=2, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=2, year=2009, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='SA', plot_number=3, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=3, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=3, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=3, year=2009, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='SA', plot_number=4, year=2005, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=4, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=4, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='SA', plot_number=4, year=2009, condition='B',dss_filename=dssf)
+
+
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=1, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=1, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=1, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=1, year=2007, condition='B',dss_filename=dssf)
+
+
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=2, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=2, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=2, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=2, year=2007, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=3, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=3, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=3, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=3, year=2007, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=4, year=2004, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=4, year=2004, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=4, year=2005, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Ta', plot_number=4, year=2007, condition='B',dss_filename=dssf)
+
+
+
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2006, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2007, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=1, year=2010, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=2, year=2006, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=2, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=2, year=2007, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=2, year=2010, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=3, year=2006, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=3, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=3, year=2007, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=3, year=2010, condition='B',dss_filename=dssf)
+
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=4, year=2006, condition='N',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=4, year=2006, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=4, year=2007, condition='B',dss_filename=dssf)
+generate_1minute_precip(filename=f, siteid='Wi', plot_number=4, year=2010, condition='B',dss_filename=dssf)

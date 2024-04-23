@@ -2,6 +2,7 @@
 
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
+from hecdss.record_type import RecordType
 from hecdss.timeseries import TimeSeries
 from hecdss.catalog import Catalog
 
@@ -10,16 +11,48 @@ class HecDss:
     def __init__(self, filename):
         self._native = _Native()
         self._native.hec_dss_open(filename)
+        self._catalog = None
 
     def close(self):
         self._native.hec_dss_close()
 
-    def get(self, pathname, startDateTime, endDateTime):
+    def get_record_type(self,pathname):
+
+        if not self._catalog:
+          self._catalog = self.get_catalog()
+
+        rt = self._catalog.recordTypeDict[pathname]
+        print(f"hec_dss_recordType for '{pathname}' is {rt}")
+        # TODO do native call.
+        # rt = self._native.hec_dss_recordType(pathname)
+        # print(f"hec_dss_recordType for '{pathname}' is {rt}")
+        return rt
+
+    def get(self, pathname, startdatetime=None, enddatetime=None):
+        type = self.get_record_type(pathname)
+
+        if type == RecordType.RegularTimeSeries:
+            return self._get_timeseries(pathname, startdatetime, enddatetime)
+        elif type == RecordType.PairedData:
+            print("???????????????????????????is paired data?????????????????????????????????????")
+            # hec_dss_pdRetrieveInfo
+            # read paired data
+        elif type == "grid":
+            pass
+        return
+
+    def _get_timeseries(self,pathname,startDateTime,endDateTime):
         # get sizes
-        startDate = startDateTime.strftime("%d%b%Y")
-        startTime = startDateTime.strftime("%H:%M")
-        endDate = endDateTime.strftime("%d%b%Y")
-        endTime = endDateTime.strftime("%H:%M")
+        if not (startDateTime and endDateTime):
+            startDate = ""
+            startTime = ""
+            endDate = ""
+            endTime = ""
+        else:
+            startDate = startDateTime.strftime("%d%b%Y")
+            startTime = startDateTime.strftime("%H:%M")
+            endDate = endDateTime.strftime("%d%b%Y")
+            endTime = endDateTime.strftime("%H:%M")
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
         self._native.hec_dss_tsGetSizes(

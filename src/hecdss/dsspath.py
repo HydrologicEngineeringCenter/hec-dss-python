@@ -17,7 +17,7 @@ class DssPath:
         if path[0]!='/' or path[-1]!= '/':
             raise Exception("Invalid DSS Path: '"+path+"'")
         path = path[1:-1]  # remove beginning and ending '/'
-        self.rawPath= path
+        #self.rawPath= path
         
         split_parts = path.split('/')
         if len(split_parts) >= 6:

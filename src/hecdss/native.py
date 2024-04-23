@@ -322,7 +322,7 @@ class _Native:
             type_c,
         )
 
-    def hec_dss_gridRetrieve(dss, pathname, boolRetrieveData, type_, dataType, 
+    def hec_dss_gridRetrieve(self,dss, pathname, boolRetrieveData, type_, dataType,
                          lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
                          numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
                          isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
@@ -375,7 +375,7 @@ class _Native:
         self.dll.hec_dss_gridRetrieve.restype = c_int
 
         # Call the C function
-        return dss_lib.hec_dss_gridRetrieve(
+        return self.dll.hec_dss_gridRetrieve(
         dss, pathname, boolRetrieveData, type_, dataType, 
         lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
         numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
@@ -385,7 +385,16 @@ class _Native:
         nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
         rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength)
 
-        
+    def hec_dss_recordType(self, pathname):
+        f= self.dll.hec_dss_recordType
+        f.argtypes = [
+            c_void_p,
+            c_char_p
+            ]
+        f.restype = c_int
+        c_str = c_char_p(pathname.encode("utf-8"))
+        return f(self.handle,c_str)
+
 
     def test():
         dss = HecDssNative()
@@ -452,3 +461,7 @@ class _Native:
         # print ("record count = "+str(nnn))
         # ttt = dss.hec_dss_export_to_file(ppp,outputFile,sd,st,ed,et)
         # dss.close()
+
+
+
+

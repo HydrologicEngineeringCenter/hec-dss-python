@@ -19,7 +19,7 @@ class HecDss:
         startDate = startDateTime.strftime("%d%b%Y")
         startTime = startDateTime.strftime("%H:%M")
         endDate = endDateTime.strftime("%d%b%Y")
-        endTime = startDateTime.strftime("%H:%M")
+        endTime = endDateTime.strftime("%H:%M")
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
         self._native.hec_dss_tsGetSizes(

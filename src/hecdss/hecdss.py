@@ -1,5 +1,5 @@
 """Docstring for public module."""
-
+from hecdss.PairedData import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
 from hecdss.record_type import RecordType
@@ -34,12 +34,112 @@ class HecDss:
         if type == RecordType.RegularTimeSeries:
             return self._get_timeseries(pathname, startdatetime, enddatetime)
         elif type == RecordType.PairedData:
-            print("???????????????????????????is paired data?????????????????????????????????????")
-            # hec_dss_pdRetrieveInfo
+            self._get_paired_data(pathname)
             # read paired data
         elif type == "grid":
             pass
         return
+
+    def _get_paired_data(self, pathname):
+        numberOrdinates = [0]
+        numberCurves = [0]
+        unitsIndependent  =[""]
+        unitsDependent = [""]
+        typeIndependent = [""]
+        typeDependent =[""]
+        labelsLength =[0]
+        self._native.hec_dss_pdRetrieveInfo(
+            pathname,
+            numberOrdinates,
+            numberCurves,
+            unitsIndependent,
+            unitsDependent,
+            typeIndependent,
+            typeDependent,
+            labelsLength
+        )
+        print("Number of Ordinates:", numberOrdinates[0])
+        print("Number of Curves:", numberCurves[0])
+        print("length of labels:", labelsLength[0])
+
+        doubleOrdinates = []
+        doubleValues = []
+        labels = []
+        # suffix of '2' so w don't info from calling hec_dss_pdRetrieveInfo
+        numberOrdinates2 = [0]
+        numberCurves2 = [0]
+        unitsIndependent2 = [""]
+        unitsDependent2 = [""]
+        typeIndependent2 = [""]
+        typeDependent2 = [""]
+        status = self._native.hec_dss_pdRetrieve(pathname,
+                                        doubleOrdinates,numberOrdinates[0],
+                                        doubleValues,numberCurves[0]*numberOrdinates[0],
+                                        numberOrdinates2,numberCurves2,
+                                        unitsIndependent2,len(unitsIndependent),
+                                        typeIndependent2,len(typeIndependent),
+                                        unitsDependent2,len(unitsDependent),
+                                        typeDependent2,len(typeDependent),
+                                        labels, labelsLength[0])
+
+
+
+        if status != 0:
+            print(f"Error reading paired-data from '{pathname}'")
+            return None
+
+
+        pd = PairedData()
+        pd.ordinates = doubleOrdinates
+        #pd.values =  #TODO
+        # # tsRetrive
+        #
+        # times = [0]
+        # values = []
+        # numberValuesRead = [0]
+        # quality = []
+        # julianBaseDate = [0]
+        # timeGranularitySeconds = [0]
+        # units = [""]
+        # bufferLength = 40
+        # dataType = [""]
+        #
+        # self._native.hec_dss_tsRetrieve(
+        #     pathname,
+        #     startDate,
+        #     startTime,
+        #     endDate,
+        #     endTime,
+        #     times,
+        #     values,
+        #     numberValues[0],
+        #     numberValuesRead,
+        #     quality,
+        #     qualityElementSize[0],
+        #     julianBaseDate,
+        #     timeGranularitySeconds,
+        #     units,
+        #     bufferLength,
+        #     dataType,
+        #     bufferLength,
+        # )
+        #
+        # # print("units = "+units[0])
+        # # print("datatype = "+dataType[0])
+        # # print("times: ")
+        # # print(times)
+        # # print(values)
+        # print("julianBaseDate = " + str(julianBaseDate[0]))
+        # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
+        # ts = TimeSeries()
+        # ts.times = DateConverter.date_times_from_julian_array(
+        #     times, timeGranularitySeconds[0], julianBaseDate[0]
+        # )
+        # ts.values = values
+        # ts.units = units[0]
+        # ts.dataType = dataType[0]
+        # ts.id = pathname
+        # return ts
 
     def _get_timeseries(self,pathname,startDateTime,endDateTime):
         # get sizes
@@ -79,7 +179,7 @@ class HecDss:
         bufferLength = 40
         dataType = [""]
 
-        self._native.hec_dss_tsRetrieve(
+        status = self._native.hec_dss_tsRetrieve(
             pathname,
             startDate,
             startTime,

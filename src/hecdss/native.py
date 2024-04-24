@@ -126,6 +126,134 @@ class _Native:
 
         return pathNameList, recordTypeArray
 
+    def hec_dss_pdRetrieveInfo(self, pathname,
+                               numberOrdinates:List[int], numberCurves:List[int],
+                               unitsIndependent:List[str],
+                               unitsDependent:List[str],
+                               typeIndependent:List[str],
+                               typeDependent:List[str],
+                               labelsLength):
+        self.dll.hec_dss_pdRetrieveInfo.argtypes = [c_void_p, c_char_p,
+                                               POINTER(c_int), POINTER(c_int),
+                                               c_char_p, c_int,
+                                               c_char_p, c_int,
+                                               c_char_p, c_int,
+                                               c_char_p]
+
+        self.dll.hec_dss_pdRetrieveInfo.restype = c_int
+        numberOrdinates_val = c_int()
+        numberCurves_val = c_int()
+        labelsLength_val = c_int()
+
+        buff_size = 40
+        c_unitsIndependent = create_string_buffer(buff_size)
+        c_string_length = c_int(buff_size)
+        c_unitsDependent= create_string_buffer(buff_size)
+        c_typeIndependent= create_string_buffer(buff_size)
+        c_typeDependent= create_string_buffer(buff_size)
+
+        result = self.dll.hec_dss_pdRetrieveInfo(
+            self.handle,
+            pathname.encode("utf-8"),
+            ctypes.byref(numberOrdinates_val),
+            ctypes.byref(numberCurves_val),
+            c_unitsIndependent,
+            c_string_length,
+            c_unitsDependent,
+            c_string_length,
+            c_typeIndependent,
+            c_string_length,
+            c_typeDependent,
+            c_string_length,
+            ctypes.byref(labelsLength_val),
+        )
+
+        numberOrdinates[0] = numberOrdinates_val.value
+        numberCurves[0] = numberCurves_val.value
+        labelsLength[0] = labelsLength_val.value
+
+#units[0] = c_units.value.decode("utf-8")
+        unitsIndependent[0] = c_unitsIndependent.value.decode('utf-8')
+        unitsDependent[0] = c_unitsDependent.value.decode('utf-8')
+        typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
+        typeDependent[0] = c_typeDependent.value.decode('utf-8')
+
+        if result == 0:
+            print("Function call successful:")
+            print("Number of ordinates:", numberOrdinates[0])
+            print("Number of curves:", numberCurves[0])
+            print("Labels length:", labelsLength[0])
+        else:
+            print("Function call failed with result:", result)
+
+        return result
+
+    def hec_dss_pdRetrieve(self, pathname:str,
+                           doubleOrdinates:List[float], doubleOrdinatesLength:int,
+                           doubleValues:List[float], doubleValuesLength:int,
+                           numberOrdinates:List[int], numberCurves:List[int],
+                           unitsIndependent:List[str], unitsIndependentLength:int,
+                           typeIndependent:List[str],typeIndependentLength:int,
+                           unitsDependent:List[str], unitsDependentLength:int,
+                           typeDependent:List[str], typeDependentLength:int,
+                           labels:List[str], labelsLength:int):
+
+        self.dll.hec_dss_pdRetrieve.argtypes = [c_void_p, c_char_p,
+                                           POINTER(c_double), c_int,
+                                           POINTER(c_double), c_int,
+                                           POINTER(c_int), POINTER(c_int),
+                                           c_char_p, c_int,
+                                           c_char_p, c_int,
+                                           c_char_p, c_int,
+                                           c_char_p, c_int,
+                                           c_char_p, c_int]
+
+        self.dll.hec_dss_pdRetrieve.restype = c_int
+
+        c_doubleOrdinates = ( c_double * doubleOrdinatesLength)()
+        c_doubleValues =  ( c_double * doubleValuesLength)()
+        c_numberOrdinates = c_int()
+        c_numberCurves = c_int()
+
+        c_labels = create_string_buffer(labelsLength)
+        c_unitsIndependent = create_string_buffer(unitsIndependentLength)
+        c_unitsDependent = create_string_buffer(unitsDependentLength)
+        c_typeIndependent = create_string_buffer(typeIndependentLength)
+        c_typeDependent = create_string_buffer(typeDependentLength)
+
+        result = self.dll.hec_dss_pdRetrieve(self.handle,
+                                        pathname.encode("utf-8"),
+                                        c_doubleOrdinates, doubleOrdinatesLength,
+                                        c_doubleValues, doubleValuesLength,
+                                        ctypes.byref(c_numberOrdinates),
+                                        ctypes.byref(c_numberCurves),
+                                        c_unitsIndependent, unitsIndependentLength,
+                                        c_typeIndependent, typeIndependentLength,
+                                        c_unitsDependent, unitsDependentLength,
+                                        c_typeDependent, typeDependentLength,
+                                        c_labels, labelsLength)
+
+        unitsIndependent[0] = c_unitsIndependent.value.decode('utf-8')
+        unitsDependent[0] = c_unitsDependent.value.decode('utf-8')
+        typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
+        typeDependent[0] = c_typeDependent.value.decode('utf-8')
+
+        doubleOrdinates.extend(list(c_doubleOrdinates))
+        doubleValues.extend(list(c_doubleValues))
+        numberOrdinates[0]=c_numberOrdinates
+        numberCurves[0]=c_numberCurves
+        labels.extend(c_labels.value.decode('utf-8').split("\0"))
+
+        if result == 0:
+            print("Function call successful:")
+            print("ordinates:", doubleOrdinates)
+            print("curves:", doubleValues)
+            print("Labels length:", labels)
+        else:
+            print("Function call failed with result:", result)
+
+        return result
+
     def hec_dss_tsGetSizes(
         self,
         pathname,

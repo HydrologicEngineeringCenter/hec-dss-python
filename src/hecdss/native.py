@@ -19,6 +19,8 @@ class _Native:
             )
             self.dll = ctypes.CDLL(libc_path)
         elif sys.platform == "win32":
+            this_dir = os.path.dirname(os.path.realpath(__file__))
+            sys.path.append(this_dir+"/lib")
             self.dll = ctypes.CDLL("hecdss")
         else:
             raise Exception("Unsupported platform")

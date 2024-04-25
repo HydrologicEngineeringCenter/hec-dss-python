@@ -34,7 +34,7 @@ class HecDss:
         if type == RecordType.RegularTimeSeries:
             return self._get_timeseries(pathname, startdatetime, enddatetime)
         elif type == RecordType.PairedData:
-            self._get_paired_data(pathname)
+            return self._get_paired_data(pathname)
             # read paired data
         elif type == "grid":
             pass
@@ -76,10 +76,10 @@ class HecDss:
                                         doubleOrdinates,numberOrdinates[0],
                                         doubleValues,numberCurves[0]*numberOrdinates[0],
                                         numberOrdinates2,numberCurves2,
-                                        unitsIndependent2,len(unitsIndependent),
-                                        typeIndependent2,len(typeIndependent),
-                                        unitsDependent2,len(unitsDependent),
-                                        typeDependent2,len(typeDependent),
+                                        unitsIndependent2,len(unitsIndependent[0])+1,
+                                        typeIndependent2,len(typeIndependent[0])+1,
+                                        unitsDependent2,len(unitsDependent[0])+1,
+                                        typeDependent2,len(typeDependent[0])+1,
                                         labels, labelsLength[0])
 
 
@@ -88,58 +88,20 @@ class HecDss:
             print(f"Error reading paired-data from '{pathname}'")
             return None
 
-
         pd = PairedData()
         pd.ordinates = doubleOrdinates
-        #pd.values =  #TODO
-        # # tsRetrive
-        #
-        # times = [0]
-        # values = []
-        # numberValuesRead = [0]
-        # quality = []
-        # julianBaseDate = [0]
-        # timeGranularitySeconds = [0]
-        # units = [""]
-        # bufferLength = 40
-        # dataType = [""]
-        #
-        # self._native.hec_dss_tsRetrieve(
-        #     pathname,
-        #     startDate,
-        #     startTime,
-        #     endDate,
-        #     endTime,
-        #     times,
-        #     values,
-        #     numberValues[0],
-        #     numberValuesRead,
-        #     quality,
-        #     qualityElementSize[0],
-        #     julianBaseDate,
-        #     timeGranularitySeconds,
-        #     units,
-        #     bufferLength,
-        #     dataType,
-        #     bufferLength,
-        # )
-        #
-        # # print("units = "+units[0])
-        # # print("datatype = "+dataType[0])
-        # # print("times: ")
-        # # print(times)
-        # # print(values)
-        # print("julianBaseDate = " + str(julianBaseDate[0]))
-        # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
-        # ts = TimeSeries()
-        # ts.times = DateConverter.date_times_from_julian_array(
-        #     times, timeGranularitySeconds[0], julianBaseDate[0]
-        # )
-        # ts.values = values
-        # ts.units = units[0]
-        # ts.dataType = dataType[0]
-        # ts.id = pathname
-        # return ts
+
+        n = numberCurves2[0].value
+        pd.values = [doubleValues[i:i+n] for i in range(0, len(doubleValues), n)]
+
+        pd.labels = labels
+        pd.type_independent = typeIndependent2[0]
+        pd.type_dependent = typeDependent2[0]
+        pd.units_independent = unitsIndependent2[0]
+        pd.units_dependent = unitsDependent2[0]
+        pd.id = pathname
+
+        return pd
 
     def _get_timeseries(self,pathname,startDateTime,endDateTime):
         # get sizes
@@ -216,25 +178,33 @@ class HecDss:
         ts.id = pathname
         return ts
 
-    def put(self, ts):
+    def put(self, rt):
         # TO DO.. save other types besides regular interval.
         # TO DO. check data type..
         # TO Do. is timezone needed?
-        # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
-        #                           saveAsFloat, units, type):
-        startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
-        quality = []  # TO DO
 
-        self._native.hec_dss_tsStoreRegular(
-            ts.id,
-            startDate,
-            startTime,
-            ts.values,
-            quality,
-            False,
-            ts.units,
-            ts.dataType,
-        )
+        if type(rt) is TimeSeries:
+            ts = rt
+            # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
+            #                           saveAsFloat, units, type):
+            startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
+            quality = []  # TO DO
+
+            self._native.hec_dss_tsStoreRegular(
+                ts.id,
+                startDate,
+                startTime,
+                ts.values,
+                quality,
+                False,
+                ts.units,
+                ts.dataType,
+            )
+
+        elif type(rt) is PairedData:
+            pd = rt
+            print(pd)
+            return self._native.hec_dss_pdStore(pd)
 
     def get_catalog(self):
         paths, recordTypes = self._native.hec_dss_catalog()

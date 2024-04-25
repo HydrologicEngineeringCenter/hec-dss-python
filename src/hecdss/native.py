@@ -20,8 +20,8 @@ class _Native:
             self.dll = ctypes.CDLL(libc_path)
         elif sys.platform == "win32":
             this_dir = os.path.dirname(os.path.realpath(__file__))
-            sys.path.append(this_dir+"/lib")
-            self.dll = ctypes.CDLL("hecdss")
+            # sys.path.append(this_dir+r"\lib")
+            self.dll = ctypes.CDLL(this_dir+r"\lib\hecdss.dll")
         else:
             raise Exception("Unsupported platform")
 
@@ -255,6 +255,62 @@ class _Native:
             print("Function call failed with result:", result)
 
         return result
+
+    def hec_dss_pdStore(
+            self,
+            pd,
+    ):
+
+        self.dll.hec_dss_pdStore.restype = c_int
+        self.dll.hec_dss_pdStore.argtypes = [
+            c_void_p,  # dss (void*)
+            c_char_p,  # pathname (const char*)
+            POINTER(c_double),  # ordinatesArray (double*)
+            c_int,  # ordinatesLength (int)
+            POINTER(c_double),  # valuesArray (double*)
+            c_int,  # valuesLength (int)
+            c_int,  # numberOrdinates (int)
+            c_int,  # NumberCurves (int)
+            c_char_p,  # unitsIndependent (const char*)
+            c_char_p,  # typeIndependent (const char*)
+            c_char_p,  # unitsDependent (const char*)
+            c_char_p,  # typeDependent (const char*)
+            c_char_p,  # labels (const char*)
+            c_int,  # labelsLength (int)
+        ]
+
+
+        pathname_c = c_char_p(pd.id.encode("utf-8"))
+        Ordinates_c = (c_double * len(pd.ordinates))(*pd.ordinates)
+        OrdinatesLength_c = len(pd.ordinates)
+        flat_list = [j for sub in pd.values for j in sub]
+        Values_c = (c_double * len(pd.values))(*flat_list)
+        ValuesLength_c = len(flat_list)
+        numberOrdinates_c = len(pd.ordinates)
+        numberCurves_c = len(pd.values[0])
+        unitsIndependent_c = c_char_p(pd.units_independent.encode("utf-8"))
+        typeIndependent_c = c_char_p(pd.type_independent.encode("utf-8"))
+        unitsDependent_c = c_char_p(pd.units_dependent.encode("utf-8"))
+        typeDependent_c = c_char_p(pd.type_dependent.encode("utf-8"))
+        labels_c = c_char_p("\0".join(pd.labels).encode("utf-8"))
+        labelsLength_c = len(pd.labels)
+
+        return self.dll.hec_dss_pdStore(
+            self.handle,
+            pathname_c,
+            Ordinates_c,
+            OrdinatesLength_c,
+            Values_c,
+            ValuesLength_c,
+            numberOrdinates_c,
+            numberCurves_c,
+            unitsIndependent_c,
+            typeIndependent_c,
+            unitsDependent_c,
+            typeDependent_c,
+            labels_c,
+            labelsLength_c,
+        )
 
     def hec_dss_tsGetSizes(
         self,

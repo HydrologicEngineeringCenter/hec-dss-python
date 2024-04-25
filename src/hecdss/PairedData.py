@@ -2,7 +2,7 @@
 
 class PairedData:
     def __init__(self):
-        self.path = None
+        self.id = None
         self.ordinates = []
         self.values = []
         self.labels = []

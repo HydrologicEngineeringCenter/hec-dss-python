@@ -292,8 +292,9 @@ class _Native:
         typeIndependent_c = c_char_p(pd.type_independent.encode("utf-8"))
         unitsDependent_c = c_char_p(pd.units_dependent.encode("utf-8"))
         typeDependent_c = c_char_p(pd.type_dependent.encode("utf-8"))
-        labels_c = c_char_p("\0".join(pd.labels).encode("utf-8"))
-        labelsLength_c = len(pd.labels)
+        flat_labels = "\0".join(pd.labels)
+        labels_c = c_char_p(flat_labels.encode("utf-8"))
+        labelsLength_c = len(flat_labels)
 
         return self.dll.hec_dss_pdStore(
             self.handle,

@@ -29,7 +29,7 @@ class PairedData:
     @staticmethod
     def create(x_values, y_values, x_units="", x_type="", y_units="", y_type="", path=None):
         pd = PairedData()
-        pd.path = path
+        pd.id = path
         pd.ordinates = x_values
         pd.values = y_values
         pd.units_independent = x_units

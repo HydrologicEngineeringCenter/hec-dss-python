@@ -22,7 +22,7 @@ class HecDss:
           self._catalog = self.get_catalog()
 
         rt = self._catalog.recordTypeDict[pathname]
-        print(f"hec_dss_recordType for '{pathname}' is {rt}")
+        # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         # TODO do native call.
         # rt = self._native.hec_dss_recordType(pathname)
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
@@ -58,9 +58,9 @@ class HecDss:
             typeDependent,
             labelsLength
         )
-        print("Number of Ordinates:", numberOrdinates[0])
-        print("Number of Curves:", numberCurves[0])
-        print("length of labels:", labelsLength[0])
+        # print("Number of Ordinates:", numberOrdinates[0])
+        # print("Number of Curves:", numberCurves[0])
+        # print("length of labels:", labelsLength[0])
 
         doubleOrdinates = []
         doubleValues = []
@@ -82,8 +82,6 @@ class HecDss:
                                         typeDependent2,len(typeDependent[0])+1,
                                         labels, labelsLength[0])
 
-
-
         if status != 0:
             print(f"Error reading paired-data from '{pathname}'")
             return None
@@ -93,7 +91,6 @@ class HecDss:
 
         n = numberCurves2[0].value
         pd.values = [doubleValues[i:i+n] for i in range(0, len(doubleValues), n)]
-
         pd.labels = labels
         pd.type_independent = typeIndependent2[0]
         pd.type_dependent = typeDependent2[0]
@@ -126,8 +123,8 @@ class HecDss:
             numberValues,
             qualityElementSize,
         )
-        print("Number of values:", numberValues[0])
-        print("Quality element size:", qualityElementSize[0])
+        # print("Number of values:", numberValues[0])
+        # print("Quality element size:", qualityElementSize[0])
 
         # tsRetrive
 
@@ -166,8 +163,8 @@ class HecDss:
         # print("times: ")
         # print(times)
         # print(values)
-        print("julianBaseDate = " + str(julianBaseDate[0]))
-        print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
+        # print("julianBaseDate = " + str(julianBaseDate[0]))
+        # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
         ts = TimeSeries()
         ts.times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
@@ -204,7 +201,7 @@ class HecDss:
 
         elif type(container) is PairedData:
             pd = container
-            print(pd)
+            # print(pd)
             status = self._native.hec_dss_pdStore(pd)
             self._catalog = None
 

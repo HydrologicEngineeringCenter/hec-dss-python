@@ -182,9 +182,9 @@ class _Native:
 
         if result == 0:
             print("Function call successful:")
-            print("Number of ordinates:", numberOrdinates[0])
-            print("Number of curves:", numberCurves[0])
-            print("Labels length:", labelsLength[0])
+            # print("Number of ordinates:", numberOrdinates[0])
+            # print("Number of curves:", numberCurves[0])
+            # print("Labels length:", labelsLength[0])
         else:
             print("Function call failed with result:", result)
 
@@ -244,13 +244,14 @@ class _Native:
         doubleValues.extend(list(c_doubleValues))
         numberOrdinates[0]=c_numberOrdinates
         numberCurves[0]=c_numberCurves
-        labels.extend(c_labels.value.decode('utf-8').split("\0"))
+        print(numberCurves[0])
+        labels.extend(c_labels.raw.decode('utf-8').split("\0")[:c_numberCurves.value])
 
         if result == 0:
             print("Function call successful:")
-            print("ordinates:", doubleOrdinates)
-            print("curves:", doubleValues)
-            print("Labels length:", labels)
+            # print("ordinates:", doubleOrdinates)
+            # print("curves:", doubleValues)
+            # print("Labels length:", labels)
         else:
             print("Function call failed with result:", result)
 
@@ -284,7 +285,7 @@ class _Native:
         Ordinates_c = (c_double * len(pd.ordinates))(*pd.ordinates)
         OrdinatesLength_c = len(pd.ordinates)
         flat_list = [j for sub in pd.values for j in sub]
-        Values_c = (c_double * len(pd.values))(*flat_list)
+        Values_c = (c_double * len(flat_list))(*flat_list)
         ValuesLength_c = len(flat_list)
         numberOrdinates_c = len(pd.ordinates)
         numberCurves_c = len(pd.values[0])
@@ -295,6 +296,8 @@ class _Native:
         flat_labels = "\0".join(pd.labels)
         labels_c = c_char_p(flat_labels.encode("utf-8"))
         labelsLength_c = len(flat_labels)
+        x = len(flat_labels)
+        y = len(labels_c.value)
 
         return self.dll.hec_dss_pdStore(
             self.handle,

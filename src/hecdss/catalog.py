@@ -31,7 +31,7 @@ class Catalog:
                 tsRecords.append(t)
             else: 
                 # add NON time-series to list (nothing else needed)
-                self.items.append(path) 
+                self.items.append(path)
 
         # go through each timeSeriesDictNoDates, and sort each list of dates
         # use first and last to create the condensed path 
@@ -45,7 +45,7 @@ class Catalog:
             p = DssPath(key,rt)
             p.D = condensedDpart
             self.items.append(p)
-    
+
     def print(self):
         for ds in self.items:
             print(ds)

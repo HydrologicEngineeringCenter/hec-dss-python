@@ -178,19 +178,19 @@ class HecDss:
         ts.id = pathname
         return ts
 
-    def put(self, rt):
+    def put(self, container):
         # TO DO.. save other types besides regular interval.
         # TO DO. check data type..
         # TO Do. is timezone needed?
-
-        if type(rt) is TimeSeries:
-            ts = rt
+        status = 0
+        if type(container) is TimeSeries:
+            ts = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
             startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
             quality = []  # TO DO
 
-            self._native.hec_dss_tsStoreRegular(
+            status = self._native.hec_dss_tsStoreRegular(
                 ts.id,
                 startDate,
                 startTime,
@@ -200,11 +200,23 @@ class HecDss:
                 ts.units,
                 ts.dataType,
             )
+            self._catalog = None
 
-        elif type(rt) is PairedData:
-            pd = rt
+        elif type(container) is PairedData:
+            pd = container
             print(pd)
-            return self._native.hec_dss_pdStore(pd)
+            status = self._native.hec_dss_pdStore(pd)
+            self._catalog = None
+
+        # TODO -- instead of invalidating catalog,with _catalog=None
+        #  can we be smart?
+        # TODO -- if we get smart, catalog has  recordTypeDict and timeSeriesDictNoDates
+        # how about Catalog has method  catalog.notify_put(pathname,RecordType)
+        #  and                          catalog.notify_delete(pathname, RecordType)
+        # if not self._catalog is None:
+        #     self._catalog.recordTypeDict[pd.id] = RecordType.PairedData
+
+        return status
 
     def get_catalog(self):
         paths, recordTypes = self._native.hec_dss_catalog()

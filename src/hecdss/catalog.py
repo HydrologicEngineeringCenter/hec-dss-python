@@ -22,16 +22,18 @@ class Catalog:
             rawPath = self.rawCatalog[i]
             recordType = RecordType.RecordTypeFromInt(self.rawRecordTypes[i])
             path = DssPath(rawPath,recordType)
-            cleanPath = str(path.path_without_date())
-            self.recordTypeDict[cleanPath] = recordType 
             # if timeseries - accumulate dates within a dataset
             if path.is_time_series():
+                cleanPath = str(path.path_without_date())
+                self.recordTypeDict[cleanPath] = recordType
                 tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)
-            else: 
+            else:
+                cleanPath = str(path)
+                self.recordTypeDict[cleanPath] = recordType
                 # add NON time-series to list (nothing else needed)
-                self.items.append(path) 
+                self.items.append(path)
 
         # go through each timeSeriesDictNoDates, and sort each list of dates
         # use first and last to create the condensed path 
@@ -45,7 +47,7 @@ class Catalog:
             p = DssPath(key,rt)
             p.D = condensedDpart
             self.items.append(p)
-    
+
     def print(self):
         for ds in self.items:
             print(ds)

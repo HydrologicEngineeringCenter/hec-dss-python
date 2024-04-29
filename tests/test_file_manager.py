@@ -34,4 +34,8 @@ class TestFileManager:
 
     def cleanup(self):
         """Deletes the temporary directory and its contents."""
-        shutil.rmtree(self.temp_dir)
+        try:
+            shutil.rmtree(self.temp_dir)
+        except Exception as e:
+            pass
+

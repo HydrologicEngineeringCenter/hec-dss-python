@@ -54,7 +54,6 @@ class TestBasics(unittest.TestCase):
         """
         Generates a PairedData object
         """
-        # dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
         x_values = [00, 11, 22, 33, 44]
         y_values = [[j+i for j in range(3)] for i in x_values]
         pd = PairedData.create(x_values, y_values)
@@ -72,7 +71,8 @@ class TestBasics(unittest.TestCase):
         """
         Generates a PairedData object then stores data on disk
         """
-        dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
+        dss = HecDss(self.test_files.get_copy("sample7.dss"))
+        # dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
         x_values = [00, 11, 22, 33, 44]
         y_values = [[j + i for j in range(3)] for i in x_values]
         pd = PairedData.create(x_values, y_values, path="/MY BASIN/DEER CREEK/STAGE-FLOW///USGS-create/")
@@ -90,7 +90,8 @@ class TestBasics(unittest.TestCase):
         """
         Generates a PairedData object then stores data on disk
         """
-        dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
+        dss = HecDss(self.test_files.get_copy("sample7.dss"))
+        # dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
         x_values = [00, 11, 22, 33, 44]
         y_values = [[j + i for j in range(3)] for i in x_values]
         path = "/MY BASIN/DEER CREEK/STAGE-FLOW///USGS-create/"
@@ -112,7 +113,8 @@ class TestBasics(unittest.TestCase):
         """
         Generates a PairedData object then stores data on disk
         """
-        dss = HecDss(MODIFIED_TEST_DIR + r"\sample7.dss")
+        dss = HecDss(self.test_files.get_copy("sample7.dss"))
+        # dss = HecDss(MODIFIED_TEST_DIR+r"\sample7.dss")
         path = "/MY BASIN/DEER CREEK/STAGE-FLOW///USGS/"
         pd = dss.get(path)
 
@@ -140,7 +142,8 @@ class TestBasics(unittest.TestCase):
         """
         Generates a PairedData object then stores data on disk
         """
-        dss = HecDss(MODIFIED_TEST_DIR + r"\R703F3-PF_v7.dss")
+        dss = HecDss(self.test_files.get_copy("R703F3-PF_v7.dss"))
+        # dss = HecDss(MODIFIED_TEST_DIR + r"\R703F3-PF_v7.dss")
         path = "/FOLSOM/AUXILIARY SPILLWAY-GATE RATING/ELEV-FLOW/PAIREDVALUESEXT///"
         pd = dss.get(path)
 

@@ -20,6 +20,8 @@ class DssWriter:
         tsc.id = path
         tsc.values = df[df.columns[0]].values.astype(float)
         tsc.times = df.index.tolist()
+        tsc.units = df.units
+        tsc.dataType = df.data_type
 
         dss.put(tsc)
         dss.close()

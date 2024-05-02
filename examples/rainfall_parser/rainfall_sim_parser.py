@@ -160,19 +160,18 @@ def generate_1minute_precip(filename, siteid, plot_number, year, condition, dss_
     # convert from mm/hour to mm/minute
     ts_1minute[series_name] = ts_1minute[series_name] / 60
     ts_1minute = ts_1minute.rename(columns={series_name: series_name_min})
+    ts_1minute.units = "MM"
+    ts_1minute.data_type = "PER-CUM"
     # ts_1minute.to_csv(output_filename)
-    path = f"/{siteid}/{condition}{plot_number}-{year}/Precip//1Minute/USDA Walnut Gulch/"
+    path = f"/{siteid}/{condition}{plot_number}-{year}/PRECIP-INC//1Minute/USDA Walnut Gulch/"
     dss = DssWriter(dss_filename)
     dss.write_to_dss(ts_1minute, path)
 
 
 f = 'rainfall_sim.csv'
 dssf = 'rain_sim.dss'
-
 # write_debug_files = True
-generate_1minute_precip(filename=f, siteid='Ab', plot_number=1, year=2003, condition='B', dss_filename=dssf)
 
-# input("wait!")
 
 generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2005, condition='N', dss_filename=dssf)
 generate_1minute_precip(filename=f, siteid='ER3', plot_number=1, year=2005, condition='B', dss_filename=dssf)

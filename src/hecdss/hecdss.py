@@ -5,6 +5,7 @@ from hecdss.dateconverter import DateConverter
 from hecdss.record_type import RecordType
 from hecdss.timeseries import TimeSeries
 from hecdss.catalog import Catalog
+from hecdss.gridded_data import GriddedData
 
 
 class HecDss:
@@ -36,9 +37,109 @@ class HecDss:
         elif type == RecordType.PairedData:
             return self._get_paired_data(pathname)
             # read paired data
-        elif type == "grid":
-            pass
+        elif type == RecordType.Grid:
+            return self._get_gridded_data(pathname)
         return
+
+    def _get_gridded_data(self, pathname):
+        typeNum = [0]
+        dataType = [0]
+        lowerLeftCellX = [0]
+        lowerLeftCellY = [0]
+        numberOfCellsX = [0]
+        numberOfCellsY = [0]
+        numberOfRanges = [0]
+        srsDefinitionType = [0]
+        timeZoneRawOffset = [0]
+        isInterval = [0]
+        isTimeStamped = [0]
+        dataUnits = [""]
+        dataSource = [""]
+        srsName = [""]
+        srsDefinition = [""]
+        timeZoneID = [""]
+        cellSize = [0.0]
+        xCoordOfGridCellZero = [0.0]
+        yCoordOfGridCellZero = [0.0]
+        nullValue = [0.0]
+        maxDataValue = [0.0]
+        minDataValue = [0.0]
+        meanDataValue = [0.0]
+        rangeLimitTable = []
+        numberEqualOrExceedingRangeLimit = []
+        data = []
+
+        status = self._native.hec_dss_gridRetrieve(
+            pathname=pathname,
+            typeNum=typeNum,
+            dataType=dataType,
+            lowerLeftCellX=lowerLeftCellX,
+            lowerLeftCellY=lowerLeftCellY,
+            numberOfCellsX=numberOfCellsX,
+            numberOfCellsY=numberOfCellsY,
+            numberOfRanges=numberOfRanges,
+            srsDefinitionType=srsDefinitionType,
+            timeZoneRawOffset=timeZoneRawOffset,
+            isInterval=isInterval,
+            isTimeStamped=isTimeStamped,
+            dataUnits=dataUnits,
+            dataSource=dataSource,
+            srsName=srsName,
+            srsDefinition=srsDefinition,
+            timeZoneID=timeZoneID,
+            cellSize=cellSize,
+            xCoordOfGridCellZero=xCoordOfGridCellZero,
+            yCoordOfGridCellZero=yCoordOfGridCellZero,
+            nullValue=nullValue,
+            maxDataValue=maxDataValue,
+            minDataValue=minDataValue,
+            meanDataValue=meanDataValue,
+            rangeLimitTable=rangeLimitTable,
+            numberEqualOrExceedingRangeLimit=numberEqualOrExceedingRangeLimit,
+            data=data,
+            # dataLength=0,
+            # dataUnitsLength=40,
+            # dataSourceLength=40,
+            # srsNameLength=40,
+            # srsDefinitionLength=40,
+            # timeZoneIDLength=40,
+            # rangeTablesLength=40,
+        )
+
+        if status != 0:
+            print(f"Error reading gridded-data from '{pathname}'")
+            return None
+
+        gd = GriddedData()
+        gd.type = typeNum[0]
+        gd.dataType = dataType[0]
+        gd.lowerLeftCellX = lowerLeftCellX[0]
+        gd.lowerLeftCellY = lowerLeftCellY[0]
+        gd.numberOfCellsX = numberOfCellsX[0]
+        gd.numberOfCellsY = numberOfCellsY[0]
+        gd.numberOfRanges = numberOfRanges[0]
+        gd.srsDefinitionType = srsDefinitionType[0]
+        gd.timeZoneRawOffset = timeZoneRawOffset[0]
+        gd.isInterval = isInterval[0]
+        gd.isTimeStamped = isTimeStamped[0]
+        gd.dataUnits = dataUnits[0]
+        gd.dataSource = dataSource[0]
+        gd.srsName = srsName[0]
+        gd.srsDefinition = srsDefinition[0]
+        gd.timeZoneID = timeZoneID[0]
+        gd.cellSize = cellSize[0]
+        gd.xCoordOfGridCellZero = xCoordOfGridCellZero[0]
+        gd.yCoordOfGridCellZero = yCoordOfGridCellZero[0]
+        gd.nullValue = nullValue[0]
+        gd.maxDataValue = maxDataValue[0]
+        gd.minDataValue = minDataValue[0]
+        gd.meanDataValue = meanDataValue[0]
+        gd.rangeLimitTable = rangeLimitTable
+        gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
+        gd.data = [[data[(i*numberOfCellsX[0])+j] for j in range(numberOfCellsX[0])] for i in range(numberOfCellsY[0])]
+        gd.id = pathname
+
+        return gd
 
     def _get_paired_data(self, pathname):
         numberOrdinates = [0]
@@ -204,6 +305,12 @@ class HecDss:
             # print(pd)
             status = self._native.hec_dss_pdStore(pd)
             self._catalog = None
+        elif type(container) is GriddedData:
+            gd = container
+            status = self._native.hec_dss_gridStore(gd)
+            self._catalog = None
+        else:
+            Exception(f"unsupported record_type: {type(container)}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

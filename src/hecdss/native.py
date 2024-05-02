@@ -128,6 +128,261 @@ class _Native:
 
         return pathNameList, recordTypeArray
 
+    def hec_dss_gridRetrieve(self, pathname: str,
+                             typeNum: List[int], dataType: List[int],
+                             lowerLeftCellX: List[int], lowerLeftCellY: List[int],
+                             numberOfCellsX: List[int], numberOfCellsY: List[int],
+                             numberOfRanges: List[int], srsDefinitionType: List[int],
+                             timeZoneRawOffset: List[int], isInterval: List[int],
+                             isTimeStamped: List[int],
+                             dataUnits: List[str],
+                             dataSource: List[str],
+                             srsName: List[str],
+                             srsDefinition: List[str],
+                             timeZoneID: List[str],
+                             cellSize: List[float], xCoordOfGridCellZero: List[float],
+                             yCoordOfGridCellZero: List[float], nullValue: List[float],
+                             maxDataValue: List[float], minDataValue: List[float],
+                             meanDataValue: List[float],
+                             rangeLimitTable: List[float],
+                             numberEqualOrExceedingRangeLimit: List[int],
+                             data: List[float], dataLength: int = 0,
+                             dataUnitsLength: int = 40, dataSourceLength: int = 40,
+                             srsNameLength: int = 40, srsDefinitionLength: int = 600,
+                             timeZoneIDLength: int = 40, rangeTablesLength: int = 0,):
+
+        self.dll.hec_dss_gridRetrieve.argtypes = [c_void_p, c_char_p, c_int,
+                                             POINTER(c_int), POINTER(c_int),
+                                             POINTER(c_int), POINTER(c_int),
+                                             POINTER(c_int), POINTER(c_int),
+                                             POINTER(c_int), POINTER(c_int),
+                                             POINTER(c_int), POINTER(c_int),
+                                             POINTER(c_int),
+                                             c_char_p, c_int,
+                                             c_char_p, c_int,
+                                             c_char_p, c_int,
+                                             c_char_p, c_int,
+                                             c_char_p, c_int,
+                                             POINTER(c_float), POINTER(c_float),
+                                             POINTER(c_float), POINTER(c_float),
+                                             POINTER(c_float), POINTER(c_float),
+                                             POINTER(c_float),
+                                             POINTER(c_float), c_int,
+                                             POINTER(c_int),
+                                             POINTER(c_float), c_int]
+
+        self.dll.hec_dss_gridRetrieve.restype = c_int
+
+        # Type conversions and buffer initializations
+        status = c_int()
+        type_pointer = c_int()
+        dataType_pointer = c_int()
+
+        c_lowerLeftCellX = c_int()
+        c_lowerLeftCellY = c_int()
+        c_numberOfCellsX = c_int()
+        c_numberOfCellsY = c_int()
+        c_numberOfRanges = c_int()
+        c_srsDefinitionType = c_int()
+
+        c_timeZoneRawOffset = c_int()
+        c_isInterval = c_int()
+        c_isTimeStamped = c_int()
+
+        c_dataUnits = create_string_buffer(dataUnitsLength)
+        c_dataSource = create_string_buffer(dataSourceLength)
+        c_srsName = create_string_buffer(srsNameLength)
+        c_srsDefinition = create_string_buffer(srsDefinitionLength)
+        c_timeZoneID = create_string_buffer(timeZoneIDLength)
+
+        c_cellSize = c_float()
+        c_xCoordOfGridCellZero = c_float()
+        c_yCoordOfGridCellZero = c_float()
+        c_nullValue = c_float()
+        c_maxDataValue = c_float()
+        c_minDataValue = c_float()
+        c_meanDataValue = c_float()
+
+        c_rangeLimitTable = (c_float * rangeTablesLength)()
+
+        c_numberEqualOrExceedingRangeLimit = (c_int * rangeTablesLength)()
+
+        c_data = (c_float * 0)()
+
+        result = self.dll.hec_dss_gridRetrieve(self.handle, pathname.encode("utf-8"), False,
+                                          ctypes.byref(type_pointer), ctypes.byref(dataType_pointer),
+                                          c_lowerLeftCellX, c_lowerLeftCellY,
+                                          c_numberOfCellsX, c_numberOfCellsY,
+                                          c_numberOfRanges, c_srsDefinitionType,
+                                          ctypes.byref(c_timeZoneRawOffset), c_isInterval,
+                                          c_isTimeStamped,
+                                          c_dataUnits, dataUnitsLength,
+                                          c_dataSource, dataSourceLength,
+                                          c_srsName, srsNameLength,
+                                          c_srsDefinition, srsDefinitionLength,
+                                          c_timeZoneID, timeZoneIDLength,
+                                          ctypes.byref(c_cellSize), ctypes.byref(c_xCoordOfGridCellZero),
+                                          ctypes.byref(c_yCoordOfGridCellZero), ctypes.byref(c_nullValue),
+                                          ctypes.byref(c_maxDataValue), ctypes.byref(c_minDataValue),
+                                          ctypes.byref(c_meanDataValue),
+                                          c_rangeLimitTable, rangeTablesLength,
+                                          c_numberEqualOrExceedingRangeLimit,
+                                          c_data, dataLength)
+        if result != 0:
+            print("boolRetriveData False, Function call failed with result:", result)
+            return result
+
+        rangeTablesLength = c_numberOfRanges.value
+        c_rangeLimitTable = (c_float * rangeTablesLength)()
+        c_numberEqualOrExceedingRangeLimit = (c_int * rangeTablesLength)()
+
+        dataLength = dataLength if dataLength else c_numberOfCellsX.value * c_numberOfCellsY.value
+        c_data = (c_float * dataLength)()
+
+        result = self.dll.hec_dss_gridRetrieve(self.handle, pathname.encode("utf-8"), True,
+                                               ctypes.byref(type_pointer), ctypes.byref(dataType_pointer),
+                                               c_lowerLeftCellX, c_lowerLeftCellY,
+                                               c_numberOfCellsX, c_numberOfCellsY,
+                                               c_numberOfRanges, c_srsDefinitionType,
+                                               ctypes.byref(c_timeZoneRawOffset), c_isInterval,
+                                               c_isTimeStamped,
+                                               c_dataUnits, dataUnitsLength,
+                                               c_dataSource, dataSourceLength,
+                                               c_srsName, srsNameLength,
+                                               c_srsDefinition, srsDefinitionLength,
+                                               c_timeZoneID, timeZoneIDLength,
+                                               ctypes.byref(c_cellSize), ctypes.byref(c_xCoordOfGridCellZero),
+                                               ctypes.byref(c_yCoordOfGridCellZero), ctypes.byref(c_nullValue),
+                                               ctypes.byref(c_maxDataValue), ctypes.byref(c_minDataValue),
+                                               ctypes.byref(c_meanDataValue),
+                                               c_rangeLimitTable, rangeTablesLength,
+                                               c_numberEqualOrExceedingRangeLimit,
+                                               c_data, dataLength)
+
+        # Processing results
+        if result == 0:
+
+            typeNum[0] = type_pointer.value
+            dataType[0] = dataType_pointer.value
+
+            lowerLeftCellX[0] = c_lowerLeftCellX.value
+            lowerLeftCellY[0] = c_lowerLeftCellY.value
+            numberOfCellsX[0] = c_numberOfCellsX.value
+            numberOfCellsY[0] = c_numberOfCellsY.value
+            numberOfRanges[0] = c_numberOfRanges.value
+
+            srsDefinitionType[0] = c_srsDefinitionType.value
+            timeZoneRawOffset[0] = c_timeZoneRawOffset.value
+            isInterval[0] = c_isInterval.value
+            isTimeStamped[0] = c_isTimeStamped.value
+
+            dataUnits[0] = c_dataUnits.value.decode('utf-8')
+            dataSource[0] = c_dataSource.value.decode('utf-8')
+            srsName[0] = c_srsName.value.decode('utf-8')
+            srsDefinition[0] = c_srsDefinition.value.decode('utf-8')
+            timeZoneID[0] = c_timeZoneID.value.decode('utf-8')
+
+            cellSize[0] = c_cellSize.value
+            xCoordOfGridCellZero[0] = c_xCoordOfGridCellZero.value
+            yCoordOfGridCellZero[0] = c_yCoordOfGridCellZero.value
+            nullValue[0] = c_nullValue.value
+            maxDataValue[0] = c_maxDataValue.value
+            minDataValue[0] = c_minDataValue.value
+            meanDataValue[0] = c_meanDataValue.value
+
+            rangeLimitTable.extend(list(c_rangeLimitTable))
+            numberEqualOrExceedingRangeLimit.extend(list(c_numberEqualOrExceedingRangeLimit))
+            data.extend(list(c_data))
+
+            print("Function call successful:")
+        else:
+            print("Function call failed with result:", result)
+
+        return result
+
+    def hec_dss_gridStore(
+            self,
+            gd,
+    ):
+
+        self.dll.hec_dss_pdStore.restype = c_int
+        self.dll.hec_dss_pdStore.argtypes = [
+            ctypes.POINTER(ctypes.c_void_p),  # dss (dss file pointer)
+            ctypes.c_char_p,  # pathname
+            ctypes.c_int,  # gridType
+            ctypes.c_int,  # dataType
+            ctypes.c_int,  # lowerLeftCellX
+            ctypes.c_int,  # lowerLeftCellY
+            ctypes.c_int,  # numberOfCellsX
+            ctypes.c_int,  # numberOfCellsY
+            ctypes.c_int,  # numberOfRanges
+            ctypes.c_int,  # srsDefinitionType
+            ctypes.c_int,  # timeZoneRawOffset
+            ctypes.c_int,  # isInterval
+            ctypes.c_int,  # isTimeStamped
+            ctypes.c_char_p,  # dataUnits
+            ctypes.c_char_p,  # dataSource
+            ctypes.c_char_p,  # srsName
+            ctypes.c_char_p,  # srsDefinition
+            ctypes.c_char_p,  # timeZoneID
+            ctypes.c_float,  # cellSize
+            ctypes.c_float,  # xCoordOfGridCellZero
+            ctypes.c_float,  # yCoordOfGridCellZero
+            ctypes.c_float,  # nullValue
+            ctypes.c_float,  # maxDataValue
+            ctypes.c_float,  # minDataValue
+            ctypes.c_float,  # meanDataValue
+            ctypes.POINTER(ctypes.c_float),  # rangeLimitTable
+            ctypes.POINTER(ctypes.c_int),  # numberEqualOrExceedingRangeLimit
+            ctypes.POINTER(ctypes.c_float)  # data
+        ]
+
+        c_pathname = c_char_p(gd.id.encode("utf-8"))
+
+        c_gridType = c_int(gd.type)
+        c_dataType = c_int(gd.dataType)
+        c_lowerLeftCellX = c_int(gd.lowerLeftCellX)
+        c_lowerLeftCellY = c_int(gd.lowerLeftCellY)
+        c_numberOfCellsX = c_int(gd.numberOfCellsX)
+        c_numberOfCellsY = c_int(gd.numberOfCellsY)
+        c_numberOfRanges = c_int(gd.numberOfRanges)
+        c_srsDefinitionType = c_int(gd.srsDefinitionType)
+        c_timeZoneRawOffset = c_int(gd.timeZoneRawOffset)
+        c_isInterval = c_int(gd.isInterval)
+        c_isTimeStamped = c_int(gd.isTimeStamped)
+
+        c_dataUnits = c_char_p(gd.dataUnits.encode("utf-8"))
+        c_dataSource = c_char_p(gd.dataSource.encode("utf-8"))
+        c_srsName = c_char_p(gd.srsName.encode("utf-8"))
+        c_srsDefinition = c_char_p(gd.srsDefinition.encode("utf-8"))
+        c_timeZoneID = c_char_p(gd.timeZoneID.encode("utf-8"))
+
+        c_cellSize = c_float(gd.cellSize)
+        c_xCoordOfGridCellZero = c_float(gd.xCoordOfGridCellZero)
+        c_yCoordOfGridCellZero = c_float(gd.yCoordOfGridCellZero)
+        c_nullValue = c_float(gd.nullValue)
+        c_maxDataValue = c_float(gd.maxDataValue)
+        c_minDataValue = c_float(gd.minDataValue)
+        c_meanDataValue = c_float(gd.meanDataValue)
+
+        c_rangeLimitTable = (c_float * len(gd.rangeLimitTable))(*gd.rangeLimitTable)
+        c_numberEqualOrExceedingRangeLimit = (c_int * len(gd.numberEqualOrExceedingRangeLimit))(*gd.numberEqualOrExceedingRangeLimit)
+        flat_list = [j for sub in gd.data for j in sub]
+        c_data = (c_float * len(flat_list))(*flat_list)
+
+        return self.dll.hec_dss_gridStore(self.handle, c_pathname, c_gridType, c_dataType,
+                                     c_lowerLeftCellX, c_lowerLeftCellY,
+                                     c_numberOfCellsX, c_numberOfCellsY,
+                                     c_numberOfRanges, c_srsDefinitionType,
+                                     c_timeZoneRawOffset, c_isInterval,
+                                     c_isTimeStamped,
+                                     c_dataUnits, c_dataSource,
+                                     c_srsName, c_srsDefinition, c_timeZoneID,
+                                     c_cellSize, c_xCoordOfGridCellZero,
+                                     c_yCoordOfGridCellZero, c_nullValue,
+                                     c_maxDataValue, c_minDataValue, c_meanDataValue,
+                                     c_rangeLimitTable, c_numberEqualOrExceedingRangeLimit, c_data)
+
     def hec_dss_pdRetrieveInfo(self, pathname,
                                numberOrdinates:List[int], numberCurves:List[int],
                                unitsIndependent:List[str],
@@ -512,68 +767,68 @@ class _Native:
             type_c,
         )
 
-    def hec_dss_gridRetrieve(self,dss, pathname, boolRetrieveData, type_, dataType,
-                         lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
-                         numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
-                         isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
-                         srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
-                         timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
-                         nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
-                         rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength):
-    
-    # Define the argument types for the C function
-        self.dll.hec_dss_gridRetrieve.argtypes = [
-        POINTER(dss),             # dss_file* dss
-        c_char_p,                 # const char* pathname
-        c_int,                    # int boolRetrieveData
-        POINTER(c_int),    # int* type
-        POINTER(c_int),    # int* dataType
-        POINTER(c_int),    # int* lowerLeftCellX
-        POINTER(c_int),    # int* lowerLeftCellY
-        POINTER(c_int),    # int* numberOfCellsX
-        POINTER(c_int),    # int* numberOfCellsY
-        POINTER(c_int),    # int* numberOfRanges
-        POINTER(c_int),    # int* srsDefinitionType
-        POINTER(c_int),    # int* timeZoneRawOffset
-        POINTER(c_int),    # int* isInterval
-        POINTER(c_int),    # int* isTimeStamped
-        c_char_p,                 # char* dataUnits
-        c_int,                    # const int dataUnitsLength
-        c_char_p,                 # char* dataSource
-        c_int,                    # const int dataSourceLength
-        c_char_p,                 # char* srsName
-        c_int,                    # const int srsNameLength
-        c_char_p,                 # char* srsDefinition
-        c_int,                    # const int srsDefinitionLength
-        c_char_p,                 # char* timeZoneID
-        c_int,                    # const int timeZoneIDLength
-        POINTER(c_float),  # float* cellSize
-        POINTER(c_float),  # float* xCoordOfGridCellZero
-        POINTER(c_float),  # float* yCoordOfGridCellZero
-        POINTER(c_float),  # float* nullValue
-        POINTER(c_float),  # float* maxDataValue
-        POINTER(c_float),  # float* minDataValue
-        POINTER(c_float),  # float* meanDataValue
-        POINTER(c_float),  # float* rangeLimitTable
-        c_int,                    # const int rangeTablesLength
-        POINTER(c_int),    # int* numberEqualOrExceedingRangeLimit
-        POINTER(c_float),  # float* data
-        c_int                     # const int dataLength
-        ]
-
-        # Define the return type for the C function
-        self.dll.hec_dss_gridRetrieve.restype = c_int
-
-        # Call the C function
-        return self.dll.hec_dss_gridRetrieve(
-        dss, pathname, boolRetrieveData, type_, dataType, 
-        lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
-        numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
-        isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
-        srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
-        timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
-        nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
-        rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength)
+    # def hec_dss_gridRetrieve(self,dss, pathname, boolRetrieveData, type_, dataType,
+    #                      lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
+    #                      numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
+    #                      isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
+    #                      srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
+    #                      timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
+    #                      nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
+    #                      rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength):
+    #
+    # # Define the argument types for the C function
+    #     self.dll.hec_dss_gridRetrieve.argtypes = [
+    #     POINTER(dss),             # dss_file* dss
+    #     c_char_p,                 # const char* pathname
+    #     c_int,                    # int boolRetrieveData
+    #     POINTER(c_int),    # int* type
+    #     POINTER(c_int),    # int* dataType
+    #     POINTER(c_int),    # int* lowerLeftCellX
+    #     POINTER(c_int),    # int* lowerLeftCellY
+    #     POINTER(c_int),    # int* numberOfCellsX
+    #     POINTER(c_int),    # int* numberOfCellsY
+    #     POINTER(c_int),    # int* numberOfRanges
+    #     POINTER(c_int),    # int* srsDefinitionType
+    #     POINTER(c_int),    # int* timeZoneRawOffset
+    #     POINTER(c_int),    # int* isInterval
+    #     POINTER(c_int),    # int* isTimeStamped
+    #     c_char_p,                 # char* dataUnits
+    #     c_int,                    # const int dataUnitsLength
+    #     c_char_p,                 # char* dataSource
+    #     c_int,                    # const int dataSourceLength
+    #     c_char_p,                 # char* srsName
+    #     c_int,                    # const int srsNameLength
+    #     c_char_p,                 # char* srsDefinition
+    #     c_int,                    # const int srsDefinitionLength
+    #     c_char_p,                 # char* timeZoneID
+    #     c_int,                    # const int timeZoneIDLength
+    #     POINTER(c_float),  # float* cellSize
+    #     POINTER(c_float),  # float* xCoordOfGridCellZero
+    #     POINTER(c_float),  # float* yCoordOfGridCellZero
+    #     POINTER(c_float),  # float* nullValue
+    #     POINTER(c_float),  # float* maxDataValue
+    #     POINTER(c_float),  # float* minDataValue
+    #     POINTER(c_float),  # float* meanDataValue
+    #     POINTER(c_float),  # float* rangeLimitTable
+    #     c_int,                    # const int rangeTablesLength
+    #     POINTER(c_int),    # int* numberEqualOrExceedingRangeLimit
+    #     POINTER(c_float),  # float* data
+    #     c_int                     # const int dataLength
+    #     ]
+    #
+    #     # Define the return type for the C function
+    #     self.dll.hec_dss_gridRetrieve.restype = c_int
+    #
+    #     # Call the C function
+    #     return self.dll.hec_dss_gridRetrieve(
+    #     dss, pathname, boolRetrieveData, type_, dataType,
+    #     lowerLeftCellX, lowerLeftCellY, numberOfCellsX, numberOfCellsY,
+    #     numberOfRanges, srsDefinitionType, timeZoneRawOffset, isInterval,
+    #     isTimeStamped, dataUnits, dataUnitsLength, dataSource, dataSourceLength,
+    #     srsName, srsNameLength, srsDefinition, srsDefinitionLength, timeZoneID,
+    #     timeZoneIDLength, cellSize, xCoordOfGridCellZero, yCoordOfGridCellZero,
+    #     nullValue, maxDataValue, minDataValue, meanDataValue, rangeLimitTable,
+    #     rangeTablesLength, numberEqualOrExceedingRangeLimit, data, dataLength)
 
     def hec_dss_recordType(self, pathname):
         f= self.dll.hec_dss_recordType

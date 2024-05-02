@@ -34,6 +34,11 @@ class Catalog:
                 self.recordTypeDict[cleanPath] = recordType
                 # add NON time-series to list (nothing else needed)
                 self.items.append(path)
+            elif recordType == RecordType.Grid:
+                cleanPath = str(path)
+                self.recordTypeDict[cleanPath] = recordType
+                # add NON time-series to list (nothing else needed)
+                self.items.append(path)
             else:
                 Exception(f"unsupported record_type: {recordType}")
 

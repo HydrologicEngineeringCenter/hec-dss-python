@@ -52,7 +52,7 @@ class Test_Grid_Data(unittest.TestCase):
         Generates a PairedData object
         """
         data = [[j+(50*i) for j in range(50)] for i in range(50)]
-        gd = GriddedData.create(data=data, numberOfCellsX=50, numberOfCellsY=50)
+        gd = GriddedData.create(data=data)
         assert (gd.data == data), f"gd.data should be {data}. is {gd.data}"
         assert (gd.numberOfCellsX == 50), f"gd.numberOfCellsX should be 50. is {gd.numberOfCellsX}"
         assert (gd.numberOfCellsY == 50), f"gd.numberOfCellsY should be 50. is {gd.numberOfCellsY }"
@@ -62,11 +62,11 @@ class Test_Grid_Data(unittest.TestCase):
         Generates a PairedData object then stores data on disk
         """
         path = "/grid/new/gradient/01MAY2024:1400/01MAY2024:1400/new2-grad/"
-        file = self.test_files.get_copy("grid-example.dss")
+        # file = self.test_files.get_copy("grid-example.dss")
         # dss = HecDss(file)
         dss = HecDss(MODIFIED_TEST_DIR + r"\grid-example.dss")
         data = [[j + (50 * i) for j in range(50)] for i in range(50)]
-        gd = GriddedData.create(data=data, numberOfCellsX=50, numberOfCellsY=50, path=path)
+        gd = GriddedData.create(data=data, path=path)
 
         status = dss.put(gd)
 

@@ -1,4 +1,5 @@
 # import pandas as pd
+import math
 
 class GriddedData:
     def __init__(self):
@@ -44,10 +45,47 @@ class GriddedData:
     #
     #     return pd.DataFrame(data)
 
+    def range_limit_table(self, minval, maxval, range_, bins, datasize, data):
+        max_bins = 15
+
+        if bins > max_bins:
+            bins = max_bins
+
+        self.rangeLimitTable = [0] * bins
+        self.numberEqualOrExceedingRangeLimit = [0] * bins
+
+        self.rangeLimitTable[0] = -3.4028234663852886e+38
+        self.rangeLimitTable[1] = minval
+
+        step = range_ / bins
+
+        for i in range(2, bins):
+            self.rangeLimitTable[i] = minval + step * i
+
+        self.rangeLimitTable[bins - 1] = maxval
+
+        # Exceedance
+        for idx in range(datasize):
+            for jdx in range(bins):
+                if data[idx] >= self.rangeLimitTable[jdx]:
+                    self.numberEqualOrExceedingRangeLimit[jdx] += 1
+
+    def update_grid_info(self):
+        self.numberOfCellsX = len(self.data[0])
+        self.numberOfCellsY = len(self.data)
+        n = self.numberOfCellsX * self.numberOfCellsY
+        self.maxDataValue = max([max(i) for i in self.data])
+        self.minDataValue = min([min(i) for i in self.data])
+        bin_range = (int)(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
+        self.meanDataValue = sum([sum(i)/len(i) for i in self.data])/len(self.data)
+        self.numberOfRanges = math.floor(1 + 3.322 * math.log10(n) + 1)
+        flatData = [j for sub in self.data for j in sub]
+        self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flatData)
+
     @staticmethod
     def create(path=None,
         type = 420,
-        dataType = 0,
+        dataType = 1,
         lowerLeftCellX = 0,
         lowerLeftCellY = 0,
         numberOfCellsX = 0,
@@ -57,12 +95,12 @@ class GriddedData:
         timeZoneRawOffset = 0,
         isInterval = 0,
         isTimeStamped = 0,
-        dataUnits = "",
+        dataUnits = "MM",
         dataSource = "",
-        srsName = "",
-        srsDefinition = "",
+        srsName = "WKT",
+        srsDefinition = 'PROJCS["USA_Contiguous_Albers_Equal_Area_Conic_USGS_version",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Albers"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-96.0],PARAMETER["Standard_Parallel_1",29.5],PARAMETER["Standard_Parallel_2",45.5],PARAMETER["Latitude_Of_Origin",23.0],UNIT["Meter",1.0]]',
         timeZoneID = "",
-        cellSize = 0.0,
+        cellSize = 2000.0,
         xCoordOfGridCellZero = 0.0,
         yCoordOfGridCellZero = 0.0,
         nullValue = 0.0,
@@ -101,6 +139,8 @@ class GriddedData:
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
         gd.data = data
+
+        gd.update_grid_info()
 
         return gd
 

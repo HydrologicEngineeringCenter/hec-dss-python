@@ -1,10 +1,12 @@
 # import pandas as pd
+import numpy as np
+
 
 class PairedData:
     def __init__(self):
         self.id = None
-        self.ordinates = []
-        self.values = []
+        self.ordinates = np.empty(0)
+        self.values = np.empty(0)
         self.labels = []
         self.type_independent = ""
         self.type_dependent = ""
@@ -27,11 +29,12 @@ class PairedData:
     #     return pd.DataFrame(data)
 
     @staticmethod
-    def create(x_values, y_values, x_units="", x_type="", y_units="", y_type="", path=None):
+    def create(x_values, y_values, labels=[], x_units="", x_type="", y_units="", y_type="", path=None):
         pd = PairedData()
         pd.id = path
-        pd.ordinates = x_values
-        pd.values = y_values
+        pd.ordinates = np.array(x_values)
+        pd.values = np.array(y_values)
+        pd.labels = labels
         pd.units_independent = x_units
         pd.units_dependent = y_units
         pd.type_independent = x_type

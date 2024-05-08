@@ -1,5 +1,7 @@
 """Docstring for public module."""
-from hecdss.PairedData import PairedData
+import numpy as np
+
+from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
 from hecdss.record_type import RecordType
@@ -42,7 +44,7 @@ class HecDss:
         return
 
     def _get_gridded_data(self, pathname):
-        typeNum = [0]
+        gridType = [0]
         dataType = [0]
         lowerLeftCellX = [0]
         lowerLeftCellY = [0]
@@ -71,7 +73,7 @@ class HecDss:
 
         status = self._native.hec_dss_gridRetrieve(
             pathname=pathname,
-            typeNum=typeNum,
+            gridType=gridType,
             dataType=dataType,
             lowerLeftCellX=lowerLeftCellX,
             lowerLeftCellY=lowerLeftCellY,
@@ -111,7 +113,7 @@ class HecDss:
             return None
 
         gd = GriddedData()
-        gd.type = typeNum[0]
+        gd.type = gridType[0]
         gd.dataType = dataType[0]
         gd.lowerLeftCellX = lowerLeftCellX[0]
         gd.lowerLeftCellY = lowerLeftCellY[0]
@@ -136,7 +138,8 @@ class HecDss:
         gd.meanDataValue = meanDataValue[0]
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
-        gd.data = [[data[(i*numberOfCellsX[0])+j] for j in range(numberOfCellsX[0])] for i in range(numberOfCellsY[0])]
+        # gd.data = [[data[(i*numberOfCellsX[0])+j] for j in range(numberOfCellsX[0])] for i in range(numberOfCellsY[0])]
+        gd.data = np.array(data).reshape((numberOfCellsX[0], numberOfCellsY[0]))
         gd.id = pathname
 
         return gd
@@ -188,10 +191,11 @@ class HecDss:
             return None
 
         pd = PairedData()
-        pd.ordinates = doubleOrdinates
+        pd.ordinates = np.array(doubleOrdinates)
 
         n = numberCurves2[0].value
-        pd.values = [doubleValues[i:i+n] for i in range(0, len(doubleValues), n)]
+        pd.values = np.array(doubleValues).reshape((len(doubleOrdinates), n))
+        # pd.values = [doubleValues[i:i+n] for i in range(0, len(doubleValues), n)]
         pd.labels = labels
         pd.type_independent = typeIndependent2[0]
         pd.type_dependent = typeDependent2[0]
@@ -270,7 +274,7 @@ class HecDss:
         ts.times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
-        ts.values = values
+        ts.values = np.array(values)
         ts.units = units[0]
         ts.dataType = dataType[0]
         ts.id = pathname

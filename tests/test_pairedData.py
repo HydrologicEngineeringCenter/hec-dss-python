@@ -2,10 +2,13 @@
 
 import unittest
 import sys
+
+import numpy as np
+
 from test_file_manager import TestFileManager
 sys.path.append(r'src')
 import copy
-from hecdss.PairedData import PairedData
+from hecdss.paired_data import PairedData
 from hecdss import Catalog, HecDss
 from datetime import datetime
 
@@ -105,9 +108,9 @@ class TestBasics(unittest.TestCase):
         pd2 = dss.get(path)
         dss.close()
 
-        assert (pd.values == pd2.values), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd2.values}"
+        assert (np.array_equal(pd.values, pd2.values)), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd2.values}"
         assert (pd.labels == pd2.labels), f"pd.labels contents is not equal to that of pd2.labels. pd is {pd.labels} and pd2 is {pd2.labels}"
-        assert (pd.ordinates == pd2.ordinates), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd2.ordinates}"
+        assert (np.array_equal(pd.ordinates, pd2.ordinates)), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd2.ordinates}"
 
     def test_paired_data_read_store_read(self):
         """
@@ -130,10 +133,10 @@ class TestBasics(unittest.TestCase):
 
         pd3 = dss.get(path2)
 
-        assert (pd.values == pd3.values), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd3.values}"
+        assert (np.array_equal(pd.values, pd3.values)), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd3.values}"
         assert (pd.labels[0] == "Flow"), f"pd.labels is not equal to 'Flow'. pd.labels[0] is {pd.labels[0]}"
         assert (pd3.labels[0] == "Flow2"), f"pd3.labels[0] is not equal to 'Flow2'. pd3.labels[0] is {pd3.labels[0]}"
-        assert (pd.ordinates == pd3.ordinates), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd3.ordinates}"
+        assert (np.array_equal(pd.ordinates, pd3.ordinates)), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd3.ordinates}"
 
 
         dss.close()
@@ -156,9 +159,9 @@ class TestBasics(unittest.TestCase):
 
         pd3 = dss.get(path2)
 
-        assert (pd.values == pd3.values), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd3.values}"
+        assert (np.array_equal(pd.values, pd3.values)), f"pd.values contents is not equal to that of pd2.values. pd is {pd.values} and pd2 is {pd3.values}"
         assert (pd3.labels[3] == "New Label"), f"pd3.labels[3] is not equal to 'New Label'. pd3.labels[3] is {pd3.labels[3]}"
-        assert (pd.ordinates == pd3.ordinates), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd3.ordinates}"
+        assert (np.array_equal(pd.ordinates, pd3.ordinates)), f"pd.ordinates contents is not equal to that of pd2.ordinates. pd is {pd.ordinates} and pd2 is {pd3.ordinates}"
 
 
         dss.close()

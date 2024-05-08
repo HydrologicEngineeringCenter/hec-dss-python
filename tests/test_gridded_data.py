@@ -3,10 +3,12 @@
 import unittest
 import sys
 
+import numpy as np
+
 from test_file_manager import TestFileManager
 sys.path.append(r'src')
 import copy
-from hecdss.PairedData import PairedData
+from hecdss.paired_data import PairedData
 from hecdss.gridded_data import GriddedData
 from hecdss import Catalog, HecDss
 from datetime import datetime
@@ -53,18 +55,18 @@ class Test_Grid_Data(unittest.TestCase):
         """
         data = [[j+(50*i) for j in range(50)] for i in range(50)]
         gd = GriddedData.create(data=data)
-        assert (gd.data == data), f"gd.data should be {data}. is {gd.data}"
+        assert (np.array_equal(gd.data, np.array(data))), f"gd.data should be {np.array(data)}. is {gd.data}"
         assert (gd.numberOfCellsX == 50), f"gd.numberOfCellsX should be 50. is {gd.numberOfCellsX}"
-        assert (gd.numberOfCellsY == 50), f"gd.numberOfCellsY should be 50. is {gd.numberOfCellsY }"
+        assert (gd.numberOfCellsY == 50), f"gd.numberOfCellsY should be 50. is {gd.numberOfCellsY}"
 
     def test_gridded_data_create_store(self):
         """
         Generates a PairedData object then stores data on disk
         """
         path = "/grid/new/gradient/01MAY2024:1400/01MAY2024:1400/new2-grad/"
-        # file = self.test_files.get_copy("grid-example.dss")
-        # dss = HecDss(file)
-        dss = HecDss(MODIFIED_TEST_DIR + r"\grid-example.dss")
+        file = self.test_files.get_copy("grid-example.dss")
+        dss = HecDss(file)
+        # dss = HecDss(MODIFIED_TEST_DIR + r"\grid-example.dss")
         data = [[j + (50 * i) for j in range(50)] for i in range(50)]
         gd = GriddedData.create(data=data, path=path)
 
@@ -104,8 +106,8 @@ class Test_Grid_Data(unittest.TestCase):
         Generates a PairedData object then stores data on disk
         """
         path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS/"
-        # dss = HecDss(self.test_files.get_copy("grid-example.dss"))
-        dss = HecDss(MODIFIED_TEST_DIR + r"\grid-example.dss")
+        dss = HecDss(self.test_files.get_copy("grid-example.dss"))
+        # dss = HecDss(MODIFIED_TEST_DIR + r"\grid-example.dss")
         gd = dss.get(path)
 
         path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS-new/"

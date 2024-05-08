@@ -1,4 +1,5 @@
 # import pandas as pd
+import numpy as np
 import math
 
 class GriddedData:
@@ -29,21 +30,7 @@ class GriddedData:
         self.meanDataValue = 0.0
         self.rangeLimitTable = []
         self.numberEqualOrExceedingRangeLimit = []
-        self.data = [[]]
-
-    # def curve_count(self):
-    #     return len(self.values)
-
-    # def to_data_frame(self, include_index=False):
-    #     data = {"stage": self.ordinates}
-    #     for i in range(len(self.values)):
-    #         label = self.labels[i] if i < len(self.labels) else f"value{i + 1}"
-    #         data[label] = self.values[i]
-    #
-    #     if include_index:
-    #         data["index"] = list(range(1, len(self.ordinates) + 1))
-    #
-    #     return pd.DataFrame(data)
+        self.data = np.zeros(0)
 
     def range_limit_table(self, minval, maxval, range_, bins, datasize, data):
         max_bins = 15
@@ -73,13 +60,13 @@ class GriddedData:
     def update_grid_info(self):
         self.numberOfCellsX = len(self.data[0])
         self.numberOfCellsY = len(self.data)
-        n = self.numberOfCellsX * self.numberOfCellsY
-        self.maxDataValue = max([max(i) for i in self.data])
-        self.minDataValue = min([min(i) for i in self.data])
+        n = np.size(self.data)
+        self.maxDataValue = np.max(self.data)
+        self.minDataValue = np.min(self.data)
         bin_range = (int)(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
-        self.meanDataValue = sum([sum(i)/len(i) for i in self.data])/len(self.data)
+        self.meanDataValue = np.mean(self.data)
         self.numberOfRanges = math.floor(1 + 3.322 * math.log10(n) + 1)
-        flatData = [j for sub in self.data for j in sub]
+        flatData = self.data.flatten()
         self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flatData)
 
     @staticmethod
@@ -109,7 +96,7 @@ class GriddedData:
         meanDataValue = 0.0,
         rangeLimitTable = [],
         numberEqualOrExceedingRangeLimit = [],
-        data=[[]]):
+        data=np.zeros(0)):
 
         gd = GriddedData()
         gd.id = path
@@ -138,7 +125,7 @@ class GriddedData:
         gd.meanDataValue = meanDataValue
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
-        gd.data = data
+        gd.data = np.array(data)
 
         gd.update_grid_info()
 

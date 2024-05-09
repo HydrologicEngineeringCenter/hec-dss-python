@@ -1,6 +1,7 @@
-from .record_type import RecordType
-from .dsspath import DssPath
+from record_type import RecordType
+from dsspath import DssPath
 from datetime import datetime
+import pandas as pd
 
 class Catalog:
     """manage list of objects inside a DSS database"""
@@ -22,10 +23,10 @@ class Catalog:
             rawPath = self.rawCatalog[i]
             recordType = RecordType.RecordTypeFromInt(self.rawRecordTypes[i])
             path = DssPath(rawPath,recordType)
-            cleanPath = str(path.path_without_date())
+            cleanPath = str(path.pathWithoutDate())
             self.recordTypeDict[cleanPath] = recordType 
             # if timeseries - accumulate dates within a dataset
-            if path.is_time_series():
+            if path.isTimeSeries():
                 tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)
@@ -49,6 +50,27 @@ class Catalog:
     def print(self):
         for ds in self.items:
             print(ds)
+    
+    #This function adds all catalog items into a single list
+    def to_list(self):
+        list_items = []
+        for ds in self.items:
+            indiv_item = ds
+            list_items.append(indiv_item)
+        return list_items
+    
+    #This functino adds all the catalog items into a dataframe, it also splits the pathname into its parts for easy queries
+    def to_dataframe(self):
+        path_list = self.to_list()
+        full_array = []
+        for input in path_list:
+            a_part, b_part, c_part, d_part, e_part, f_part  = str(input).split('/')[1:-1]
+            array_entry = [input, a_part, b_part, c_part, d_part, e_part, f_part]
+            full_array.append(array_entry)
+        df_columns = ['full_pathname', 'a_part', 'b_part', 'c_part', 'd_part', 'e_part', 'f_part']    
+        catalog_df = pd.DataFrame(full_array, columns=df_columns)
+        return catalog_df
+    
 
     def __iter__(self):
         self.index = 0  # Initialize the index to 0

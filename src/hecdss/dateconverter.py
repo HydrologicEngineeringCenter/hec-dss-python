@@ -20,7 +20,6 @@ class DateConverter:
         
         return dtstr[:9],dtstr[-5:]
 
-
     @staticmethod
     def date_times_from_julian_array(times_julian, time_granularity_seconds, julian_base_date):
         """"
@@ -30,12 +29,14 @@ class DateConverter:
             raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
         
         times = []
+        #print(times_julian[0])
+        #print(time_granularity_seconds)
         for t in times_julian:
             baseDateTime =datetime(1900,1,1)- timedelta(days=1)     #datetime.fromtimestamp(julian_base_date)
             delta = 0
             if time_granularity_seconds == 60:  # 60 seconds per minute
                 delta =timedelta(minutes=t)
-            if time_granularity_seconds == 3600:  # 600 seconds per hour
+            if time_granularity_seconds == 3600:  # 3600 seconds per hour
                 delta =timedelta(hours=t)
             if time_granularity_seconds == 86400:  # 86400 seconds per day
                 delta =timedelta(days=t)
@@ -43,7 +44,16 @@ class DateConverter:
             times.append(baseDateTime+delta)
 
         return times
+    
+    def julian_times_from_datetime_array(times_dt, time_granularity_seconds):
+        #Convert from Python Datetime notation to DSS integer datetime, 
+        times = []
+        baseDateTime = datetime(1900,1,1) - timedelta(days=1) 
+        for t in times_dt:
+            dss_time = ((t - baseDateTime).total_seconds())/time_granularity_seconds
+            times.append(int(dss_time))
 
+        return times
 
 
 if __name__ == "__main__":

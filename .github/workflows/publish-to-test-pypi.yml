@@ -19,6 +19,7 @@ jobs:
     name: Build Distribution
     runs-on: ubuntu-latest
 
+    needs: [testing]
     steps:
       - uses: actions/checkout@v4
 
@@ -81,10 +82,15 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest ]
-    needs: [build]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: add dll
+        run: python3 src/hecdss/download_hecdss.py
 
       - name: Install Packages
         run: pip install pytest

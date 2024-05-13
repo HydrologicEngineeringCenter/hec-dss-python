@@ -10,6 +10,5 @@
 __pycache__/
 .vscode
 tests/data/**/tmp/*
-hecdss.dll
 .idea
 .ipynb_checkpoints

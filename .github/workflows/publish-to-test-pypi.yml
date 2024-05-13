@@ -76,6 +76,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest ]
+    needs: [build]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -98,6 +99,7 @@ jobs:
     # The distribution will only be published if the tests have passed.
     needs:
       - build
+      - testing
 
     # Set up the environment for trusted publishing on PyPI.
     environment:
@@ -131,6 +133,7 @@ jobs:
     # The distribution will only be published if the tests have passed.
     needs:
       - build
+      - testing
 
     # Set up the environment for trusted publishing on PyPI.
     environment:

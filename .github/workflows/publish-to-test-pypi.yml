@@ -27,17 +27,17 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v3
-
-      - name: Cache Virtual Environment
-        uses: actions/cache@v4
-        with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}
-
-      - name: Install Dependencies
-        run: poetry install
+#      - name: Install Poetry
+#        uses: abatilo/actions-poetry@v3
+#
+#      - name: Cache Virtual Environment
+#        uses: actions/cache@v4
+#        with:
+#          path: ./.venv
+#          key: venv-${{ hashFiles('poetry.lock') }}
+#
+#      - name: Install Dependencies
+#        run: poetry install
 
       # The tests should have already been run in the testing workflow, but we run them
       # again here to make sure that we do not deploy a broken distribution.
@@ -46,13 +46,27 @@ jobs:
 
       # Once the tests have passsed we can build the distribution and store it, so it can
       # be accessed in the jobs below.
-      - name: Build Distribution
-        run: poetry build
+#      - name: Build Distribution
+#        run: poetry build
+#
+#      - name: Store Distribution
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: package-dist
+#          path: dist/
 
-      - name: Store Distribution
-        uses: actions/upload-artifact@v4
+      - name: Install pypa/build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v3
         with:
-          name: package-dist
+          name: python-package-distributions
           path: dist/
 
   # The development distribution is a snapshot of the package and is deployed each time

@@ -55,6 +55,12 @@ jobs:
 #          name: package-dist
 #          path: dist/
 
+      - name: Install Packages
+        run: pip install pytest
+
+      - name: Run tests
+        run: pytest test_pairedData.py
+
       - name: Install pypa/build
         run: >-
           python3 -m

@@ -54,6 +54,8 @@ jobs:
 #        with:
 #          name: package-dist
 #          path: dist/
+      - name: add dll
+        run: python3 src/hecdss/download_hecdss.py
 
       - name: Install pypa/build
         run: >-

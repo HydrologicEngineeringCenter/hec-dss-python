@@ -58,6 +58,9 @@ jobs:
       - name: Install Packages
         run: pip install pytest
 
+      - name: Install numpy
+        run: pip install numpy
+
       - name: Run tests
         run: pytest tests/test_pairedData.py
 

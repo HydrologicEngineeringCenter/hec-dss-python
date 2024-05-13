@@ -54,6 +54,12 @@ jobs:
 #        with:
 #          name: package-dist
 #          path: dist/
+      - name: Install requests
+        run: pip install requests
+
+      - name: Install zipfile
+        run: pip install zipfile
+
       - name: add dll
         run: python3 src/hecdss/download_hecdss.py
 

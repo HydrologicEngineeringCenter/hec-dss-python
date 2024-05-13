@@ -59,7 +59,7 @@ jobs:
         run: pip install pytest
 
       - name: Run tests
-        run: pytest test_pairedData.py
+        run: pytest tests/test_pairedData.py
 
       - name: Install pypa/build
         run: >-

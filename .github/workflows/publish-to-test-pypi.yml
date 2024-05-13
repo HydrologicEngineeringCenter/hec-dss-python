@@ -90,7 +90,6 @@ jobs:
         run: pip install requests
 
       - name: add dll
-        if: windows-latest
         run: python3 src/hecdss/download_hecdss.py
 
       - name: Install Packages

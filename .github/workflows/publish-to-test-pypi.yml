@@ -1,0 +1,206 @@
+name: Deployment
+
+# The deployment workflow should only run when changes are merged into the `main` branch.
+# Since a branch protection rule prevents directly pushing to `main` this workflow will
+# only run on a successful merge request.
+on:
+  push:
+    branches:
+      - main
+      - feature/grid
+
+  # Allow the workflow to be manually triggered from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  # Build and test the distribution before deploying to the various platforms. This allows
+  # us to store the build artifacts and reuse them in the deployment jobs below.
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+
+    needs: [testing]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+#      - name: Install Poetry
+#        uses: abatilo/actions-poetry@v3
+#
+#      - name: Cache Virtual Environment
+#        uses: actions/cache@v4
+#        with:
+#          path: ./.venv
+#          key: venv-${{ hashFiles('poetry.lock') }}
+#
+#      - name: Install Dependencies
+#        run: poetry install
+
+      # The tests should have already been run in the testing workflow, but we run them
+      # again here to make sure that we do not deploy a broken distribution.
+#      - name: Run Tests
+#        run: poetry run pytest tests/
+
+      # Once the tests have passsed we can build the distribution and store it, so it can
+      # be accessed in the jobs below.
+#      - name: Build Distribution
+#        run: poetry build
+#
+#      - name: Store Distribution
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: package-dist
+#          path: dist/
+      - name: Install requests
+        run: pip install requests
+
+      - name: add dll
+        run: python3 src/hecdss/download_hecdss.py
+
+      - name: Install pypa/build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-dist
+          path: dist/
+
+  testing:
+    name: testing HECDSS functions
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: add dll
+        run: python3 src/hecdss/download_hecdss.py
+
+      - name: Install Packages
+        run: pip install pytest
+
+      - name: Install numpy
+        run: pip install numpy
+
+      - name: Run tests
+        run: pytest tests/test_paired_data.py
+
+  # The development distribution is a snapshot of the package and is deployed each time
+  # changes are merged into the main branch.
+  deploy-dev:
+    name: Publish Development Distribution
+    runs-on: ubuntu-latest
+
+    # The distribution will only be published if the tests have passed.
+    needs:
+      - build
+      - testing
+
+    # Set up the environment for trusted publishing on PyPI.
+    environment:
+      name: development
+      url: https://test.pypi.org/p/hecdss
+
+    permissions:
+      id-token: write # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - name: Download Distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: package-dist
+          path: dist/
+
+      - name: Publish Distribution To Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  # The release distribution is published whenever a tagged branch is merged into the main
+  # branch.
+  deploy-release:
+    name: Publish Release Distribution
+    runs-on: ubuntu-latest
+
+    # Require a tag push to publish a release distribution.
+    if: startsWith(github.ref, 'refs/tags/')
+
+    # The distribution will only be published if the tests have passed.
+    needs:
+      - build
+      - testing
+
+    # Set up the environment for trusted publishing on PyPI.
+    environment:
+      name: release
+      url: https://pypi.org/p/hecdss
+
+    permissions:
+      id-token: write # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - name: Download Distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: package-dist
+          path: dist/
+
+      - name: Publish Distribution To PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  # Upload a GitHub release whenever a release distribution is published.
+  github-release:
+    name: Create Signed GitHub Release
+    runs-on: ubuntu-latest
+
+    # GitHub releases are only uploaded for release (tagged) distributions.
+    needs: [deploy-release]
+
+    permissions:
+      contents: write # IMPORTANT: mandatory for making GitHub Releases
+      id-token: write # IMPORTANT: mandatory for sigstore
+
+    steps:
+      - name: Download Distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: package-dist
+          path: dist/
+
+      - name: Sign Distribution
+        uses: sigstore/gh-action-sigstore-python@v2.1.1
+        with:
+          inputs: |
+            ./dist/*.tar.gz
+            ./dist/*.whl
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' \
+            --repo '${{ github.repository }}' \
+            --notes ""
+
+      - name: Upload GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |-
+          gh release upload '${{ github.ref_name }}' dist/** \
+            --repo '${{ github.repository }}'

@@ -1,7 +1,10 @@
+import numpy as np
+
+
 class TimeSeries:
     def __init__(self):
         self.times = []
-        self.values = []
+        self.values = np.empty(0)
         self.units =""
         self.dataType =""
         self.id = ""

@@ -21,14 +21,6 @@ class _Native:
             )
             self.dll = ctypes.CDLL(libc_path)
         elif sys.platform == "win32":
-            this_dir = os.path.dirname(os.path.realpath(__file__))
-            # sys.path.append(this_dir+r"\lib")
-            # self.dll = ctypes.CDLL(this_dir+r"\lib\hecdss.dll")
-            # with resources.open_binary('hecdss', "hecdss.dll") as fp:
-            #     dll = fp.read()
-            # self.dll = ctypes.CDLL(io.BytesIO(dll))
-
-            # dll_dir = os.path.join(os.path.dirname(__file__), 'lib')
             dll_dir = os.path.join(os.path.dirname(sys.modules["hecdss"].__file__), 'lib')
             dll_path = os.path.join(dll_dir, 'hecdss.dll')
 
@@ -445,10 +437,6 @@ class _Native:
             unitsDependent[0] = c_unitsDependent.value.decode('utf-8')
             typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
             typeDependent[0] = c_typeDependent.value.decode('utf-8')
-            # print("Function call successful:")
-            # print("Number of ordinates:", numberOrdinates[0])
-            # print("Number of curves:", numberCurves[0])
-            # print("Labels length:", labelsLength[0])
         else:
             print("Function call failed with result:", result)
 
@@ -511,10 +499,6 @@ class _Native:
             numberCurves[0] = c_numberCurves
             print(numberCurves[0])
             labels.extend(c_labels.raw.decode('utf-8').split("\0")[:c_numberCurves.value])
-            # print("Function call successful:")
-            # print("ordinates:", doubleOrdinates)
-            # print("curves:", doubleValues)
-            # print("Labels length:", labels)
         else:
             print("Function call failed with result:", result)
 
@@ -616,9 +600,6 @@ class _Native:
         if result == 0:
             numberValues[0] = nv.value
             qualityElementSize[0] = qes.value
-            # print("Function call successful:")
-            # print("Number of values:", numberValues[0])
-            # print("Quality element size:", qualityElementSize[0])
         else:
             print("Function call failed with result:", result)
 
@@ -780,73 +761,6 @@ class _Native:
         f.restype = c_int
         c_str = c_char_p(pathname.encode("utf-8"))
         return f(self.handle,c_str)
-
-
-    # def test():
-    #     dss = HecDssNative()
-    #     outputFile = b"output.txt"
-    #
-    #     dss.hec_dss_open(b"sample7.dss")
-    #     nnn = dss.hec_dss_record_count()
-    #     print("record count = " + str(nnn))
-    #
-    #     times = [0, 0, 0, 0, 0]
-    #     numberValues = len(times)
-    #     times_int = (c_int * numberValues)(*times)
-    #     values = [0, 0, 0, 0, 0]
-    #     values_double = (c_double * numberValues)(*values)
-    #
-    #     numberValuesRead = c_int()
-    #     quality = []
-    #     qualityLength = c_int(len(quality))
-    #     quality_int = (c_int * len(quality))(*quality)
-    #
-    #     julianBaseDate = c_int()
-    #     timeGranularitySeconds = c_int()
-    #     buffer_size = 20
-    #     units = ctypes.create_string_buffer(buffer_size)
-    #     dataType = ctypes.create_string_buffer(buffer_size)
-    #
-    #     result = dss.hec_dss_tsRetrieve(
-    #         b"//SACRAMENTO/PRECIP-INC//1Day/OBS/",
-    #         b"01Jan1924",
-    #         b"0100",
-    #         b"01Jan2005",
-    #         b"2400",
-    #         times_int,
-    #         values_double,
-    #         numberValues,
-    #         ctypes.byref(numberValuesRead),
-    #         quality_int,
-    #         qualityLength,
-    #         ctypes.byref(julianBaseDate),
-    #         ctypes.byref(timeGranularitySeconds),
-    #         units,
-    #         buffer_size,
-    #         dataType,
-    #         buffer_size,
-    #     )
-    #
-    #     if result == 0:
-    #         print("Function call successful.")
-    #     else:
-    #         print("Function call failed." + str(result))
-    #
-    #     print(units.value.decode("utf-8"))
-
-        # ppp = b"/AMERICAN/FOLSOM/FLOW-RES IN/01JAN2006/1Day/OBS/"
-        # sd = b"12MAR2006"
-        # ed = b"05APR2006"
-        # st = b"1200"
-        # et = b"1200"
-        # dss = HecDss()
-        # outputFile=b"output.txt"
-        #
-        # dss.open("sample7.dss")
-        # nnn = dss.record_count()
-        # print ("record count = "+str(nnn))
-        # ttt = dss.hec_dss_export_to_file(ppp,outputFile,sd,st,ed,et)
-        # dss.close()
 
 
 

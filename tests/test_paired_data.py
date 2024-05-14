@@ -18,7 +18,7 @@ TEST_DIR="tests/data/"
 # "sample7.dss" and "R703F3-PF_v7.dss" which are modified within these tests
 MODIFIED_TEST_DIR=r"C:\Users\oskar\Documents\dss"
 
-class TestBasics(unittest.TestCase):
+class TestPairedData(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_files = TestFileManager(TEST_DIR)

@@ -1,12 +1,13 @@
 import numpy as np
 
 
-class TimeSeries:
+class IrregularTimeSeries:
     def __init__(self):
         self.times = []
         self.values = np.empty(0)
         self.units =""
         self.dataType =""
+        self.interval = 0
         self.id = ""
 
     def add_data_point(self, date, value):

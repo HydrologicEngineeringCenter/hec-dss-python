@@ -1,5 +1,77 @@
 from datetime import datetime, timedelta, time
 
+sec = [
+    31536000,
+    2592000,
+    1296000,
+    864000,
+    604800,
+    86400,
+    43200,
+    28800,
+    21600,
+    14400,
+    10800,
+    7200,
+    3600,
+    1800,
+    1200,
+    900,
+    720,
+    600,
+    360,
+    300,
+    240,
+    180,
+    120,
+    60,
+    30,
+    20,
+    15,
+    10,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+]
+time_string = [
+    "1Year",
+    "1Month",
+    "Semi-Month",
+    "Tri-Month",
+    "1Week",
+    "1Day",
+    "12Hour",
+    "8Hour",
+    "6Hour",
+    "4Hour",
+    "3Hour",
+    "2Hour",
+    "1Hour",
+    "30Minute",
+    "20Minute",
+    "15Minute",
+    "12Minute",
+    "10Minute",
+    "6Minute",
+    "5Minute",
+    "4Minute",
+    "3Minute",
+    "2Minute",
+    "1Minute",
+    "30Second",
+    "20Second",
+    "15Second",
+    "10Second",
+    "6Second",
+    "5Second",
+    "4Second",
+    "3Second",
+    "2Second",
+    "1Second"
+]
 class DateConverter:
 
 
@@ -44,6 +116,22 @@ class DateConverter:
 
         return times
 
+    @staticmethod
+    def intervalString_to_sec(interval):
+
+        if time_string.__contains__(interval):
+            i = time_string.index(interval)
+            return sec[i]
+        elif sec.__contains__(interval):
+            return interval
+
+        return "empty"
+
+    @staticmethod
+    def sec_to_intervalString(interval):
+
+        i = sec.index(interval)
+        return time_string[i]
 
 
 if __name__ == "__main__":

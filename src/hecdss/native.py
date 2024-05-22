@@ -752,6 +752,60 @@ class _Native:
             c_type,
         )
 
+    def hec_dss_tsStoreIrregular(
+        self,
+        pathname,
+        startDateBase,
+        times,
+        timeGranularitySeconds,
+        valueArray,
+        qualityArray,
+        saveAsFloat,
+        units,
+        dataType,
+    ):
+
+        self.dll.hec_dss_tsStoreIregular.restype = c_int
+        self.dll.hec_dss_tsStoreIregular.argtypes = [
+            c_void_p,  # dss (void*)
+            c_char_p,  # pathname (const char*)
+            c_char_p,  # startDateBase (const char*)
+            POINTER(c_int),  # times (int*)
+            c_int,  # timeGranularitySeconds (int)
+            POINTER(c_double),  # valueArray (double*)
+            c_int,  # valueArraySize (int)
+            POINTER(c_int),  # qualityArray (int*)
+            c_int,  # qualityArraySize (int)
+            c_int,  # saveAsFloat (int)
+            c_char_p,  # units (const char*)
+            c_char_p,  # type (const char*)
+        ]
+
+        c_pathname = c_char_p(pathname.encode("utf-8"))
+        c_startDateBase = c_char_p(startDateBase.encode("utf-8"))
+        c_units = c_char_p(units.encode("utf-8"))
+        c_type = c_char_p(dataType.encode("utf-8"))
+
+        print(valueArray)
+        c_valueArray = (c_double * len(valueArray))(*valueArray)
+        c_times = (c_int * len(times))(*times)
+        c_qualityArray = (c_int * len(qualityArray))(*qualityArray)
+        # import pdb;pdb.set_trace()
+        return self.dll.hec_dss_tsStoreIregular(
+            self.handle,
+            c_pathname,
+            c_startDateBase,
+            c_times,
+            int(timeGranularitySeconds),
+            c_valueArray,
+            len(valueArray),
+            c_qualityArray,
+            len(qualityArray),
+            int(saveAsFloat),
+            c_units,
+            c_type,
+        )
+
     def hec_dss_recordType(self, pathname):
         f = self.dll.hec_dss_recordType
         f.argtypes = [

@@ -8,33 +8,52 @@
 ### DSS file methods
 1. `HecDss(file_path: str)`: Opens a DSS file located at the provided file path.
    
-2. `get()`: Edits the content of the currently opened DSS file.
+2. `get(record_path: str)`: Retrieves the record data from the currently opened DSS file of the designated path.
 
-3. `put()`: Saves the changes made to the DSS file.
+3. `put(new_record: recordType)`: Stores recordType object to the DSS file at designated path.
+
+4. `close()`: Closes the currently opened DSS file.
 
 ### Catalog object methods
-1. `get_data(data_path: str)`: Retrieves data stored at the specified data path.
-  
-2. `store_data(data: Any, data_path: str)`: Stores data at the specified data path within the DSS file.
-
-### Methods and Attributes of Functions
-
-- `open_file()`
-  - `file_path`: A string specifying the path to the DSS file.
-  
-- `get_data()`
-  - `data_path`: A string representing the path to the data stored in the DSS file.
+1. `get_catalog()`: Retrieves the catalog of all paths  stored in the Dss file.
+   - `rawCatalog` - list of records within the Dss file.
+   - `rawRecordtypes` - list of record types within the Dss file.
 
 ## Supported Data Types
 
-### Time Series Data
-- **Stored object in Python**: Time series data is stored as a Pandas DataFrame.
+### Regular TimeSeries Data
+- **Stored object in Python**: Regular Timeseries data is stored as 2 arrays of values and times/interval and startdate.
+- **Attributes**: The TimeSeries object has the following attributes:
+  - `start_date`: The start date of the time series data.
+  - `times`: The times of the time series data.
+  - `values`: The values of the time series data.
+  - `interval`: The interval of the time series data.
+  - `units`: The units of the time series data.
+  - `id`: The Path of the time series data.
 
-### Scaled Data
-- **Stored object in Python**: Scaled data is stored as a NumPy array.
+### Irregular TimeSeries Data
+- **Stored object in Python**: Irregular Timeseries data is stored as 2 arrays of values and times.
+- **Attributes**: The TimeSeries object has the following attributes:
+  - `times`: The times of the time series data.
+  - `values`: The values of the time series data.
+  - `units`: The units of the time series data.
+  - `data`: The time series data.
+  - `id`: The Path of the time series data.
 
-### Statistical Data
-- **Stored object in Python**: Statistical data is stored as a dictionary.
+
+### Paired Data
+- **Stored object in Python**: Paired data stored as aa (x, y) where y could be stored as a 2d numpy matrix.
+- **Attributes**: The PairedData object has the following attributes:
+  - `ordinates`: The x values of the paired data
+  - `values`: y values of the paired data stored as 2d numpy array.
+  - `labels`: The labels of the paired data.
+  - `id`: The Path of the paired data.
+
+### Gridded Data
+- **Stored object in Python**: A 2d matrix stored as a numpy 2d object.
+- **Attributes**: The GriddedData object has the following attributes:
+  - `data`: The data of the gridded data object.
+  - `id`: The Path of the gridded data.
 
 ## Installation
 
@@ -48,14 +67,17 @@ from hecdss import DssFile
 
 # Open a DSS file
 file_path = "example.dss"
-dss_file = DssFile()
-dss_file.open_file(file_path)
+dss = DssFile(file_path)
 
 # Retrieve and print data
-data_path = "/example/data"
-data = dss_file.get_data(data_path)
+data_path = "/example/data/////"
+data = dss.get(data_path)
 print(data)
 
+dss.values = dss.values * 2
+
 # Save changes to DSS file
-dss_file.save_file()
+dss.put(data_path)
+
+dss.close()
 

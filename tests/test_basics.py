@@ -101,6 +101,21 @@ class TestBasics(unittest.TestCase):
         # assert(1,len(pd.labels))
         # assert("Flow",pd3.labels[0])
 
+    def write_regular_timeseries(self):
+        dss = HecDss(self.test_files.get_copy("sample7.dss"))
+        print("record count = " + str(dss.record_count()))
+
+        t1 = datetime(2005, 1, 1)
+        t2 = datetime(2005, 1, 4)
+        tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/", t1, t2)  # read float
+        tsc.print_to_console()
+
+        tsc.id="//SACRAMENTO/PRECIP-INC//1Day/OBS-double/"
+        dss.put(tsc)  # write double
+        tsc = dss.get(tsc.id)
+        self.assertEquals(4,len(tsc.values))
+        dss.close()
+
 
 
 if __name__ == "__main__":

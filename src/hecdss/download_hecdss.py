@@ -35,9 +35,12 @@ def download_and_unzip(url, zip_file, destination_dir):
     else:
         print(f"Failed to download zip file. Status code: {response.status_code}")
 
+base_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/"
+version = "7-IS-7"
 
 destination_dir = Path(__file__).parent.joinpath("lib")
-zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-4-win-x86_64/hecdss-7-IS-4-win-x86_64.zip"
-download_and_unzip(zip_url, "hecdss-7-IS-4-win-x86_64.zip", destination_dir)
-zip_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/7-IS-4-linux-x86_64/hecdss-7-IS-4-linux-x86_64.zip"
-download_and_unzip(zip_url, "hecdss-7-IS-4-linux-x86_64.zip", destination_dir)
+zip_url = f"{base_url}{version}-win-x86_64/hecdss-{version}-win-x86_64.zip"
+download_and_unzip(zip_url, f"hecdss-{version}-win-x86_64.zip", destination_dir)
+
+zip_url = f"{base_url}{version}-linux-x86_64/hecdss-{version}-linux-x86_64.zip"
+download_and_unzip(zip_url, f"hecdss-{version}-linux-x86_64.zip", destination_dir)

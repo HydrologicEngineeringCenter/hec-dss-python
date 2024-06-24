@@ -5,7 +5,8 @@ from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
 from hecdss.record_type import RecordType
-from hecdss.timeseries import TimeSeries
+from hecdss.regular_timeseries import RegularTimeSeries
+from hecdss.irregular_timeseries import IrregularTimeSeries
 from hecdss.catalog import Catalog
 from hecdss.gridded_data import GriddedData
 from hecdss.dsspath import DssPath
@@ -39,7 +40,7 @@ class HecDss:
     def get(self, pathname, startdatetime=None, enddatetime=None):
         type = self.get_record_type(pathname)
 
-        if type == RecordType.RegularTimeSeries:
+        if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
             return self._get_timeseries(pathname, startdatetime, enddatetime)
         elif type == RecordType.PairedData:
             return self._get_paired_data(pathname)
@@ -275,7 +276,7 @@ class HecDss:
         # print(values)
         # print("julianBaseDate = " + str(julianBaseDate[0]))
         # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
-        ts = TimeSeries()
+        ts = RegularTimeSeries()
         ts.times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
@@ -290,7 +291,7 @@ class HecDss:
         # TO DO. check data type..
         # TO Do. is timezone needed?
         status = 0
-        if type(container) is TimeSeries:
+        if type(container) is RegularTimeSeries:
             ts = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
@@ -308,7 +309,25 @@ class HecDss:
                 ts.dataType,
             )
             self._catalog = None
+        if type(container) is IrregularTimeSeries:
+            its = container
+            # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
+            #                           saveAsFloat, units, type):
+            startDate, startTime = DateConverter.dss_datetime_from_string(its.times[0])
+            quality = []  # TO DO
 
+            status = self._native.hec_dss_tsStoreIrregular(
+                its.id,
+                startDate,
+                its.times,
+                its.interval,
+                its.values,
+                quality,
+                False,
+                its.units,
+                its.dataType,
+            )
+            self._catalog = None
         elif type(container) is PairedData:
             pd = container
             # print(pd)

@@ -2,7 +2,7 @@
 name = "hec-dss-python"
 version = "0.1.0"
 description = "Python wrapper for the HEC-DSS file database C library."
-authors = [{ name="Hydrologic Engineering Center", email="hec.dss@usace.army.mil" },]
+authors = ["Hydrologic Engineering Center"]
 license = "MIT"
 readme = "Readme.md"
 packages = [{ include = "hecdss", from = "src" }]

@@ -5,7 +5,12 @@ This repository contains a Python wrapper for the HEC-DSS file database C librar
 ## Getting Started
 
 1. Clone this repository to your local machine.
-2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's src/hecdss/lib directory. [hecdss.dll](https://github.com/HydrologicEngineeringCenter/hec-dss-python/releases/download/v0.0.1-alpha/hecdss.dll)
+2. Place the appropriate `hecdss.dll` or `hecdss.so` file for your platform in the repository's src/hecdss/lib directory.
+   1. One option is to download it from provided link [hecdss.dll](https://github.com/HydrologicEngineeringCenter/hec-dss-python/releases/download/v0.0.1-alpha/hecdss.dll)
+   2. Second option is to run the following python script in the repository directory:
+      ```
+      C:\project\hec-dss-python>python src\hec-dss-python\download_hecdss.py
+      ```
 3. from the repo directory (hec-dss-python)
    ```
    C:\project\hec-dss-python>python tests\test_basics.py

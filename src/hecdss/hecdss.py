@@ -9,6 +9,7 @@ from hecdss.regular_timeseries import RegularTimeSeries
 from hecdss.irregular_timeseries import IrregularTimeSeries
 from hecdss.catalog import Catalog
 from hecdss.gridded_data import GriddedData
+from hecdss.dsspath import DssPath
 
 
 class HecDss:
@@ -24,8 +25,12 @@ class HecDss:
 
         if not self._catalog:
           self._catalog = self.get_catalog()
+        if pathname in self._catalog.recordTypeDict:
+            rt = self._catalog.recordTypeDict[pathname]
+        else:
+            path = DssPath(pathname, RecordType.Unknown)
+            rt = self._catalog.recordTypeDict[path.path_without_date().__str__()]
 
-        rt = self._catalog.recordTypeDict[pathname]
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         # TODO do native call.
         # rt = self._native.hec_dss_recordType(pathname)

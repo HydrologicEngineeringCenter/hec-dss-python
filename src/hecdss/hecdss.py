@@ -281,6 +281,7 @@ class HecDss:
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
         ts.values = np.array(values)
+        ts.quality = quality
         ts.units = units[0]
         ts.dataType = dataType[0]
         ts.id = pathname

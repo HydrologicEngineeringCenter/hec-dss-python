@@ -112,10 +112,20 @@ class TestBasics(unittest.TestCase):
 
         tsc.id="//SACRAMENTO/PRECIP-INC/01Jan2005/1Day/OBS-double/"
         dss.put(tsc)  # write double
-        tsc = dss.get(tsc.id)
+        tsc = dss.get(tsc.id,t1,t2)
+        tsc.print_to_console()
         self.assertEqual(4,len(tsc.values))
         dss.close()
 
+    def test_read_regular_timeseries_with_quality(self):
+        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
+        print("record count = " + str(dss.record_count()))
+        t1 = datetime(2021, 9, 15, 7)
+        t2 = datetime(2021, 10, 4, 7)
+        tsc = dss.get("/regular-time-series/GAPT/FLOW//6Hour/forecast1/",t1,t2)
+        tsc.print_to_console()
+        self.assertEqual(77, len(tsc.values))
+        dss.close()
 
 
 if __name__ == "__main__":

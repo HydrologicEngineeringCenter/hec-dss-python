@@ -616,7 +616,7 @@ class _Native:
         values:List[float],
         arraySize:str,
         numberValuesRead,
-        quality,
+        quality:List[int],
         qualityLength:int,
         julianBaseDate:int,
         timeGranularitySeconds:int,
@@ -694,6 +694,8 @@ class _Native:
         times.extend(list(c_times[: c_numberValuesRead.value]))
         values.clear()
         values.extend(list(c_values[: c_numberValuesRead.value]))
+        quality.clear()
+        quality.extend(list(c_quality[: c_numberValuesRead.value]))
         units[0] = c_units.value.decode("utf-8")
         dataType[0] = c_dataType.value.decode("utf-8")
         julianBaseDate[0] = c_julianBaseDate.value

@@ -59,7 +59,7 @@
 
 To install `hecdss`, use the following command:
 ```bash
-pip install hecdss
+pip install -i https://test.pypi.org/simple/ hecdss
 ```
 
 ```bash

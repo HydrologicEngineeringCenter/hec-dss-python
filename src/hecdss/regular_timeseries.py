@@ -2,21 +2,24 @@ import numpy as np
 
 from .dateconverter import DateConverter
 from .dsspath import DssPath
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 
 class RegularTimeSeries:
     def __init__(self):
         self.times = []
         self.values = np.empty(0)
+        self.quality = []
         self.units = ""
         self.dataType = ""
         self.interval = ""
         self.startDate = ""
         self.id = ""
 
-    def add_data_point(self, date, value):
+    def add_data_point(self, date, value, flag=None):
         self.times.append(date)
         self.values.append(value)
+        if flag is not None:
+            self.quality.append(flag)
 
     def get_value_at(self, date):
         if date in self.times:
@@ -38,15 +41,20 @@ class RegularTimeSeries:
         print("dsspath='" + self.id + "'")
         print("units='"+self.units+"'")
         print("dataType='"+self.dataType+"'")
-        for time, value in zip(self.times, self.values):
-            print(f"Time: {time}, Value: {value}")
+        print("Time,Value,Flag")
+        if not len(self.quality) > 0:
+            for time, value in zip(self.times, self.values):
+                print(f"{time}, {value}")
+        else:
+            for time, value, flag in zip(self.times, self.values, self.quality):
+                print(f"{time}, {value}, {flag}")
 
     def _get_interval_interval(self):
         result = DateConverter.intervalString_to_sec(self.interval)
         return result
 
     def _get_interval_path(self):
-        if self.id != None:
+        if self.id is not None:
             return DateConverter.intervalString_to_sec(DssPath(self.id, type(self)).E)
         return "empty"
 

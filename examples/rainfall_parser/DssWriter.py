@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from hecdss.hecdss import HecDss
-from hecdss.hecdss import TimeSeries
+from hecdss.hecdss import RegularTimeSeries
 
 
 class DssWriter:
@@ -16,7 +16,7 @@ class DssWriter:
 
         dss = HecDss(self.filename)
         print("record count = " + str(dss.record_count()))
-        tsc = TimeSeries()
+        tsc = RegularTimeSeries()
         tsc.id = path
         tsc.values = df[df.columns[0]].values.astype(float)
         tsc.times = df.index.tolist()

@@ -11,8 +11,10 @@ from hecdss.catalog import Catalog
 from hecdss.gridded_data import GriddedData
 from hecdss.dsspath import DssPath
 
+DSS_UNDEFINED_VALUE = -340282346638528859811704183484516925440.000000
 
 class HecDss:
+
     def __init__(self, filename):
         self._native = _Native()
         self._native.hec_dss_open(filename)
@@ -280,7 +282,10 @@ class HecDss:
         ts.times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
-        ts.values = np.array(values)
+        arr = np.array(values)
+        indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
+        arr[indices] = None
+        ts.values = arr
         ts.quality = quality
         ts.units = units[0]
         ts.dataType = dataType[0]

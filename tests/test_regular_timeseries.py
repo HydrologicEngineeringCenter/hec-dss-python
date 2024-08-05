@@ -2,24 +2,20 @@
 
 import unittest
 import sys
+import os
 
-import numpy as np
 
-from test_file_manager import TestFileManager
 sys.path.append(r'src')
-import copy
-from hecdss.paired_data import PairedData
-from hecdss.gridded_data import GriddedData
-from hecdss.regular_timeseries import RegularTimeSeries
-from hecdss import Catalog, HecDss
-from datetime import datetime, timedelta
+sys.path.append(os.path.dirname(__file__))
 
-TEST_DIR = "tests/data/"
+from file_manager import FileManager
+from hecdss.regular_timeseries import RegularTimeSeries
+from datetime import datetime, timedelta
 
 class TestGriddedData(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_files = TestFileManager(TEST_DIR)
+        self.test_files = FileManager()
     
     def tearDown(self) -> None:
         self.test_files.cleanup()

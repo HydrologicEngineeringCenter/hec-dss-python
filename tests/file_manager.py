@@ -3,17 +3,19 @@ import tempfile
 import os
 import uuid
 
-class TestFileManager:
+class FileManager:
     """
-    This TestFileManager is used to create uniquely named copies of test input files
+    This FileManager is used to create uniquely named copies of test input files
     in a unique temporary directory.
 
     This ensures that file operations in tests do not interfere with the original files 
     and provides a clean, isolated environment for each test.
     """
 
-    def __init__(self, test_data_dir):
-        self.test_data_dir = test_data_dir
+    def __init__(self):
+        d = os.path.dirname(__file__)
+        d = os.path.join(d, "data")
+        self.test_data_dir = d
         self.temp_dir = tempfile.mkdtemp()
 
     def get_copy(self, filename):

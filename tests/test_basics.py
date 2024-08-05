@@ -1,24 +1,23 @@
 """Pytest module."""
 
 import unittest
+import os
 import sys
-from test_file_manager import TestFileManager
-sys.path.append(r'src')
-import copy
 
+sys.path.append(r'src')
+sys.path.append(os.path.dirname(__file__))
+from file_manager import FileManager
 from hecdss import Catalog, HecDss
 from datetime import datetime
 
-TEST_DIR="tests/data/"
 
 class TestBasics(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_files = TestFileManager(TEST_DIR)
-    
+        self.test_files = FileManager()
+
     def tearDown(self) -> None:
         self.test_files.cleanup()
-
 
     def test_issue9(self):
         dss = HecDss(self.test_files.get_copy("sample7.dss"))
@@ -35,7 +34,6 @@ class TestBasics(unittest.TestCase):
             print(f"len(tsc.values) = {len(tsc.values)}")
             # assert len(tsc.values) > 1
         dss.close()
-
 
     def test_basic(self):
         dss = HecDss(self.test_files.get_copy("sample7.dss"))
@@ -60,7 +58,7 @@ class TestBasics(unittest.TestCase):
         dss = HecDss(self.test_files.get_copy("sample7.dss"))
         catalog = dss.get_catalog()
         for ds in catalog:
-            print(ds.recType,ds)
+            print(ds.recType, ds)
 
         dss.close()
 
@@ -79,8 +77,7 @@ class TestBasics(unittest.TestCase):
     def test_grid(self):
         dss = HecDss(self.test_files.get_copy("grid-example.dss"))
 
-        dss.close()        
-
+        dss.close()
 
     def test_paired_data(self):
         """
@@ -110,19 +107,30 @@ class TestBasics(unittest.TestCase):
         tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/", t1, t2)  # read float
         tsc.print_to_console()
 
-        tsc.id="//SACRAMENTO/PRECIP-INC/01Jan2005/1Day/OBS-double/"
+        tsc.id = "//SACRAMENTO/PRECIP-INC/01Jan2005/1Day/OBS-double/"
         dss.put(tsc)  # write double
-        tsc = dss.get(tsc.id,t1,t2)
+        tsc = dss.get(tsc.id, t1, t2)
         tsc.print_to_console()
-        self.assertEqual(4,len(tsc.values))
+        self.assertEqual(4, len(tsc.values))
         dss.close()
 
+    def test_missing_values(self):
+        dss = HecDss(self.test_files.get_copy("missing_data.dss"))
+        print("record count = " + str(dss.record_count()))
+        tsc = dss.get("/CUMBERLAND RIVER/CUMBERLAND FALLS/FLOW//30Minute/MISSING/", datetime(2020, 1, 3, 11, 0),
+                      datetime(2020, 1, 13, 0, 0))
+        tsc.print_to_console()
+
+    # values = ts.values
+    # MISSING = -3.4028234663852886e+38
+    # tolerance = 100000
+    # values = [None if abs(x - MISSING) < tolerance else x for x in values]
     def test_read_regular_timeseries_with_quality(self):
         dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
         print("record count = " + str(dss.record_count()))
         t1 = datetime(2021, 9, 15, 7)
         t2 = datetime(2021, 10, 4, 7)
-        tsc = dss.get("/regular-time-series/GAPT/FLOW//6Hour/forecast1/",t1,t2)
+        tsc = dss.get("/regular-time-series/GAPT/FLOW//6Hour/forecast1/", t1, t2)
         tsc.print_to_console()
         self.assertEqual(77, len(tsc.values))
         dss.close()

@@ -847,7 +847,7 @@ class _Native:
                            doubleValues: List[float]):
         f = self.dll.hec_dss_arrayStore
         f.argtypes = [
-            POINTER(c_void_p),  # dss_file* dss
+            c_void_p,  # dss_file* dss
             c_char_p,  # const char* pathname
             POINTER(c_int),  # int* intValues
             c_int,  # const int intValuesLength
@@ -856,10 +856,36 @@ class _Native:
             POINTER(c_double),  # double* doubleValues
             c_int  # const int doubleValuesLength
         ]
-        c_intValues = (c_int32 * len(intValues))(*intValues)
-        c_floatValues = (c_int32 * len(floatValues))(*floatValues)
-        c_doubleValues = (c_int32 * len(doubleValues))(*doubleValues)
+        f.restype = c_int
 
-        return f(self.handle, pathname, c_intValues, len(intValues),
+        c_intValues = (c_int32 * len(intValues))(*intValues)
+        c_floatValues = (c_float * len(floatValues))(*floatValues)
+        c_doubleValues = (c_double * len(doubleValues))(*doubleValues)
+        return f(self.handle, pathname.encode('utf-8'), c_intValues, len(intValues),
                  c_floatValues, len(floatValues),
                  c_doubleValues, len(doubleValues))
+
+    def hec_dss_arrayRetrieve(self, pathname, intValues: List[int], floatValues: List[float], doubleValues: List[float]):
+        f = self.dll.hec_dss_arrayRetrieve
+
+        f.argtypes = (
+            c_void_p,  # dss_file*
+            c_char_p,  # const char* - pathname
+            POINTER(c_int),  # int* intValues
+            c_int,  # const int intValuesLength
+            POINTER(c_float),  # float* floatValues
+            c_int,  # const int floatValuesLength
+            POINTER(c_double),  # double* doubleValues
+            c_int  # const int doubleValuesLength
+        )
+        f.restype = c_int
+
+        c_intValues = (c_int32 * len(intValues))(*intValues)
+        c_floatValues = (c_float * len(floatValues))(*floatValues)
+        c_doubleValues = (c_double * len(doubleValues))(*doubleValues)
+
+        return f(self.handle, pathname.encode('utf-8'),
+                 c_intValues, len(intValues),
+                 c_floatValues, len(floatValues),
+                 c_doubleValues, len(doubleValues))
+

@@ -10,12 +10,15 @@ class RecordType(Enum):
     Grid = 6
     Tin = 7
     LocationInfo = 8
+    Array = 9
 
     @staticmethod
     def RecordTypeFromInt(recType):
         rval = RecordType.Unknown
 
-        if 100 <= recType < 110:
+        if 90 <= recType <= 93 :
+            rval = RecordType.Array
+        elif 100 <= recType < 110:
             if recType == 102 or recType == 107:
                 rval = RecordType.RegularTimeSeriesProfile
             else:

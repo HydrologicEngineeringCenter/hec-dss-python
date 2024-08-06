@@ -13,15 +13,18 @@ class ArrayContainer:
         a = ArrayContainer()
         a.id = path
         a.values = np.array(values, dtype=np.int)
+        return a
 
     @staticmethod
     def create_float_array(values: List[float], path=None):
         a = ArrayContainer()
         a.id = path
         a.values = np.array(values, dtype=np.float32)
+        return a
 
-@staticmethod
+    @staticmethod
     def create_double_array(values: List[float], path=None):
         a = ArrayContainer()
         a.id = path
         a.values = np.array(values, dtype=np.float64)
+        return a

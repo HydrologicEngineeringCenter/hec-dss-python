@@ -61,7 +61,7 @@ class RegularTimeSeries:
     def _get_interval_times(self):
         if len(self.times) > 1 and type(self.times[0]) == datetime:
             interval = self.times[1]-self.times[0]
-            return interval.total_seconds()
+            return int(interval.total_seconds())
         return "empty"
     def _interval_to_interval(self, new_interval):
         self.interval = new_interval
@@ -70,7 +70,7 @@ class RegularTimeSeries:
         if self.id != None:
             new_path = DssPath(self.id, type(self))
             new_path.E = DateConverter.sec_to_intervalString(new_interval)
-            self.path = new_path.__str__()
+            self.id = str(new_path)
 
     def _interval_to_times(self, new_interval):
         if type(self.startDate) == datetime:
@@ -82,6 +82,7 @@ class RegularTimeSeries:
 
         x = [self._get_interval_times(), self._get_interval_path(), self._get_interval_interval()]
         x = [i for i in x if i != "empty"]
+        print(x)
         if(not all(i == x[0] for i in x)):
             raise ValueError("inconsistent interval within arguments")
         elif len(x) != 3 and len(x) != 0:

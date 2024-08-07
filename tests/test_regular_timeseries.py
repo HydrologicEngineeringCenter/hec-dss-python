@@ -12,7 +12,7 @@ from file_manager import FileManager
 from hecdss.regular_timeseries import RegularTimeSeries
 from datetime import datetime, timedelta
 
-class TestGriddedData(unittest.TestCase):
+class TestRegularTimeSeries(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_files = FileManager()
@@ -29,14 +29,17 @@ class TestGriddedData(unittest.TestCase):
         # rts = RegularTimeSeries.create(range(15), interval="5Second", startDate=datetime.today(), path=path)
         # print(rts)
 
-        path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/1Day/SHG-SNODAS/"
+        #
+        path = "//EAU GALLA RIVER/Flow//1Day//"
         rts = RegularTimeSeries.create(range(15), startDate=datetime.today(), path=path)
+        self.assertEqual(86400, rts.interval)
         print(rts)
 
-        path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS/"
+
+        path = "//EAU GALLA RIVER/Flow////"
         times = [datetime.today()+(i * timedelta(seconds=10)) for i in range(15)]
         rts = RegularTimeSeries.create(range(15), times=times, path=path)
-        print(rts)
+        self.assertEqual("//EAU GALLA RIVER/Flow//10Second//", rts.id)
 
         # path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/1Day/SHG-SNODAS/"
         # times = [datetime.today() + (i * timedelta(seconds=10)) for i in range(15)]

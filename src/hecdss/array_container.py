@@ -28,3 +28,10 @@ class ArrayContainer:
         a.id = path
         a.values = np.array(values, dtype=np.float64)
         return a
+
+    def __str__(self):
+        if self.id is not None:
+            identifier = f"id: {self.id}, "
+        else:
+            identifier = ""
+        return f"{identifier}type: {self.values.dtype}, shape: {self.values.shape}, values: {self.values.tolist()}"

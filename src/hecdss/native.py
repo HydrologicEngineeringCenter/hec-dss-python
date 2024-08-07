@@ -3,6 +3,7 @@ from ctypes import c_float, c_double, c_char_p, c_int, c_void_p, POINTER
 from ctypes import c_int32
 from ctypes import byref, create_string_buffer
 from ctypes.util import find_library
+import numpy as np
 from importlib import resources
 import io
 import os
@@ -865,7 +866,8 @@ class _Native:
                  c_floatValues, len(floatValues),
                  c_doubleValues, len(doubleValues))
 
-    def hec_dss_arrayRetrieve(self, pathname, intValues: List[int], floatValues: List[float], doubleValues: List[float]):
+    def hec_dss_arrayRetrieve(self, pathname, intValues: List[int], floatValues: List[float],
+                              doubleValues: List[float]):
         f = self.dll.hec_dss_arrayRetrieve
 
         f.argtypes = (
@@ -884,8 +886,19 @@ class _Native:
         c_floatValues = (c_float * len(floatValues))(*floatValues)
         c_doubleValues = (c_double * len(doubleValues))(*doubleValues)
 
-        return f(self.handle, pathname.encode('utf-8'),
-                 c_intValues, len(intValues),
-                 c_floatValues, len(floatValues),
-                 c_doubleValues, len(doubleValues))
+        status = f(self.handle, pathname.encode('utf-8'),
+                   c_intValues, len(intValues),
+                   c_floatValues, len(floatValues),
+                   c_doubleValues, len(doubleValues))
 
+        if status == 0:
+            if len(intValues) > 0:
+                intValues[:] = np.ctypeslib.as_array(c_intValues, shape=(len(intValues),))
+            if len(floatValues) > 0:
+                floatValues[:] = np.ctypeslib.as_array(c_floatValues, shape=(len(floatValues),))
+            if len(doubleValues) > 0:
+                doubleValues[:] = np.ctypeslib.as_array(c_doubleValues, shape=(len(doubleValues),))
+
+
+        else:
+            print("Error reading array status = {status}")

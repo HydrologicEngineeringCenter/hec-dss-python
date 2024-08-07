@@ -3,7 +3,7 @@
 import unittest
 import os
 import sys
-
+import numpy as np
 sys.path.append(r'src')
 sys.path.append(os.path.dirname(__file__))
 from file_manager import FileManager
@@ -29,6 +29,7 @@ class TestArray(unittest.TestCase):
         print(f"record_type = {dss.get_record_type(a.id)}")
         b = dss.get(a.id)
         print(b)
+        np.testing.assert_array_equal(b.values, a.values)
 
 
 if __name__ == "__main__":

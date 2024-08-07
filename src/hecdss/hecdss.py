@@ -1,6 +1,7 @@
 """Docstring for public module."""
 import numpy as np
 
+from hecdss.array_container import ArrayContainer
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
@@ -13,6 +14,7 @@ from hecdss.dsspath import DssPath
 
 DSS_UNDEFINED_VALUE = -340282346638528859811704183484516925440.000000
 
+
 class HecDss:
 
     def __init__(self, filename):
@@ -23,10 +25,10 @@ class HecDss:
     def close(self):
         self._native.hec_dss_close()
 
-    def get_record_type(self,pathname):
+    def get_record_type(self, pathname):
 
         if not self._catalog:
-          self._catalog = self.get_catalog()
+            self._catalog = self.get_catalog()
         if pathname in self._catalog.recordTypeDict:
             rt = self._catalog.recordTypeDict[pathname]
         else:
@@ -49,7 +51,37 @@ class HecDss:
             # read paired data
         elif type == RecordType.Grid:
             return self._get_gridded_data(pathname)
-        return
+        elif type == RecordType.Array:
+            return self._get_array(pathname)
+        return None
+
+    def _get_array(self, pathname: str):
+        intValuesCount = [0]
+        floatValuesCount = [0]
+        doubleValuesCount = [0]
+
+        self._native.hec_dss_arrayRetrieveInfo(pathname, intValuesCount, floatValuesCount, doubleValuesCount)
+
+        intValues = []
+        floatValues = []
+        doubleValues = []
+
+        if intValuesCount[0] > 0:
+            intValues = [0] * intValuesCount[0]
+        if floatValuesCount[0] > 0:
+            floatValues = [0] * floatValuesCount[0]
+        if doubleValuesCount[0] > 0:
+            doubleValues = [0] * doubleValuesCount[0]
+
+        status = self._native.hec_dss_arrayRetrieve(pathname, intValues, floatValues, doubleValues)
+        rval = None
+        if len(intValues) > 0:
+            rval = ArrayContainer.create_int_array(intValues)
+        if len(floatValues) > 0:
+            rval = ArrayContainer.create_float_array(floatValues)
+        if len(doubleValues) > 0:
+            rval = ArrayContainer.create_double_array(doubleValues)
+        return rval
 
     def _get_gridded_data(self, pathname):
         gridType = [0]
@@ -155,11 +187,11 @@ class HecDss:
     def _get_paired_data(self, pathname):
         numberOrdinates = [0]
         numberCurves = [0]
-        unitsIndependent  =[""]
+        unitsIndependent = [""]
         unitsDependent = [""]
         typeIndependent = [""]
-        typeDependent =[""]
-        labelsLength =[0]
+        typeDependent = [""]
+        labelsLength = [0]
         self._native.hec_dss_pdRetrieveInfo(
             pathname,
             numberOrdinates,
@@ -185,14 +217,14 @@ class HecDss:
         typeIndependent2 = [""]
         typeDependent2 = [""]
         status = self._native.hec_dss_pdRetrieve(pathname,
-                                        doubleOrdinates,numberOrdinates[0],
-                                        doubleValues,numberCurves[0]*numberOrdinates[0],
-                                        numberOrdinates2,numberCurves2,
-                                        unitsIndependent2,len(unitsIndependent[0])+1,
-                                        typeIndependent2,len(typeIndependent[0])+1,
-                                        unitsDependent2,len(unitsDependent[0])+1,
-                                        typeDependent2,len(typeDependent[0])+1,
-                                        labels, labelsLength[0])
+                                                 doubleOrdinates, numberOrdinates[0],
+                                                 doubleValues, numberCurves[0] * numberOrdinates[0],
+                                                 numberOrdinates2, numberCurves2,
+                                                 unitsIndependent2, len(unitsIndependent[0]) + 1,
+                                                 typeIndependent2, len(typeIndependent[0]) + 1,
+                                                 unitsDependent2, len(unitsDependent[0]) + 1,
+                                                 typeDependent2, len(typeDependent[0]) + 1,
+                                                 labels, labelsLength[0])
 
         if status != 0:
             print(f"Error reading paired-data from '{pathname}'")
@@ -213,7 +245,7 @@ class HecDss:
 
         return pd
 
-    def _get_timeseries(self,pathname,startDateTime,endDateTime):
+    def _get_timeseries(self, pathname, startDateTime, endDateTime):
         # get sizes
         if not (startDateTime and endDateTime):
             startDate = ""
@@ -315,7 +347,7 @@ class HecDss:
                 ts.dataType,
             )
             self._catalog = None
-        if type(container) is IrregularTimeSeries:
+        elif type(container) is IrregularTimeSeries:
             its = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
@@ -343,8 +375,16 @@ class HecDss:
             gd = container
             status = self._native.hec_dss_gridStore(gd)
             self._catalog = None
+        elif type(container) is ArrayContainer:
+            if container.values.dtype.name == 'int32':
+                self._native.hec_dss_arrayStore(container.id, container.values, [], [])
+            elif container.values.dtype.name == 'float32':
+                self._native.hec_dss_arrayStore(container.id, [], container.values, [])
+            elif container.values.dtype.name == 'float64':
+                self._native.hec_dss_arrayStore(container.id, [], [], container.values)
+
         else:
-            Exception(f"unsupported record_type: {type(container)}")
+            raise Exception(f"unsupported record_type: {type(container)}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

@@ -29,7 +29,8 @@ class Catalog:
                 tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)
-            elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text]:
+            elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text,
+                                RecordType.LocationInfo, RecordType.Array]:
                 self.recordTypeDict[str(path)] = recordType
                 self.items.append(path)
             else:

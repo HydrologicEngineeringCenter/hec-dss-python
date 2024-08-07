@@ -99,7 +99,7 @@ jobs:
         run: pip install numpy
 
       - name: Run tests
-        run: pytest tests/test_paired_data.py
+        run: pytest tests/test_basics.py tests/test_gridded_data.py tests/test_paired_data.py tests/test_regular_timeseries.py tests/test_text.py
 
   # The development distribution is a snapshot of the package and is deployed each time
   # changes are merged into the main branch.

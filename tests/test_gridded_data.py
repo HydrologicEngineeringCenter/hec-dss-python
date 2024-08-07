@@ -2,27 +2,23 @@
 
 import unittest
 import sys
-
+import os
 import numpy as np
 
-from test_file_manager import TestFileManager
 sys.path.append(r'src')
-import copy
-from hecdss.paired_data import PairedData
+sys.path.append(os.path.dirname(__file__))
+from file_manager import FileManager
 from hecdss.gridded_data import GriddedData
-from hecdss import Catalog, HecDss
-from datetime import datetime
+from hecdss import HecDss
 
-TEST_DIR = "tests/data/"
 
 class TestGriddedData(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_files = TestFileManager(TEST_DIR)
-    
+        self.test_files = FileManager()
+
     def tearDown(self) -> None:
         self.test_files.cleanup()
-
 
     def test_gridded_data_read(self):
         """
@@ -49,7 +45,7 @@ class TestGriddedData(unittest.TestCase):
         """
         Generates a PairedData object
         """
-        data = [[j+(50*i) for j in range(50)] for i in range(50)]
+        data = [[j + (50 * i) for j in range(50)] for i in range(50)]
         gd = GriddedData.create(data=data)
         assert (np.array_equal(gd.data, np.array(data))), f"gd.data should be {np.array(data)}. is {gd.data}"
         assert (gd.numberOfCellsX == 50), f"gd.numberOfCellsX should be 50. is {gd.numberOfCellsX}"
@@ -73,6 +69,7 @@ class TestGriddedData(unittest.TestCase):
         dss.close()
 
         assert (status == 0), f"status should be 0. is {status}"
+
     def test_gridded_data_read_store_read(self):
         """
         Generates a PairedData object then stores data on disk
@@ -90,8 +87,10 @@ class TestGriddedData(unittest.TestCase):
 
         gd2 = dss.get(path)
 
-        assert (np.array_equal(gd.data, gd2.data)), f"gd.data contents is not equal to that of gd2.data. gd is {gd.data} and gd2 is {gd2.data}"
-        assert (gd.dataUnits == gd2.dataUnits), f"gd2.dataUnits is not equal to {gd.dataUnits}. gd2.dataUnits is {gd2.dataUnits}"
+        assert (np.array_equal(gd.data,
+                               gd2.data)), f"gd.data contents is not equal to that of gd2.data. gd is {gd.data} and gd2 is {gd2.data}"
+        assert (
+                gd.dataUnits == gd2.dataUnits), f"gd2.dataUnits is not equal to {gd.dataUnits}. gd2.dataUnits is {gd2.dataUnits}"
 
         dss.close()
 

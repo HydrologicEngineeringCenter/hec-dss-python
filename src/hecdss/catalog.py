@@ -29,18 +29,11 @@ class Catalog:
                 tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)
-            elif recordType == RecordType.PairedData:
-                cleanPath = str(path)
-                self.recordTypeDict[cleanPath] = recordType
-                # add NON time-series to list (nothing else needed)
-                self.items.append(path)
-            elif recordType == RecordType.Grid:
-                cleanPath = str(path)
-                self.recordTypeDict[cleanPath] = recordType
-                # add NON time-series to list (nothing else needed)
+            elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text]:
+                self.recordTypeDict[str(path)] = recordType
                 self.items.append(path)
             else:
-                Exception(f"unsupported record_type: {recordType}")
+                raise Exception(f"unsupported record_type: {recordType}")
 
 
 

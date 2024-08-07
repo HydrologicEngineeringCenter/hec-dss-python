@@ -2,26 +2,26 @@
 
 import unittest
 import sys
-
+import os
 import numpy as np
 
-from test_file_manager import TestFileManager
 sys.path.append(r'src')
+sys.path.append(os.path.dirname(__file__))
+
+from file_manager import FileManager
 import copy
 from hecdss.paired_data import PairedData
-from hecdss import Catalog, HecDss
-from datetime import datetime
+from hecdss import HecDss
 
-TEST_DIR="tests/data/"
 
 # update MODIFIED_TEST_DIR to be the path the folder containing dss files
 # "sample7.dss" and "R703F3-PF_v7.dss" which are modified within these tests
-MODIFIED_TEST_DIR=r"C:\Users\oskar\Documents\dss"
+# MODIFIED_TEST_DIR=r"C:\Users\oskar\Documents\dss"
 
 class TestPairedData(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_files = TestFileManager(TEST_DIR)
+        self.test_files = FileManager()
     
     def tearDown(self) -> None:
         self.test_files.cleanup()

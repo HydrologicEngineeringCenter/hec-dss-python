@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+  # Allow the workflow to be manually triggered from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  testing:
+    name: testing HECDSS functions
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: add dll
+        run: python3 src/hecdss/download_hecdss.py
+
+      - name: Install Packages
+        run: pip install pytest
+
+      - name: Install numpy
+        run: pip install numpy
+
+      - name: Run tests
+        run: pytest tests/test_basics.py tests/test_gridded_data.py tests/test_paired_data.py tests/test_regular_timeseries.py tests/test_text.py tests/test_array.py
+

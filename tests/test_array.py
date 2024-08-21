@@ -4,6 +4,7 @@ import unittest
 import os
 import sys
 import numpy as np
+
 sys.path.append(r'src')
 sys.path.append(os.path.dirname(__file__))
 from file_manager import FileManager
@@ -22,7 +23,7 @@ class TestArray(unittest.TestCase):
         a = ArrayContainer.create_float_array([1.0, 3.0, 5.0, 7.0])
         a.id = "/test/float-array/redshift////"
 
-        dss = HecDss("test_dss_array.dss")
+        dss = HecDss(self.test_files.create_test_file(".dss"))
         print(f" record_count = {dss.record_count()}")
         dss.put(a)
         # dss.set_debug_level(15)

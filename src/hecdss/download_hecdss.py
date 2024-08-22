@@ -30,13 +30,13 @@ def download_and_unzip(url, zip_file, destination_dir):
 
         with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
             zip_ref.extractall(destination_dir)
-        print("Contents extracted successfully.")
+        print(f"Contents extracted successfully to.'{destination_dir}'")
         os.remove(zip_file_path)
     else:
         print(f"Failed to download zip file. Status code: {response.status_code}")
 
 base_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/"
-version = "7-IS-7"
+version = "7-IT-2"
 
 destination_dir = Path(__file__).parent.joinpath("lib")
 zip_url = f"{base_url}{version}-win-x86_64/hecdss-{version}-win-x86_64.zip"

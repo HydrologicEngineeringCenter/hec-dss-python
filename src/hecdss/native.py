@@ -14,22 +14,28 @@ from typing import List
 class _Native:
     """Wrapper for Native method calls to hecdss.dll or libhecdss.so"""
 
+    def load_hecdss_library(self, libname):
+        """
+        searches and loads [lib]hecdss.[dll|so]
+        """
+        paths_to_try = [
+            libname,
+            os.path.join(os.path.dirname(__file__), 'lib', libname),
+            find_library("hecdss")
+        ]
+        found_libs = [path for path in paths_to_try if path is not None and os.path.exists(path)]
+        if len(found_libs) == 0:
+            raise FileNotFoundError(f"{libname} not found Paths searched: {paths_to_try}")
+        return ctypes.CDLL(found_libs[0])
+
+
     def __init__(self):
-        if sys.platform == "linux" or sys.platform == "darwin":
-            libc_path = (
-                "libhecdss.so"
-                if find_library("libhecdss")
-                else os.path.join(os.environ["LD_LIBRARY_PATH"], "libhecdss.so")
-            )
-            self.dll = ctypes.CDLL(libc_path)
-        elif sys.platform == "win32":
-            dll_dir = os.path.join(os.path.dirname(sys.modules["hecdss"].__file__), 'lib')
-            dll_path = os.path.join(dll_dir, 'hecdss.dll')
 
-            self.dll = ctypes.CDLL(dll_path)
-
+        self.handle = None
+        if sys.platform == "win32":
+            self.dll = self.load_hecdss_library("hecdss.dll")
         else:
-            raise Exception("Unsupported platform")
+            self.dll = self.load_hecdss_library("libhecdss.so")
 
     def hec_dss_open(self, dss_filename: str):
         f = self.dll.hec_dss_open

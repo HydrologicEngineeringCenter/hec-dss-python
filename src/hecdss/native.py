@@ -16,16 +16,20 @@ class _Native:
 
     def __init__(self):
         if sys.platform == "linux" or sys.platform == "darwin":
-            libc_path = (
-                "libhecdss.so"
-                if find_library("libhecdss")
-                else os.path.join(os.environ["LD_LIBRARY_PATH"], "libhecdss.so")
-            )
-            self.dll = ctypes.CDLL(libc_path)
+            paths_to_try = [
+                "libhecdss.so",
+                os.path.join(os.path.dirname(__file__), 'lib', 'libhecdss.so'),
+                find_library("libhecdss")
+            ]
+            found_libs = [path for path in paths_to_try if os.path.exists(path)]
+            if len(found_libs) == 0:
+                raise FileNotFoundError(f"libhecdss.so not found Paths searched: {paths_to_try}")
+
+            self.dll = ctypes.CDLL(found_libs[0])
         elif sys.platform == "win32":
             dll_dir = os.path.join(os.path.dirname(sys.modules["hecdss"].__file__), 'lib')
             dll_path = os.path.join(dll_dir, 'hecdss.dll')
-
+            print(f"trying path:{dll_path}")
             self.dll = ctypes.CDLL(dll_path)
 
         else:

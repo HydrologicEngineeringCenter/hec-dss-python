@@ -21,7 +21,7 @@ class _Native:
                 os.path.join(os.path.dirname(__file__), 'lib', 'libhecdss.so'),
                 find_library("libhecdss")
             ]
-            found_libs = [path for path in paths_to_try if os.path.exists(path)]
+            found_libs = [path for path in paths_to_try if path is not None and os.path.exists(path)]
             if len(found_libs) == 0:
                 raise FileNotFoundError(f"libhecdss.so not found Paths searched: {paths_to_try}")
 

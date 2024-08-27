@@ -73,17 +73,11 @@ class CwmsUtility:
         returns CWMS convention time-series-id
         [Location]-[sub-location].[Parameter]-[sub-parameter].[Type].[Interval].[Duration].[Version]
         """
-        tsid = ""
         p = DssPath(path, 0)
         a, b, c, e, f = p.A.strip(), p.B.strip(), p.C.strip(), p.E.strip(), p.F.strip()
-        # [Location]
-        if a != "":
-            # [Location]
-            tsid += a[:24] + "-"  # limit base location to 24 characters
-        if b != "":
-            # [sub-location]
-            tsid += b[:32]   # limit sub-location to 32 characters
-
+        # drop a part (watershed by convention)
+        # [Location]-[sub-location]
+        tsid = b
         # [parameter]
         tsid += "." + c + "."
         # [Type]

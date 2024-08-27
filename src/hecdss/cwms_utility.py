@@ -137,7 +137,7 @@ class CwmsUtility:
             if cwms_interval[1:] in CwmsUtility.CWMS_DSS_INTERVAL_MAP:
                 return "~" + CwmsUtility.CWMS_DSS_INTERVAL_MAP[cwms_interval[1:]]
 
-        raise ValueError(f"The cwms interval {cwms_interval} is invalid, or there is not a supported conversion to DSS")
+        raise ValueError(f"The cwms interval '{cwms_interval}' is invalid, or there is not a supported conversion to DSS")
 
     @staticmethod
     def _convert_dss_interval_to_cwms_interval(dss_interval: str):
@@ -153,7 +153,7 @@ class CwmsUtility:
             if e_part[1:] in CwmsUtility.DSS_CWMS_INTERVAL_MAP:
                 return "~" + CwmsUtility.DSS_CWMS_INTERVAL_MAP[e_part[1:]]
 
-        raise ValueError(f"The cwms interval {dss_interval} is invalid, or there is not a supported conversion to a "
+        raise ValueError(f"The dss interval '{dss_interval}' is invalid, or there is not a supported conversion to a "
                          f"CWMS interval")
 
 

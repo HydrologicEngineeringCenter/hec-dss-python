@@ -10,7 +10,7 @@ class RegularTimeSeries:
         self.values = np.empty(0)
         self.quality = []
         self.units = ""
-        self.dataType = ""
+        self.data_type = ""
         self.interval = ""
         self.startDate = ""
         self.id = ""
@@ -40,7 +40,7 @@ class RegularTimeSeries:
     def print_to_console(self):
         print("dsspath='" + self.id + "'")
         print("units='"+self.units+"'")
-        print("dataType='"+self.dataType+"'")
+        print("dataType='" + self.data_type + "'")
         print("Time,Value,Flag")
         if not len(self.quality) > 0:
             for time, value in zip(self.times, self.values):
@@ -96,7 +96,7 @@ class RegularTimeSeries:
         rts.times = times
         rts.values = np.array(values)
         rts.units = units
-        rts.dataType = dataType
+        rts.data_type = dataType
         rts.interval = interval
         rts.startDate = startDate
         rts.id = path

@@ -128,9 +128,10 @@ class DateConverter:
         return "empty"
 
     @staticmethod
-    def sec_to_intervalString(interval):
+    def sec_to_intervalString(seconds: int):
 
-        i = sec.index(interval)
+        i = sec.index(seconds)
+
         return time_string[i]
 
 

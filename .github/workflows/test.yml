@@ -37,5 +37,5 @@ jobs:
         run: pip install numpy
 
       - name: Run tests
-        run: pytest tests/test_basics.py tests/test_gridded_data.py tests/test_paired_data.py tests/test_regular_timeseries.py tests/test_text.py tests/test_array.py
+        run: pytest tests
 

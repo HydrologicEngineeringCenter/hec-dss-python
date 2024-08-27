@@ -46,6 +46,7 @@ class TestDssPath(unittest.TestCase):
             tsid = CwmsUtility.pathname_to_cwms_tsid(pathname, dss_type, duration)
             if tsid != row[0]:
                 print(f"error converting to tsid. expected '{row[0]}', actual: '{tsid}'")
+                assert tsid == row[0]
 
     def test_convert_cwms_tsid_to_dss_path(self):
         for row in self.example_data:
@@ -55,7 +56,15 @@ class TestDssPath(unittest.TestCase):
             expected_pathname_without_date = DssPath(str(expected_pathname)).path_without_date()
             if expected_pathname_without_date != pathname:
                 print(f"error converting to path. expected '{expected_pathname_without_date}', actual: '{pathname}'")
+                assert expected_pathname_without_date == pathname
 
+    def test_strict_cwms_id(self):
+        dss_path = self.example_data[0][1]
+        tsid = CwmsUtility.pathname_to_cwms_tsid(dss_path, DssType.INST_VAL, "0")
+        assert tsid == self.example_data[0][0]
+        strict_expected = "Nork-Norton-Prairie_Dog.Stage.Inst.15Minutes.0.Nwklrgs-Raw"
+        tsid = CwmsUtility.pathname_to_cwms_tsid(dss_path, DssType.INST_VAL, "0", True)
+        assert tsid == strict_expected
 
 # t = TestDssPath()
 # t.test_convert_cwms_tsid_to_dss_path()

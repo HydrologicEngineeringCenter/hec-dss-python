@@ -65,7 +65,7 @@ class CwmsUtility:
             return "Inst"
 
     @staticmethod
-    def pathname_to_cwms_tsid(path, dss_type="", duration="0"):
+    def pathname_to_cwms_tsid(path, dss_type="", duration="0", strict=False):
         """
         pathname is a dsspath name. Example: /TULA//Flow//1Hour/Ccp-Rev/
         type is
@@ -88,7 +88,8 @@ class CwmsUtility:
         tsid += duration+"."
         # [Version]
         tsid += f
-
+        if strict:
+            return tsid.title()
         return tsid
 
     @staticmethod

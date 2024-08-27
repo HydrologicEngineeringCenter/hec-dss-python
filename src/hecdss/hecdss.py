@@ -320,7 +320,7 @@ class HecDss:
         ts.values = arr
         ts.quality = quality
         ts.units = units[0]
-        ts.dataType = dataType[0]
+        ts.data_type = dataType[0]
         ts.id = pathname
         return ts
 
@@ -344,7 +344,7 @@ class HecDss:
                 quality,
                 False,
                 ts.units,
-                ts.dataType,
+                ts.data_type,
             )
             self._catalog = None
         elif type(container) is IrregularTimeSeries:
@@ -363,7 +363,7 @@ class HecDss:
                 quality,
                 False,
                 its.units,
-                its.dataType,
+                its.data_type,
             )
             self._catalog = None
         elif type(container) is PairedData:

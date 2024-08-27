@@ -21,7 +21,7 @@ class DssWriter:
         tsc.values = df[df.columns[0]].values.astype(float)
         tsc.times = df.index.tolist()
         tsc.units = df.units
-        tsc.dataType = df.data_type
+        tsc.data_type = df.data_type
 
         dss.put(tsc)
         dss.close()

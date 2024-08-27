@@ -34,6 +34,7 @@ pip install -i https://test.pypi.org/simple/ hecdss
   - `times`: The times of the time series data.
   - `values`: The values of the time series data.
   - `interval`: The interval of the time series data.
+  - `data_type`: the dss data type ("PER-AVER","PER-CUM", "INST-VAL", "INST-CUM", .. )
   - `units`: The units of the time series data.
   - `id`: The Path of the time series data.
   
@@ -50,7 +51,7 @@ data_path = "/example/data/////"
 data = dss.get(data_path)
 print(data)
 
-dss.values = dss.values * 2
+data.values = data.values * 2
 # Save changes to DSS file
 dss.put(data_path)
 dss.close()

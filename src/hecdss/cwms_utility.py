@@ -153,7 +153,7 @@ class CwmsUtility:
 
 
     @staticmethod
-    def dss_data_type_from_cwms_tsid(cwms_tsid):str
+    def dss_data_type_from_cwms_tsid(cwms_tsid) -> str:
         """
         takes an input id such as 'TULA.Flow.Inst.1Hour.0.Ccp-Rev'
         and returns the DSS DataType  'INST-VAL' in this example

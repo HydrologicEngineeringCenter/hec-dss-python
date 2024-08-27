@@ -16,7 +16,3 @@ class TestBasics(unittest.TestCase):
         s = str(t)
         assert s == "PER-CUM", f"actual:{s},  expected 'PER-CUM'"
 
-
-
-tb = TestBasics()
-tb.test_to_string()

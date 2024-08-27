@@ -9,4 +9,5 @@ class DssType(Enum):
     FREQ = "FREQ"
     PER_MAX = "PER-MAX"
     PER_MIN = "PER-MIN"
+    CONST = "CONST"
 

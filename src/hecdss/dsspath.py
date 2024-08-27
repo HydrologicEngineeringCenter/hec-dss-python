@@ -11,12 +11,13 @@ class DssPath:
     _timeSeriesFamily = [RecordType.IrregularTimeSeries, RecordType.RegularTimeSeries,
                          RecordType.RegularTimeSeriesProfile]
 
-    def __init__(self, path: str, recType: int):
+    def __init__(self, path: str, recType = 0):
         """
         path is raw dss pathname
         recType is a RecordType , such as RecordType.RegularTimeSeries
         """
-        if path[0] != '/' or path[-1] != '/':
+        # path should be at least 7 slash characters ///////
+        if len(path.strip()) < 7 or path[0] != '/' or path[-1] != '/':
             raise Exception("Invalid DSS Path: '" + path + "'")
         path = path[1:-1]  # remove beginning and ending '/'
         # self.rawPath= path
@@ -25,6 +26,9 @@ class DssPath:
         if len(split_parts) >= 6:
             self.A, self.B, self.C, self.D, self.E, self.F = split_parts[:6]
         self.recType = recType
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
     def __str__(self):
         return "/" + self.A + "/" + self.B + "/" + self.C + "/" + self.D + "/" + self.E + "/" + self.F + "/"

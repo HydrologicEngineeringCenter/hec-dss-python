@@ -1,12 +1,54 @@
+import re
+
 from hecdss import DssPath
 from hecdss.dss_type import DssType
 
 
 class CwmsUtility:
+    CWMS_DSS_INTERVAL_MAP = {
+        '1Minute': '1Minute',
+        '2Minutes': '2Minute',
+        '3Minutes': '3Minute',
+        '4Minutes': '4Minute',
+        '5Minutes': '5Minute',
+        '6Minutes': '6Minute',
+        '12Minutes': '12Minute',
+        '15Minutes': '15Minute',
+        '20Minutes': '20Minute',
+        '30Minutes': '30Minutes',
+        '1Hour': '1Hour',
+        '2Hours': '2Hour',
+        '3Hours': '3Hour',
+        '4Hours': '4Hour',
+        '6Hours': '6Hour',
+        '8Hours': '8Hour',
+        '12Hours': '12Hour',
+        '1Day': '1Day',
+        # # DSS doesn't support the 2Day, 3Day, etc...  intervals.
+        # '2Days': '',
+        # '3Days': '',
+        # '4Days': '',
+        # '5Days': '',
+        # '6Days': '',
+        '1Week': '1Week',
+        '1Month': '1Month',
+        '1Year': '1Year',
+        '0': 'Ir-Year'  # not optimized for some cases
+    }
+
+    # build another map from DSS to CWMS (use lower case for DSS key)
+    DSS_CWMS_INTERVAL_MAP = {v.lower(): k for k, v in CWMS_DSS_INTERVAL_MAP.items()}
+    DSS_CWMS_INTERVAL_MAP["ir-day"] = "0"
+    DSS_CWMS_INTERVAL_MAP["ir-month"] = "0"
+    # DSS_CWMS_INTERVAL_MAP["ir-year"] = "0" # already included
+    DSS_CWMS_INTERVAL_MAP["ir-decade"] = "0"
+    DSS_CWMS_INTERVAL_MAP["ir-century"] = "0"
+
+
 
     @staticmethod
-    def get_cwms_parameter_type(dss_type):
-        s = dss_type.upper()
+    def get_cwms_parameter_type(dss_type: DssType):
+        s = str(dss_type).upper()
         if "INST" in s:
             return "Inst"
         elif "AVE" in s:
@@ -23,7 +65,7 @@ class CwmsUtility:
             return "Inst"
 
     @staticmethod
-    def pathname_to_cwms_tsid(path, dss_type=""):
+    def pathname_to_cwms_tsid(path, dss_type="", duration="0"):
         """
         pathname is a dsspath name. Example: /TULA//Flow//1Hour/Ccp-Rev/
         type is
@@ -31,36 +73,29 @@ class CwmsUtility:
         returns CWMS convention time-series-id
         [Location]-[sub-location].[Parameter]-[sub-parameter].[Type].[Interval].[Duration].[Version]
         """
-        id_str = ""
-        loc = ""
+        tsid = ""
         p = DssPath(path, 0)
-        a, b, c, e, f = p.A.strip(), p.B.strip(), p.C.strip(), p.E.string(), p.F.strip()
+        a, b, c, e, f = p.A.strip(), p.B.strip(), p.C.strip(), p.E.strip(), p.F.strip()
+        # [Location]
         if a != "":
-            loc += a.capitalize()[:24]  # limit base location to 24 characters
+            # [Location]
+            tsid += a[:24] + "-"  # limit base location to 24 characters
         if b != "":
-            loc += "-" + b.capitalize()[:32]  # limit sub-location to 32 characters
+            # [sub-location]
+            tsid += b[:32]   # limit sub-location to 32 characters
 
-        loc += "." + c.capitalize() + "." + get_cwms_parameter_type(dss_type) + "."
-        DateConverter.intervalString_to_sec(e)  # dss7 regular only. TODO: interval factor.
-        # default_interval = IntervalFactory.find_any(
-        #     IntervalFactory.equals_minutes(HecTimeSeries.get_interval_from_e_part(path.e_part()))) \
-        #     .or_else(IntervalFactory.irregular())
-        #
-        # interval = IntervalFactory.find_any(equals_name(path.e_part())) \
-        #     .or_else(default_interval) \
-        #     .get_interval()
+        # [parameter]
+        tsid += "." + c + "."
+        # [Type]
+        tsid += CwmsUtility.get_cwms_parameter_type(dss_type) + "."
+        # [Interval]
+        tsid += CwmsUtility._convert_dss_interval_to_cwms_interval(e) + "."
+        # [Duration]
+        tsid += duration+"."
+        # [Version]
+        tsid += f
 
-        # id_str += interval + "."
-        #
-        # if dss_type.upper().startswith("INS"):
-        #     id_str += "0."
-        # else:
-        #     id_str += interval.replace(mil.army.usace.hec.metadata.Interval.LOCAL_AND_PSEUDOREGULAR_PREFIX,
-        #                                "") + "."
-        #
-        # id_str += make_nice(path.f_part())
-        # return id_str
-        return loc
+        return tsid
 
     @staticmethod
     def cwms_ts_id_to_pathname(ts_id: str) -> str:
@@ -76,20 +111,51 @@ class CwmsUtility:
         ts_id = ts_id.replace('/', '-')
         # Replace period separators with slashes so we can split it
         ts_id = ts_id.replace('.', '/')
-        location, parameter, cmws_type, cwms_interval, duration, version = ts_id.split('/')[:6]
+        location, parameter, cwms_type, cwms_interval, duration, version = ts_id.split('/')[:6]
 
-        path = DssPath()
+        path = DssPath("///////", 0)
         path.A = ""
         path.B = location
         path.C = parameter
         path.D = ""
-        path.E = cwms_interval
+        path.E = CwmsUtility._convert_cwms_interval_to_dss_interval(cwms_interval)
         path.F = version
 
-        if cwms_interval == "0":
-            path.E = "IR-MONTH"  # could be optimized (IR-DAY is better in some cases)
-
         return path.path_without_date()
+
+    @staticmethod
+    def _convert_cwms_interval_to_dss_interval(cwms_interval: str):
+        """
+        Converts CWMS interval to DSS interval
+        for example   '2Minutes' is converted to '2Minute'
+        """
+
+        if cwms_interval in CwmsUtility.CWMS_DSS_INTERVAL_MAP:
+            return CwmsUtility.CWMS_DSS_INTERVAL_MAP[cwms_interval]
+
+        if len(cwms_interval) > 1 and cwms_interval[0] == '~':  # pseudo regular
+            if cwms_interval[1:] in CwmsUtility.CWMS_DSS_INTERVAL_MAP:
+                return "~" + CwmsUtility.CWMS_DSS_INTERVAL_MAP[cwms_interval[1:]]
+
+        raise ValueError(f"The cwms interval {cwms_interval} is invalid, or there is not a supported conversion to DSS")
+
+    @staticmethod
+    def _convert_dss_interval_to_cwms_interval(dss_interval: str):
+        """
+        Converts dss interval to CWMS interval
+        for example   '12Hour' is converted to '12Hours'
+        """
+        e_part = dss_interval.lower()
+        if e_part in CwmsUtility.DSS_CWMS_INTERVAL_MAP:
+            return CwmsUtility.DSS_CWMS_INTERVAL_MAP[e_part]
+
+        if len(e_part) > 1 and e_part[0] == '~':
+            if e_part[1:] in CwmsUtility.DSS_CWMS_INTERVAL_MAP:
+                return "~" + CwmsUtility.DSS_CWMS_INTERVAL_MAP[e_part[1:]]
+
+        raise ValueError(f"The cwms interval {dss_interval} is invalid, or there is not a supported conversion to a "
+                         f"CWMS interval")
+
 
     @staticmethod
     def dss_data_type_from_cwms_tsid(cwms_tsid):
@@ -99,8 +165,6 @@ class CwmsUtility:
         :param cwms_tsid: input time-series identifier
         :return: string representing a dss data type
         """
-        # TODO PER-MAX and PER-MIN to DSS/DSSVue  documentation and Java code
-        #
         parts = cwms_tsid.split('.')
         parameter = parts[1]
         ts_type = parts[2]

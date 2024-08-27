@@ -63,6 +63,7 @@ dss.close()
   - `times`: The times of the time series data.
   - `values`: The values of the time series data.
   - `units`: The units of the time series data.
+  - `data_type`: the dss data type ('INST-VAL', 'INST-CUM')
   - `data`: The time series data.
   - `id`: The Path of the time series data.
 

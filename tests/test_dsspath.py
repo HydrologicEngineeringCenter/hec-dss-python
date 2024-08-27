@@ -14,7 +14,7 @@ from hecdss import DssPath
 
 class TestDssPath(unittest.TestCase):
 
-    def __init__(self):
+    def setUp(self) -> None:
         # the example data includes: [ tsid, dsspath, dss_type, cwms_duration ]
         self.example_data = [
             ["NORK-Norton-Prairie_Dog.Stage.Inst.15Minutes.0.nwklrgs-raw",

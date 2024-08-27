@@ -15,7 +15,7 @@ class CwmsUtility:
         '12Minutes': '12Minute',
         '15Minutes': '15Minute',
         '20Minutes': '20Minute',
-        '30Minutes': '30Minutes',
+        '30Minutes': '30Minute',
         '1Hour': '1Hour',
         '2Hours': '2Hour',
         '3Hours': '3Hour',
@@ -33,14 +33,14 @@ class CwmsUtility:
         '1Week': '1Week',
         '1Month': '1Month',
         '1Year': '1Year',
-        '0': 'Ir-Year'  # not optimized for some cases
+        '0': 'Ir-Month'  # not optimized for some cases
     }
 
     # build another map from DSS to CWMS (use lower case for DSS key)
     DSS_CWMS_INTERVAL_MAP = {v.lower(): k for k, v in CWMS_DSS_INTERVAL_MAP.items()}
     DSS_CWMS_INTERVAL_MAP["ir-day"] = "0"
-    DSS_CWMS_INTERVAL_MAP["ir-month"] = "0"
-    # DSS_CWMS_INTERVAL_MAP["ir-year"] = "0" # already included
+    # DSS_CWMS_INTERVAL_MAP["ir-month"] = "0" # already included
+    DSS_CWMS_INTERVAL_MAP["ir-year"] = "0"
     DSS_CWMS_INTERVAL_MAP["ir-decade"] = "0"
     DSS_CWMS_INTERVAL_MAP["ir-century"] = "0"
 

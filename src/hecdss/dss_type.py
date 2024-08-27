@@ -12,3 +12,5 @@ class DssType(Enum):
     PER_MIN = "PER-MIN"
     CONST = "CONST"
 
+    def __str__(self):
+        return self.value

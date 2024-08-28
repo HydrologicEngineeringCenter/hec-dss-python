@@ -52,7 +52,7 @@ class TestDssPath(unittest.TestCase):
         for row in self.example_data:
             tsid = row[0]
             expected_pathname = row[1]
-            pathname = CwmsUtility.cwms_ts_id_to_pathname(tsid)
+            pathname = CwmsUtility.cwms_ts_id_to_dss_path(tsid)
             expected_pathname_without_date = DssPath(str(expected_pathname)).path_without_date()
             if expected_pathname_without_date != pathname:
                 print(f"error converting to path. expected '{expected_pathname_without_date}', actual: '{pathname}'")

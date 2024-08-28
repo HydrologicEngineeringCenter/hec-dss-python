@@ -93,7 +93,7 @@ class CwmsUtility:
         return tsid
 
     @staticmethod
-    def cwms_ts_id_to_pathname(ts_id: str) -> str:
+    def cwms_ts_id_to_dss_path(ts_id: str) -> DssPath:
         """
         convert cwms time-series id to a dss path
         example input:
@@ -153,7 +153,7 @@ class CwmsUtility:
 
 
     @staticmethod
-    def dss_data_type_from_cwms_tsid(cwms_tsid):
+    def dss_data_type_from_cwms_tsid(cwms_tsid) -> str:
         """
         takes an input id such as 'TULA.Flow.Inst.1Hour.0.Ccp-Rev'
         and returns the DSS DataType  'INST-VAL' in this example
@@ -178,4 +178,4 @@ class CwmsUtility:
             dss_type = DssType.PER_MIN
         else:
             dss_type = ts_type  # default: use cwms type
-        return dss_type
+        return str(dss_type)

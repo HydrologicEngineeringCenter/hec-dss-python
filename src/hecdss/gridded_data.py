@@ -3,6 +3,52 @@ import numpy as np
 import math
 
 class GriddedData:
+    """container for gridded (Raster) data
+
+    Properties:
+        id = dss pathname 
+        type :  
+                400:Undefined grid with time
+                401:Undefined grig
+                410:HRAP grid with time reference
+                411:HRAP grid
+                420:Albers with time reference
+                421:Albers
+                430:Specified Grid with time reference
+                431:Specified Grid
+        dataType : 
+                PER_AVER = 0, 
+                PER_CUM = 1,
+                INST_VAL = 2, 
+                INST_CUM = 3, 
+                FREQ = 4, 
+                INVALID = 5
+        lowerLeftCellX = 0
+        lowerLeftCellY = 0
+        numberOfCellsX = 0
+        numberOfCellsY = 0
+        numberOfRanges = 0
+        srsDefinitionType = 0
+        timeZoneRawOffset = 0
+        isInterval = 0
+        isTimeStamped = 0
+        dataUnits = ""
+        dataSource = ""
+        srsName = ""
+        srsDefinition = ""
+        timeZoneID = ""
+        cellSize = 0.0
+        xCoordOfGridCellZero = 0.0
+        yCoordOfGridCellZero = 0.0
+        nullValue = 0.0
+        maxDataValue = 0.0
+        minDataValue = 0.0
+        meanDataValue = 0.0
+        rangeLimitTable = []
+        numberEqualOrExceedingRangeLimit = []
+        data = np.zeros(0)
+
+    """
     def __init__(self):
         self.id = None
         self.type = 0

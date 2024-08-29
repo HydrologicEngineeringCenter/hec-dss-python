@@ -16,17 +16,33 @@ DSS_UNDEFINED_VALUE = -340282346638528859811704183484516925440.000000
 
 
 class HecDss:
+    """ Main class for working with DSS files
+    """
+    def __init__(self, filename:str):
+        """constructor for HecDSS
 
-    def __init__(self, filename):
+        Args:
+            filename (str): DSS filename to be opened; it will be created if it doesn't exist.
+        """
+    
         self._native = _Native()
         self._native.hec_dss_open(filename)
         self._catalog = None
 
     def close(self):
+        """closes the DSS file and releases any locks
+        """
         self._native.hec_dss_close()
 
-    def get_record_type(self, pathname):
+    def get_record_type(self, pathname:str) -> RecordType:
+        """gets the record type for a given path
 
+        Args:
+            pathname (str): dss pathname
+
+        Returns:
+            RecordType: the record type :class:`hecdss.RecordType` of DSS data stored in this pathname 
+        """
         if not self._catalog:
             self._catalog = self.get_catalog()
         if pathname in self._catalog.recordTypeDict:
@@ -43,7 +59,16 @@ class HecDss:
 
     def get(self, pathname, startdatetime=None, enddatetime=None):
         type = self.get_record_type(pathname)
+        """gets various types of data from the current DSS file
 
+        Args:
+            pathname (str): dss pathname
+            startdatetime (datetime): start date for query
+            enddatetime (datetime): end date for the query
+
+        Returns:
+            varies: RegularTimeSeries, PairedData, Grid, or Array.  
+        """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
             return self._get_timeseries(pathname, startdatetime, enddatetime)
         elif type == RecordType.PairedData:
@@ -324,10 +349,19 @@ class HecDss:
         ts.id = pathname
         return ts
 
-    def put(self, container):
-        # TO DO.. save other types besides regular interval.
-        # TO DO. check data type..
-        # TO Do. is timezone needed?
+    def put(self, container) -> int: 
+        """puts data into the DSS file
+
+        Args:
+            container (varies): RegularTimeSeries, IrregularTimeSeries, PairedData, GriddedData, ArrayContainer
+
+        Raises:
+            NotImplementedError: if saving the type of container is not supported.
+
+        Returns:
+            int: status of zero when successful. Non zero for errors.
+        """
+        # TODO. is timezone needed?
         status = 0
         if type(container) is RegularTimeSeries:
             ts = container
@@ -377,14 +411,14 @@ class HecDss:
             self._catalog = None
         elif type(container) is ArrayContainer:
             if container.values.dtype.name == 'int32':
-                self._native.hec_dss_arrayStore(container.id, container.values, [], [])
+                status = self._native.hec_dss_arrayStore(container.id, container.values, [], [])
             elif container.values.dtype.name == 'float32':
-                self._native.hec_dss_arrayStore(container.id, [], container.values, [])
+                status = self._native.hec_dss_arrayStore(container.id, [], container.values, [])
             elif container.values.dtype.name == 'float64':
-                self._native.hec_dss_arrayStore(container.id, [], [], container.values)
+                status = self._native.hec_dss_arrayStore(container.id, [], [], container.values)
 
         else:
-            raise Exception(f"unsupported record_type: {type(container)}")
+            raise NotImplementedError(f"unsupported record_type: {type(container)}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?
@@ -396,14 +430,32 @@ class HecDss:
 
         return status
 
-    def get_catalog(self):
+    def get_catalog(self) -> Catalog:
+        """gets the DSS Catalog of all items in the DSS file
+
+        Returns:
+            Catalog: :class:`Catalog`
+        """
         paths, recordTypes = self._native.hec_dss_catalog()
         return Catalog(paths, recordTypes)
 
-    def record_count(self):
+    def record_count(self) -> int:
+        """get the number of records stored in the dss file
+
+        Returns:
+            int: number of items  (includes aliases)
+        """
         return self._native.hec_dss_record_count()
 
-    def set_debug_level(self, level):
+    def set_debug_level(self, level) -> int:
+        """sets the DSS debug level. 
+
+        Args:
+            level (int): a value between 0 and 15. Larger for more output
+
+        Returns:
+            int: _description_
+        """
         return self._native.hec_dss_set_debug_level(level)
 
 

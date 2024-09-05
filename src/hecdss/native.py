@@ -744,7 +744,6 @@ class _Native:
         c_units = c_char_p(units.encode("utf-8"))
         c_type = c_char_p(dataType.encode("utf-8"))
 
-        print(valueArray)
         c_valueArray = (c_double * len(valueArray))(*valueArray)
         c_qualityArray = (c_int * len(qualityArray))(*qualityArray)
         # import pdb;pdb.set_trace()

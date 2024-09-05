@@ -12,7 +12,9 @@ from typing import List
 
 
 class _Native:
-    """Wrapper for Native method calls to hecdss.dll or libhecdss.so"""
+    """Wrapper for Native method calls to hecdss.dll or libhecdss.so
+    _Native should not be used directly; Use HecDss
+    """
 
     def load_hecdss_library(self, libname):
         """
@@ -30,6 +32,7 @@ class _Native:
 
 
     def __init__(self):
+        """Loads the hecdss shared library from disk"""
 
         self.handle = None
         if sys.platform == "win32":
@@ -37,7 +40,15 @@ class _Native:
         else:
             self.dll = self.load_hecdss_library("libhecdss.so")
 
-    def hec_dss_open(self, dss_filename: str):
+    def hec_dss_open(self, dss_filename: str) -> int:
+        """opens a DSS file and gets a handle
+
+        Args:
+            dss_filename (str): filename to open
+
+        Returns:
+            int: status of zero when successful, non-zero on error.
+        """
         f = self.dll.hec_dss_open
         f.argtypes = [
             c_char_p,
@@ -53,6 +64,11 @@ class _Native:
         return rval
 
     def hec_dss_close(self):
+        """close the DSS file
+
+        Returns:
+            int: status of zero when successful, non-zero on error.
+        """
         f = self.dll.hec_dss_close
         f.argtypes = [c_void_p()]
         f.restype = c_int

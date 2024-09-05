@@ -2,6 +2,9 @@ import numpy as np
 
 
 class IrregularTimeSeries:
+    """ container for time-series data that is not at a consistent interval.
+    data is stored internally as a numpy array
+    """
     def __init__(self):
         self.times = []
         self.values = np.empty(0)

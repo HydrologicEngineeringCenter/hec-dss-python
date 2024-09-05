@@ -88,7 +88,7 @@ dss.close()
 - * Arrays are managed with ArrayContainer
    
 ```python
-  # Example workign with an array
+  # Example working with an array
   dss = HecDss("my-dss-file.dss")
   print(f" record_count = {dss.record_count()}")
   array_ints = ArrayContainer.create_float_array([1.0, 3.0, 5.0, 7.0])
@@ -120,6 +120,10 @@ This library uses (`hecdss.dll` on Windows and `libhecdss.so` on Unix/Linux).  h
    C:\project\hec-dss-python>python tests\test_basics.py
    ```
 
+
+## how to generate documentation
+
+pdoc -o docs -d google --no-show-source .\src
 
 
 ## Design 

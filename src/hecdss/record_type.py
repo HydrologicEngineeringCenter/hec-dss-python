@@ -1,6 +1,11 @@
 from enum import Enum
 
 class RecordType(Enum):
+    """ RecordType is an enumeration of DSS data types
+
+    Returns:
+        RecordType: the record type
+    """
     Unknown = 0
     RegularTimeSeriesProfile = 1
     RegularTimeSeries = 2

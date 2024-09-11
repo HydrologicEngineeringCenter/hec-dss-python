@@ -44,7 +44,7 @@ from hecdss import DssFile
 
 # Open a DSS file
 file_path = "example.dss"
-dss = DssFile(file_path)
+dss = HecDss(file_path)
 
 # Retrieve and print data
 data_path = "/example/data/////"

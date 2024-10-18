@@ -204,7 +204,7 @@ class HecDss:
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
         # gd.data = [[data[(i*numberOfCellsX[0])+j] for j in range(numberOfCellsX[0])] for i in range(numberOfCellsY[0])]
-        gd.data = np.array(data).reshape((numberOfCellsX[0], numberOfCellsY[0]))
+        gd.data = np.array(data).reshape((numberOfCellsY[0], numberOfCellsX[0]))
         gd.id = pathname
 
         return gd

@@ -270,13 +270,44 @@ class HecDss:
 
         return pd
 
+    def _get_date_time_range(self, pathname, boolFullSet):
+        firstValidJulian = [0]
+        firstSeconds = [0]
+        lastValidJulian = [0]
+        lastSeconds = [0]
+        self._native.hec_dss_tsGetDateTimeRange(
+            pathname,
+            boolFullSet,
+            firstValidJulian,
+            firstSeconds,
+            lastValidJulian,
+            lastSeconds
+        )
+        first = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
+        last = DateConverter.date_time_from_julian_second(lastValidJulian[0], lastSeconds[0])
+
+        return (first, last)
+
+
     def _get_timeseries(self, pathname, startDateTime, endDateTime):
         # get sizes
         if not (startDateTime and endDateTime):
-            startDate = ""
-            startTime = ""
-            endDate = ""
-            endTime = ""
+            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 0)
+            if not(startDateTime or endDateTime):
+                startDate = newStartDateTime.strftime("%d%b%Y")
+                startTime = newStartDateTime.strftime("%H:%M")
+                endDate = newEndDateTime.strftime("%d%b%Y")
+                endTime = newEndDateTime.strftime("%H:%M")
+            elif(endDateTime):
+                startDate = newStartDateTime.strftime("%d%b%Y")
+                startTime = newStartDateTime.strftime("%H:%M")
+                endDate = endDateTime.strftime("%d%b%Y")
+                endTime = endDateTime.strftime("%H:%M")
+            else:
+                startDate = startDateTime.strftime("%d%b%Y")
+                startTime = startDateTime.strftime("%H:%M")
+                endDate = newEndDateTime.strftime("%d%b%Y")
+                endTime = newEndDateTime.strftime("%H:%M")
         else:
             startDate = startDateTime.strftime("%d%b%Y")
             startTime = startDateTime.strftime("%H:%M")
@@ -284,7 +315,7 @@ class HecDss:
             endTime = endDateTime.strftime("%H:%M")
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
-        self._native.hec_dss_tsGetSizes(
+        status = self._native.hec_dss_tsGetSizes(
             pathname,
             startDate,
             startTime,
@@ -341,9 +372,11 @@ class HecDss:
         )
         arr = np.array(values)
         indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
-        arr[indices] = None
+        arr = np.delete(arr, indices)
+        #ts.times = np.delete(ts.times, indices)
+        ts.times = [ts.times[i] for i in range(len(ts.times)) if not np.isin(i, indices)]
         ts.values = arr
-        ts.quality = quality
+        ts.quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
         ts.units = units[0]
         ts.data_type = dataType[0]
         ts.id = pathname
@@ -387,12 +420,11 @@ class HecDss:
             #                           saveAsFloat, units, type):
             startDate, startTime = DateConverter.dss_datetime_from_string(its.times[0])
             quality = []  # TO DO
-
             status = self._native.hec_dss_tsStoreIrregular(
                 its.id,
                 startDate,
-                its.times,
-                its.interval,
+                DateConverter.julian_array_from_date_times(its.times),
+                60,
                 its.values,
                 quality,
                 False,

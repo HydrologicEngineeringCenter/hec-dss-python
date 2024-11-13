@@ -367,7 +367,7 @@ class _Native:
         c_pathname = c_char_p(gd.id.encode("utf-8"))
 
         c_gridType = c_int(gd.type)
-        c_dataType = c_int(gd.dataType)
+        c_dataType = c_int(gd.data_type)
         c_lowerLeftCellX = c_int(gd.lowerLeftCellX)
         c_lowerLeftCellY = c_int(gd.lowerLeftCellY)
         c_numberOfCellsX = c_int(gd.numberOfCellsX)
@@ -624,6 +624,52 @@ class _Native:
         if result == 0:
             numberValues[0] = nv.value
             qualityElementSize[0] = qes.value
+        else:
+            print("Function call failed with result:", result)
+
+        return result
+
+    def hec_dss_tsGetDateTimeRange(
+            self,
+            pathname,
+            boolFullSet,
+            firstValidJulian,
+            firstSeconds,
+            lastValidJulian,
+            lastSeconds,
+    ):
+        self.dll.hec_dss_tsGetDateTimeRange.argtypes = [
+            c_void_p(),  # dss
+            c_char_p,  # path
+            c_int,  # boolFullSet
+            POINTER(c_int),  # firstValidJulian
+            POINTER(c_int),  # firstSeconds
+            POINTER(c_int),  # lastValidJulian
+            POINTER(c_int),  # lastSeconds
+        ]
+        self.dll.hec_dss_tsGetDateTimeRange.restype = c_int
+
+        fjul = c_int()
+        fsec = c_int()
+
+        ljul = c_int()
+        lsec = c_int()
+
+        result = self.dll.hec_dss_tsGetDateTimeRange(
+            self.handle,
+            pathname.encode("utf-8"),
+            c_int(boolFullSet),
+            byref(fjul),
+            byref(fsec),
+            byref(ljul),
+            byref(lsec),
+        )
+
+        if result == 0:
+            firstValidJulian[0] = fjul.value
+            firstSeconds[0] = fsec.value
+            lastValidJulian[0] = ljul.value
+            lastSeconds[0] = lsec.value
         else:
             print("Function call failed with result:", result)
 

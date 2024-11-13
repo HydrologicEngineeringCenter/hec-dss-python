@@ -9,7 +9,7 @@ class IrregularTimeSeries:
         self.times = []
         self.values = np.empty(0)
         self.units =""
-        self.dataType =""
+        self.data_type = ""
         self.interval = 0
         self.id = ""
 
@@ -36,6 +36,6 @@ class IrregularTimeSeries:
     def print_to_console(self):
         print("dsspath='" + self.id + "'")
         print("units='"+self.units+"'")
-        print("dataType='"+self.dataType+"'")
+        print("dataType='" + self.data_type + "'")
         for time, value in zip(self.times, self.values):
             print(f"Time: {time}, Value: {value}")

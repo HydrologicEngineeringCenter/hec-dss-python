@@ -92,6 +92,18 @@ class DateConverter:
         
         return dtstr[:9],dtstr[-5:]
 
+    @staticmethod
+    def date_time_from_julian_second(time_julian, seconds_julian):
+        """"
+        convert from DSS integer datetime to python datetime array
+        """
+
+        baseDateTime = datetime(1900, 1, 1) - timedelta(days=1)  # datetime.fromtimestamp(julian_base_date)
+
+        days = timedelta(days=time_julian)
+        seconds = timedelta(seconds=seconds_julian)
+
+        return baseDateTime + days + seconds
 
     @staticmethod
     def date_times_from_julian_array(times_julian, time_granularity_seconds, julian_base_date):
@@ -115,6 +127,18 @@ class DateConverter:
             times.append(baseDateTime+delta)
 
         return times
+
+    @staticmethod
+    def julian_array_from_date_times(date_times, time_granularity_seconds=60):
+        """"
+        convert from DSS integer datetime array to python datetime array
+        """
+        if date_times is None:
+            raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
+
+        base_date_time = datetime(1900, 1, 1) - timedelta(days=1)  # datetime.fromtimestamp(julian_base_date)
+
+        return [int((i-base_date_time).total_seconds()/time_granularity_seconds) for i in date_times]
 
     @staticmethod
     def intervalString_to_sec(interval):

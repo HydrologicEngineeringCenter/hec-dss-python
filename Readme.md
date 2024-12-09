@@ -119,7 +119,13 @@ This library uses (`hecdss.dll` on Windows and `libhecdss.so` on Unix/Linux).  h
    ```
    C:\project\hec-dss-python>python tests\test_basics.py
    ```
-
+### Additional Notes:
+   * To test the library locally you can use:
+     * Library (Recommended): 
+       * `pip install -e .` within the `hec-dss-python` directory
+     * Python Path:
+       * Add path to `hec-dss-python` to PYTHONPATH
+       * Insert `sys.path.insert(0, os.path.abspath("./hec-dss-python")))` in your code
 
 ## how to generate documentation
 

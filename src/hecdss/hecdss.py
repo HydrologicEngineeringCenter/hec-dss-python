@@ -18,6 +18,13 @@ DSS_UNDEFINED_VALUE = -340282346638528859811704183484516925440.000000
 class HecDss:
     """ Main class for working with DSS files
     """
+    RECORD_TYPES = [
+        IrregularTimeSeries,
+        RegularTimeSeries,
+        PairedData,
+        GriddedData,
+        ArrayContainer
+    ]
     def __init__(self, filename:str):
         """constructor for HecDSS
 
@@ -28,6 +35,7 @@ class HecDss:
         self._native = _Native()
         self._native.hec_dss_open(filename)
         self._catalog = None
+        self._filename = filename
 
     def close(self):
         """closes the DSS file and releases any locks
@@ -106,6 +114,7 @@ class HecDss:
             rval = ArrayContainer.create_float_array(floatValues)
         if len(doubleValues) > 0:
             rval = ArrayContainer.create_double_array(doubleValues)
+        if rval: rval.id = pathname
         return rval
 
     def _get_gridded_data(self, pathname):
@@ -353,7 +362,7 @@ class HecDss:
         """puts data into the DSS file
 
         Args:
-            container (varies): RegularTimeSeries, IrregularTimeSeries, PairedData, GriddedData, ArrayContainer
+            container (varies): RegularTimeSeries, IrregularTimeSeries, PairedData, GriddedData, ArrayContainer, str (pathname)
 
         Raises:
             NotImplementedError: if saving the type of container is not supported.
@@ -362,6 +371,10 @@ class HecDss:
             int: status of zero when successful. Non zero for errors.
         """
         # TODO. is timezone needed?
+        # If a string is provided assume it is the path and open the container
+        if isinstance(container, str):
+            container = self.get(container)
+
         status = 0
         if type(container) is RegularTimeSeries:
             ts = container
@@ -418,7 +431,7 @@ class HecDss:
                 status = self._native.hec_dss_arrayStore(container.id, [], [], container.values)
 
         else:
-            raise NotImplementedError(f"unsupported record_type: {type(container)}")
+            raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {self.RECORD_TYPES}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

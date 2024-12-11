@@ -120,7 +120,7 @@ class DateConverter:
         for t in times_julian:
             baseDateTime =datetime(1900,1,1)- timedelta(days=1)     #datetime.fromtimestamp(julian_base_date)
             delta = 0
-            if time_granularity_seconds == 1:  # 60 seconds per minute
+            if time_granularity_seconds == 1:  # 1 second
                 delta =timedelta(seconds=t)
             if time_granularity_seconds == 60:  # 60 seconds per minute
                 delta =timedelta(minutes=t)

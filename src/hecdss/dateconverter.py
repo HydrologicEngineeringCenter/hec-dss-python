@@ -73,7 +73,7 @@ time_string = [
     "3Second",
     "2Second",
     "1Second",
-    "0second"
+    "0Second"
 ]
 class DateConverter:
 

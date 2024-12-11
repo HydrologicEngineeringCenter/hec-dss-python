@@ -8,9 +8,11 @@ class IrregularTimeSeries:
     def __init__(self):
         self.times = []
         self.values = np.empty(0)
-        self.units =""
+        self.quality = []
+        self.units = ""
         self.data_type = ""
         self.interval = 0
+        self.start_date = ""
         self.id = ""
 
     def add_data_point(self, date, value):
@@ -39,3 +41,16 @@ class IrregularTimeSeries:
         print("dataType='" + self.data_type + "'")
         for time, value in zip(self.times, self.values):
             print(f"Time: {time}, Value: {value}")
+
+    @staticmethod
+    def create(values, times=[], quality=[], units="", data_type="", interval=0, start_date="", path=None):
+        irts = IrregularTimeSeries()
+        irts.times = times
+        irts.values = np.array(values)
+        irts.quality = quality
+        irts.units = units
+        irts.data_type = data_type
+        irts.interval = interval
+        irts.start_date = start_date
+        irts.id = path
+        return irts

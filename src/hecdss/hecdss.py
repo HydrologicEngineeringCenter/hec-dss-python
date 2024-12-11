@@ -1,4 +1,6 @@
 """Docstring for public module."""
+from datetime import datetime, timedelta
+
 import numpy as np
 
 from hecdss.array_container import ArrayContainer
@@ -70,7 +72,9 @@ class HecDss:
             varies: RegularTimeSeries, PairedData, Grid, or Array.  
         """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
-            return self._get_timeseries(pathname, startdatetime, enddatetime)
+            new_pathname = DssPath(pathname).path_without_date().__str__();
+            ts = self._get_timeseries(new_pathname, startdatetime, enddatetime)
+            return ts
         elif type == RecordType.PairedData:
             return self._get_paired_data(pathname)
             # read paired data
@@ -179,7 +183,7 @@ class HecDss:
 
         gd = GriddedData()
         gd.type = gridType[0]
-        gd.dataType = dataType[0]
+        gd.data_type = dataType[0]
         gd.lowerLeftCellX = lowerLeftCellX[0]
         gd.lowerLeftCellY = lowerLeftCellY[0]
         gd.numberOfCellsX = numberOfCellsX[0]
@@ -292,27 +296,27 @@ class HecDss:
     def _get_timeseries(self, pathname, startDateTime, endDateTime):
         # get sizes
         if not (startDateTime and endDateTime):
-            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 0)
+            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
             if not(startDateTime or endDateTime):
                 startDate = newStartDateTime.strftime("%d%b%Y")
-                startTime = newStartDateTime.strftime("%H:%M")
+                startTime = newStartDateTime.strftime("%H:%M:%S")
                 endDate = newEndDateTime.strftime("%d%b%Y")
-                endTime = newEndDateTime.strftime("%H:%M")
+                endTime = newEndDateTime.strftime("%H:%M:%S")
             elif(endDateTime):
                 startDate = newStartDateTime.strftime("%d%b%Y")
-                startTime = newStartDateTime.strftime("%H:%M")
+                startTime = newStartDateTime.strftime("%H:%M:%S")
                 endDate = endDateTime.strftime("%d%b%Y")
-                endTime = endDateTime.strftime("%H:%M")
+                endTime = endDateTime.strftime("%H:%M:%S")
             else:
                 startDate = startDateTime.strftime("%d%b%Y")
-                startTime = startDateTime.strftime("%H:%M")
+                startTime = startDateTime.strftime("%H:%M:%S")
                 endDate = newEndDateTime.strftime("%d%b%Y")
-                endTime = newEndDateTime.strftime("%H:%M")
+                endTime = newEndDateTime.strftime("%H:%M:%S")
         else:
             startDate = startDateTime.strftime("%d%b%Y")
-            startTime = startDateTime.strftime("%H:%M")
+            startTime = startDateTime.strftime("%H:%M:%S")
             endDate = endDateTime.strftime("%d%b%Y")
-            endTime = endDateTime.strftime("%H:%M")
+            endTime = endDateTime.strftime("%H:%M:%S")
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
         status = self._native.hec_dss_tsGetSizes(
@@ -366,20 +370,25 @@ class HecDss:
         # print(values)
         # print("julianBaseDate = " + str(julianBaseDate[0]))
         # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
-        ts = RegularTimeSeries()
-        ts.times = DateConverter.date_times_from_julian_array(
+        if RecordType.IrregularTimeSeries == self.get_record_type(pathname):
+            ts = IrregularTimeSeries()
+        else:
+            ts = RegularTimeSeries()
+        new_times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
         arr = np.array(values)
         indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
         arr = np.delete(arr, indices)
         #ts.times = np.delete(ts.times, indices)
-        ts.times = [ts.times[i] for i in range(len(ts.times)) if not np.isin(i, indices)]
-        ts.values = arr
-        ts.quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
-        ts.units = units[0]
-        ts.data_type = dataType[0]
-        ts.id = pathname
+        new_times = [new_times[i] for i in range(len(new_times)) if not np.isin(i, indices)]
+        values = arr
+        quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
+        units = units[0]
+        data_type = dataType[0]
+        start_date = [] if len(new_times) == 0 else new_times[0]
+        id = pathname
+        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, path=id)
         return ts
 
     def put(self, container) -> int: 
@@ -400,6 +409,9 @@ class HecDss:
             ts = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
+            if not len(ts.times):
+                raise Exception("Time Series has an empty times array")
+
             startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
             quality = []  # TO DO
 
@@ -418,7 +430,8 @@ class HecDss:
             its = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
-            startDate, startTime = DateConverter.dss_datetime_from_string(its.times[0])
+            baseDateTime = datetime(1900, 1, 1)
+            startDate, startTime = DateConverter.dss_datetime_from_string(baseDateTime)
             quality = []  # TO DO
             status = self._native.hec_dss_tsStoreIrregular(
                 its.id,

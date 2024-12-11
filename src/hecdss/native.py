@@ -22,14 +22,17 @@ class _Native:
         """
         paths_to_try = [
             libname,
-            os.path.join(os.path.dirname(__file__), 'lib', libname),
-            find_library("hecdss")
+            os.path.join(os.path.dirname(__file__), "lib", libname),
+            find_library("hecdss"),
         ]
-        found_libs = [path for path in paths_to_try if path is not None and os.path.exists(path)]
+        found_libs = [
+            path for path in paths_to_try if path is not None and os.path.exists(path)
+        ]
         if len(found_libs) == 0:
-            raise FileNotFoundError(f"{libname} not found Paths searched: {paths_to_try}")
+            raise FileNotFoundError(
+                f"{libname} not found Paths searched: {paths_to_try}"
+            )
         return ctypes.CDLL(found_libs[0])
-
 
     def __init__(self):
         """Loads the hecdss shared library from disk"""
@@ -61,6 +64,9 @@ class _Native:
             print("DSS file opened successfully.")
         else:
             print("Error opening DSS file.")
+        if -500010802 == rval:
+            print(f"DSS file ({dss_filename}) not found or path does not exist.")
+            sys.exit(1)
         return rval
 
     def hec_dss_close(self):
@@ -94,7 +100,13 @@ class _Native:
         self.__hec_dss_set_value("mlvl", value)
 
     def hec_dss_export_to_file(
-            self, path: str, outputFile: str, startDate: str, startTime: str, endDate: str, endTime: str
+        self,
+        path: str,
+        outputFile: str,
+        startDate: str,
+        startTime: str,
+        endDate: str,
+        endTime: str,
     ):
         f = self.dll.hec_dss_export_to_file
         f.argtypes = [
@@ -156,48 +168,82 @@ class _Native:
 
         return pathNameList, recordTypeArray
 
-    def hec_dss_gridRetrieve(self, pathname: str,
-                             gridType: List[int], dataType: List[int],
-                             lowerLeftCellX: List[int], lowerLeftCellY: List[int],
-                             numberOfCellsX: List[int], numberOfCellsY: List[int],
-                             numberOfRanges: List[int], srsDefinitionType: List[int],
-                             timeZoneRawOffset: List[int], isInterval: List[int],
-                             isTimeStamped: List[int],
-                             dataUnits: List[str],
-                             dataSource: List[str],
-                             srsName: List[str],
-                             srsDefinition: List[str],
-                             timeZoneID: List[str],
-                             cellSize: List[float], xCoordOfGridCellZero: List[float],
-                             yCoordOfGridCellZero: List[float], nullValue: List[float],
-                             maxDataValue: List[float], minDataValue: List[float],
-                             meanDataValue: List[float],
-                             rangeLimitTable: List[float],
-                             numberEqualOrExceedingRangeLimit: List[int],
-                             data: List[float], dataLength: int = 0,
-                             dataUnitsLength: int = 40, dataSourceLength: int = 40,
-                             srsNameLength: int = 40, srsDefinitionLength: int = 600,
-                             timeZoneIDLength: int = 40, rangeTablesLength: int = 0, ):
+    def hec_dss_gridRetrieve(
+        self,
+        pathname: str,
+        gridType: List[int],
+        dataType: List[int],
+        lowerLeftCellX: List[int],
+        lowerLeftCellY: List[int],
+        numberOfCellsX: List[int],
+        numberOfCellsY: List[int],
+        numberOfRanges: List[int],
+        srsDefinitionType: List[int],
+        timeZoneRawOffset: List[int],
+        isInterval: List[int],
+        isTimeStamped: List[int],
+        dataUnits: List[str],
+        dataSource: List[str],
+        srsName: List[str],
+        srsDefinition: List[str],
+        timeZoneID: List[str],
+        cellSize: List[float],
+        xCoordOfGridCellZero: List[float],
+        yCoordOfGridCellZero: List[float],
+        nullValue: List[float],
+        maxDataValue: List[float],
+        minDataValue: List[float],
+        meanDataValue: List[float],
+        rangeLimitTable: List[float],
+        numberEqualOrExceedingRangeLimit: List[int],
+        data: List[float],
+        dataLength: int = 0,
+        dataUnitsLength: int = 40,
+        dataSourceLength: int = 40,
+        srsNameLength: int = 40,
+        srsDefinitionLength: int = 600,
+        timeZoneIDLength: int = 40,
+        rangeTablesLength: int = 0,
+    ):
 
-        self.dll.hec_dss_gridRetrieve.argtypes = [c_void_p, c_char_p, c_int,
-                                                  POINTER(c_int), POINTER(c_int),
-                                                  POINTER(c_int), POINTER(c_int),
-                                                  POINTER(c_int), POINTER(c_int),
-                                                  POINTER(c_int), POINTER(c_int),
-                                                  POINTER(c_int), POINTER(c_int),
-                                                  POINTER(c_int),
-                                                  c_char_p, c_int,
-                                                  c_char_p, c_int,
-                                                  c_char_p, c_int,
-                                                  c_char_p, c_int,
-                                                  c_char_p, c_int,
-                                                  POINTER(c_float), POINTER(c_float),
-                                                  POINTER(c_float), POINTER(c_float),
-                                                  POINTER(c_float), POINTER(c_float),
-                                                  POINTER(c_float),
-                                                  POINTER(c_float), c_int,
-                                                  POINTER(c_int),
-                                                  POINTER(c_float), c_int]
+        self.dll.hec_dss_gridRetrieve.argtypes = [
+            c_void_p,
+            c_char_p,
+            c_int,
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            POINTER(c_int),
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_float),
+            c_int,
+            POINTER(c_int),
+            POINTER(c_float),
+            c_int,
+        ]
 
         self.dll.hec_dss_gridRetrieve.restype = c_int
 
@@ -236,25 +282,44 @@ class _Native:
 
         c_data = (c_float * 0)()
 
-        result = self.dll.hec_dss_gridRetrieve(self.handle, pathname.encode("utf-8"), False,
-                                               ctypes.byref(type_pointer), ctypes.byref(dataType_pointer),
-                                               c_lowerLeftCellX, c_lowerLeftCellY,
-                                               c_numberOfCellsX, c_numberOfCellsY,
-                                               c_numberOfRanges, c_srsDefinitionType,
-                                               ctypes.byref(c_timeZoneRawOffset), c_isInterval,
-                                               c_isTimeStamped,
-                                               c_dataUnits, dataUnitsLength,
-                                               c_dataSource, dataSourceLength,
-                                               c_srsName, srsNameLength,
-                                               c_srsDefinition, srsDefinitionLength,
-                                               c_timeZoneID, timeZoneIDLength,
-                                               ctypes.byref(c_cellSize), ctypes.byref(c_xCoordOfGridCellZero),
-                                               ctypes.byref(c_yCoordOfGridCellZero), ctypes.byref(c_nullValue),
-                                               ctypes.byref(c_maxDataValue), ctypes.byref(c_minDataValue),
-                                               ctypes.byref(c_meanDataValue),
-                                               c_rangeLimitTable, rangeTablesLength,
-                                               c_numberEqualOrExceedingRangeLimit,
-                                               c_data, dataLength)
+        result = self.dll.hec_dss_gridRetrieve(
+            self.handle,
+            pathname.encode("utf-8"),
+            False,
+            ctypes.byref(type_pointer),
+            ctypes.byref(dataType_pointer),
+            c_lowerLeftCellX,
+            c_lowerLeftCellY,
+            c_numberOfCellsX,
+            c_numberOfCellsY,
+            c_numberOfRanges,
+            c_srsDefinitionType,
+            ctypes.byref(c_timeZoneRawOffset),
+            c_isInterval,
+            c_isTimeStamped,
+            c_dataUnits,
+            dataUnitsLength,
+            c_dataSource,
+            dataSourceLength,
+            c_srsName,
+            srsNameLength,
+            c_srsDefinition,
+            srsDefinitionLength,
+            c_timeZoneID,
+            timeZoneIDLength,
+            ctypes.byref(c_cellSize),
+            ctypes.byref(c_xCoordOfGridCellZero),
+            ctypes.byref(c_yCoordOfGridCellZero),
+            ctypes.byref(c_nullValue),
+            ctypes.byref(c_maxDataValue),
+            ctypes.byref(c_minDataValue),
+            ctypes.byref(c_meanDataValue),
+            c_rangeLimitTable,
+            rangeTablesLength,
+            c_numberEqualOrExceedingRangeLimit,
+            c_data,
+            dataLength,
+        )
         if result != 0:
             print("boolRetriveData False, Function call failed with result:", result)
             return result
@@ -263,28 +328,51 @@ class _Native:
         c_rangeLimitTable = (c_float * rangeTablesLength)()
         c_numberEqualOrExceedingRangeLimit = (c_int * rangeTablesLength)()
 
-        dataLength = dataLength if dataLength else c_numberOfCellsX.value * c_numberOfCellsY.value
+        dataLength = (
+            dataLength
+            if dataLength
+            else c_numberOfCellsX.value * c_numberOfCellsY.value
+        )
         c_data = (c_float * dataLength)()
 
-        result = self.dll.hec_dss_gridRetrieve(self.handle, pathname.encode("utf-8"), True,
-                                               ctypes.byref(type_pointer), ctypes.byref(dataType_pointer),
-                                               c_lowerLeftCellX, c_lowerLeftCellY,
-                                               c_numberOfCellsX, c_numberOfCellsY,
-                                               c_numberOfRanges, c_srsDefinitionType,
-                                               ctypes.byref(c_timeZoneRawOffset), c_isInterval,
-                                               c_isTimeStamped,
-                                               c_dataUnits, dataUnitsLength,
-                                               c_dataSource, dataSourceLength,
-                                               c_srsName, srsNameLength,
-                                               c_srsDefinition, srsDefinitionLength,
-                                               c_timeZoneID, timeZoneIDLength,
-                                               ctypes.byref(c_cellSize), ctypes.byref(c_xCoordOfGridCellZero),
-                                               ctypes.byref(c_yCoordOfGridCellZero), ctypes.byref(c_nullValue),
-                                               ctypes.byref(c_maxDataValue), ctypes.byref(c_minDataValue),
-                                               ctypes.byref(c_meanDataValue),
-                                               c_rangeLimitTable, rangeTablesLength,
-                                               c_numberEqualOrExceedingRangeLimit,
-                                               c_data, dataLength)
+        result = self.dll.hec_dss_gridRetrieve(
+            self.handle,
+            pathname.encode("utf-8"),
+            True,
+            ctypes.byref(type_pointer),
+            ctypes.byref(dataType_pointer),
+            c_lowerLeftCellX,
+            c_lowerLeftCellY,
+            c_numberOfCellsX,
+            c_numberOfCellsY,
+            c_numberOfRanges,
+            c_srsDefinitionType,
+            ctypes.byref(c_timeZoneRawOffset),
+            c_isInterval,
+            c_isTimeStamped,
+            c_dataUnits,
+            dataUnitsLength,
+            c_dataSource,
+            dataSourceLength,
+            c_srsName,
+            srsNameLength,
+            c_srsDefinition,
+            srsDefinitionLength,
+            c_timeZoneID,
+            timeZoneIDLength,
+            ctypes.byref(c_cellSize),
+            ctypes.byref(c_xCoordOfGridCellZero),
+            ctypes.byref(c_yCoordOfGridCellZero),
+            ctypes.byref(c_nullValue),
+            ctypes.byref(c_maxDataValue),
+            ctypes.byref(c_minDataValue),
+            ctypes.byref(c_meanDataValue),
+            c_rangeLimitTable,
+            rangeTablesLength,
+            c_numberEqualOrExceedingRangeLimit,
+            c_data,
+            dataLength,
+        )
 
         # Processing results
         if result == 0:
@@ -303,11 +391,11 @@ class _Native:
             isInterval[0] = c_isInterval.value
             isTimeStamped[0] = c_isTimeStamped.value
 
-            dataUnits[0] = c_dataUnits.value.decode('utf-8')
-            dataSource[0] = c_dataSource.value.decode('utf-8')
-            srsName[0] = c_srsName.value.decode('utf-8')
-            srsDefinition[0] = c_srsDefinition.value.decode('utf-8')
-            timeZoneID[0] = c_timeZoneID.value.decode('utf-8')
+            dataUnits[0] = c_dataUnits.value.decode("utf-8")
+            dataSource[0] = c_dataSource.value.decode("utf-8")
+            srsName[0] = c_srsName.value.decode("utf-8")
+            srsDefinition[0] = c_srsDefinition.value.decode("utf-8")
+            timeZoneID[0] = c_timeZoneID.value.decode("utf-8")
 
             cellSize[0] = c_cellSize.value
             xCoordOfGridCellZero[0] = c_xCoordOfGridCellZero.value
@@ -318,7 +406,9 @@ class _Native:
             meanDataValue[0] = c_meanDataValue.value
 
             rangeLimitTable.extend(list(c_rangeLimitTable))
-            numberEqualOrExceedingRangeLimit.extend(list(c_numberEqualOrExceedingRangeLimit))
+            numberEqualOrExceedingRangeLimit.extend(
+                list(c_numberEqualOrExceedingRangeLimit)
+            )
             data.extend(list(c_data))
 
             # print("Function call successful:")
@@ -328,8 +418,8 @@ class _Native:
         return result
 
     def hec_dss_gridStore(
-            self,
-            gd,
+        self,
+        gd,
     ):
 
         self.dll.hec_dss_pdStore.restype = c_int
@@ -361,7 +451,7 @@ class _Native:
             ctypes.c_float,  # meanDataValue
             ctypes.POINTER(ctypes.c_float),  # rangeLimitTable
             ctypes.POINTER(ctypes.c_int),  # numberEqualOrExceedingRangeLimit
-            ctypes.POINTER(ctypes.c_float)  # data
+            ctypes.POINTER(ctypes.c_float),  # data
         ]
 
         c_pathname = c_char_p(gd.id.encode("utf-8"))
@@ -393,37 +483,67 @@ class _Native:
         c_meanDataValue = c_float(gd.meanDataValue)
 
         c_rangeLimitTable = (c_float * len(gd.rangeLimitTable))(*gd.rangeLimitTable)
-        c_numberEqualOrExceedingRangeLimit = (c_int * len(gd.numberEqualOrExceedingRangeLimit))(
-            *gd.numberEqualOrExceedingRangeLimit)
+        c_numberEqualOrExceedingRangeLimit = (
+            c_int * len(gd.numberEqualOrExceedingRangeLimit)
+        )(*gd.numberEqualOrExceedingRangeLimit)
         flat_list = gd.data.flatten()
         c_data = (c_float * len(flat_list))(*flat_list)
 
-        return self.dll.hec_dss_gridStore(self.handle, c_pathname, c_gridType, c_dataType,
-                                          c_lowerLeftCellX, c_lowerLeftCellY,
-                                          c_numberOfCellsX, c_numberOfCellsY,
-                                          c_numberOfRanges, c_srsDefinitionType,
-                                          c_timeZoneRawOffset, c_isInterval,
-                                          c_isTimeStamped,
-                                          c_dataUnits, c_dataSource,
-                                          c_srsName, c_srsDefinition, c_timeZoneID,
-                                          c_cellSize, c_xCoordOfGridCellZero,
-                                          c_yCoordOfGridCellZero, c_nullValue,
-                                          c_maxDataValue, c_minDataValue, c_meanDataValue,
-                                          c_rangeLimitTable, c_numberEqualOrExceedingRangeLimit, c_data)
+        return self.dll.hec_dss_gridStore(
+            self.handle,
+            c_pathname,
+            c_gridType,
+            c_dataType,
+            c_lowerLeftCellX,
+            c_lowerLeftCellY,
+            c_numberOfCellsX,
+            c_numberOfCellsY,
+            c_numberOfRanges,
+            c_srsDefinitionType,
+            c_timeZoneRawOffset,
+            c_isInterval,
+            c_isTimeStamped,
+            c_dataUnits,
+            c_dataSource,
+            c_srsName,
+            c_srsDefinition,
+            c_timeZoneID,
+            c_cellSize,
+            c_xCoordOfGridCellZero,
+            c_yCoordOfGridCellZero,
+            c_nullValue,
+            c_maxDataValue,
+            c_minDataValue,
+            c_meanDataValue,
+            c_rangeLimitTable,
+            c_numberEqualOrExceedingRangeLimit,
+            c_data,
+        )
 
-    def hec_dss_pdRetrieveInfo(self, pathname,
-                               numberOrdinates: List[int], numberCurves: List[int],
-                               unitsIndependent: List[str],
-                               unitsDependent: List[str],
-                               typeIndependent: List[str],
-                               typeDependent: List[str],
-                               labelsLength):
-        self.dll.hec_dss_pdRetrieveInfo.argtypes = [c_void_p, c_char_p,
-                                                    POINTER(c_int), POINTER(c_int),
-                                                    c_char_p, c_int,
-                                                    c_char_p, c_int,
-                                                    c_char_p, c_int,
-                                                    c_char_p]
+    def hec_dss_pdRetrieveInfo(
+        self,
+        pathname,
+        numberOrdinates: List[int],
+        numberCurves: List[int],
+        unitsIndependent: List[str],
+        unitsDependent: List[str],
+        typeIndependent: List[str],
+        typeDependent: List[str],
+        labelsLength,
+    ):
+        self.dll.hec_dss_pdRetrieveInfo.argtypes = [
+            c_void_p,
+            c_char_p,
+            POINTER(c_int),
+            POINTER(c_int),
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+        ]
 
         self.dll.hec_dss_pdRetrieveInfo.restype = c_int
         numberOrdinates_val = c_int()
@@ -458,34 +578,56 @@ class _Native:
             numberCurves[0] = numberCurves_val.value
             labelsLength[0] = labelsLength_val.value
 
-            unitsIndependent[0] = c_unitsIndependent.value.decode('utf-8')
-            unitsDependent[0] = c_unitsDependent.value.decode('utf-8')
-            typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
-            typeDependent[0] = c_typeDependent.value.decode('utf-8')
+            unitsIndependent[0] = c_unitsIndependent.value.decode("utf-8")
+            unitsDependent[0] = c_unitsDependent.value.decode("utf-8")
+            typeIndependent[0] = c_typeIndependent.value.decode("utf-8")
+            typeDependent[0] = c_typeDependent.value.decode("utf-8")
         else:
             print("Function call failed with result:", result)
 
         return result
 
-    def hec_dss_pdRetrieve(self, pathname: str,
-                           doubleOrdinates: List[float], doubleOrdinatesLength: int,
-                           doubleValues: List[float], doubleValuesLength: int,
-                           numberOrdinates: List[int], numberCurves: List[int],
-                           unitsIndependent: List[str], unitsIndependentLength: int,
-                           typeIndependent: List[str], typeIndependentLength: int,
-                           unitsDependent: List[str], unitsDependentLength: int,
-                           typeDependent: List[str], typeDependentLength: int,
-                           labels: List[str], labelsLength: int):
+    def hec_dss_pdRetrieve(
+        self,
+        pathname: str,
+        doubleOrdinates: List[float],
+        doubleOrdinatesLength: int,
+        doubleValues: List[float],
+        doubleValuesLength: int,
+        numberOrdinates: List[int],
+        numberCurves: List[int],
+        unitsIndependent: List[str],
+        unitsIndependentLength: int,
+        typeIndependent: List[str],
+        typeIndependentLength: int,
+        unitsDependent: List[str],
+        unitsDependentLength: int,
+        typeDependent: List[str],
+        typeDependentLength: int,
+        labels: List[str],
+        labelsLength: int,
+    ):
 
-        self.dll.hec_dss_pdRetrieve.argtypes = [c_void_p, c_char_p,
-                                                POINTER(c_double), c_int,
-                                                POINTER(c_double), c_int,
-                                                POINTER(c_int), POINTER(c_int),
-                                                c_char_p, c_int,
-                                                c_char_p, c_int,
-                                                c_char_p, c_int,
-                                                c_char_p, c_int,
-                                                c_char_p, c_int]
+        self.dll.hec_dss_pdRetrieve.argtypes = [
+            c_void_p,
+            c_char_p,
+            POINTER(c_double),
+            c_int,
+            POINTER(c_double),
+            c_int,
+            POINTER(c_int),
+            POINTER(c_int),
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_int,
+        ]
 
         self.dll.hec_dss_pdRetrieve.restype = c_int
 
@@ -500,38 +642,49 @@ class _Native:
         c_typeIndependent = create_string_buffer(typeIndependentLength)
         c_typeDependent = create_string_buffer(typeDependentLength)
 
-        result = self.dll.hec_dss_pdRetrieve(self.handle,
-                                             pathname.encode("utf-8"),
-                                             c_doubleOrdinates, doubleOrdinatesLength,
-                                             c_doubleValues, doubleValuesLength,
-                                             ctypes.byref(c_numberOrdinates),
-                                             ctypes.byref(c_numberCurves),
-                                             c_unitsIndependent, unitsIndependentLength,
-                                             c_typeIndependent, typeIndependentLength,
-                                             c_unitsDependent, unitsDependentLength,
-                                             c_typeDependent, typeDependentLength,
-                                             c_labels, labelsLength)
+        result = self.dll.hec_dss_pdRetrieve(
+            self.handle,
+            pathname.encode("utf-8"),
+            c_doubleOrdinates,
+            doubleOrdinatesLength,
+            c_doubleValues,
+            doubleValuesLength,
+            ctypes.byref(c_numberOrdinates),
+            ctypes.byref(c_numberCurves),
+            c_unitsIndependent,
+            unitsIndependentLength,
+            c_typeIndependent,
+            typeIndependentLength,
+            c_unitsDependent,
+            unitsDependentLength,
+            c_typeDependent,
+            typeDependentLength,
+            c_labels,
+            labelsLength,
+        )
 
         if result == 0:
-            unitsIndependent[0] = c_unitsIndependent.value.decode('utf-8')
-            unitsDependent[0] = c_unitsDependent.value.decode('utf-8')
-            typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
-            typeDependent[0] = c_typeDependent.value.decode('utf-8')
+            unitsIndependent[0] = c_unitsIndependent.value.decode("utf-8")
+            unitsDependent[0] = c_unitsDependent.value.decode("utf-8")
+            typeIndependent[0] = c_typeIndependent.value.decode("utf-8")
+            typeDependent[0] = c_typeDependent.value.decode("utf-8")
 
             doubleOrdinates.extend(list(c_doubleOrdinates))
             doubleValues.extend(list(c_doubleValues))
             numberOrdinates[0] = c_numberOrdinates
             numberCurves[0] = c_numberCurves
             print(numberCurves[0])
-            labels.extend(c_labels.raw.decode('utf-8').split("\0")[:c_numberCurves.value])
+            labels.extend(
+                c_labels.raw.decode("utf-8").split("\0")[: c_numberCurves.value]
+            )
         else:
             print("Function call failed with result:", result)
 
         return result
 
     def hec_dss_pdStore(
-            self,
-            pd,
+        self,
+        pd,
     ):
 
         self.dll.hec_dss_pdStore.restype = c_int
@@ -586,14 +739,14 @@ class _Native:
         )
 
     def hec_dss_tsGetSizes(
-            self,
-            pathname,
-            startDate,
-            startTime,
-            endDate,
-            endTime,
-            numberValues,
-            qualityElementSize,
+        self,
+        pathname,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        numberValues,
+        qualityElementSize,
     ):
         self.dll.hec_dss_tsGetSizes.argtypes = [
             c_void_p(),  # dss
@@ -630,24 +783,24 @@ class _Native:
         return result
 
     def hec_dss_tsRetrieve(
-            self,
-            pathname: str,
-            startDate: str,
-            startTime: str,
-            endDate: str,
-            endTime: str,
-            times: List[int],
-            values: List[float],
-            arraySize: str,
-            numberValuesRead,
-            quality: List[int],
-            qualityLength: int,
-            julianBaseDate: int,
-            timeGranularitySeconds: int,
-            units: List[str],
-            unitsLength: int,
-            dataType: List[str],
-            typeLength: int,
+        self,
+        pathname: str,
+        startDate: str,
+        startTime: str,
+        endDate: str,
+        endTime: str,
+        times: List[int],
+        values: List[float],
+        arraySize: str,
+        numberValuesRead,
+        quality: List[int],
+        qualityLength: int,
+        julianBaseDate: int,
+        timeGranularitySeconds: int,
+        units: List[str],
+        unitsLength: int,
+        dataType: List[str],
+        typeLength: int,
     ):
 
         f = self.dll.hec_dss_tsRetrieve
@@ -728,15 +881,15 @@ class _Native:
         return rval
 
     def hec_dss_tsStoreRegular(
-            self,
-            pathname,
-            startDate,
-            startTime,
-            valueArray,
-            qualityArray,
-            saveAsFloat,
-            units,
-            dataType,
+        self,
+        pathname,
+        startDate,
+        startTime,
+        valueArray,
+        qualityArray,
+        saveAsFloat,
+        units,
+        dataType,
     ):
 
         self.dll.hec_dss_tsStoreRegular.restype = c_int
@@ -778,16 +931,16 @@ class _Native:
         )
 
     def hec_dss_tsStoreIrregular(
-            self,
-            pathname,
-            startDateBase,
-            times,
-            timeGranularitySeconds,
-            valueArray,
-            qualityArray,
-            saveAsFloat,
-            units,
-            dataType,
+        self,
+        pathname,
+        startDateBase,
+        times,
+        timeGranularitySeconds,
+        valueArray,
+        qualityArray,
+        saveAsFloat,
+        units,
+        dataType,
     ):
 
         self.dll.hec_dss_tsStoreIregular.restype = c_int
@@ -833,31 +986,38 @@ class _Native:
 
     def hec_dss_recordType(self, pathname):
         f = self.dll.hec_dss_recordType
-        f.argtypes = [
-            c_void_p,
-            c_char_p
-        ]
+        f.argtypes = [c_void_p, c_char_p]
         f.restype = c_int
         c_str = c_char_p(pathname.encode("utf-8"))
         return f(self.handle, c_str)
 
-    def hec_dss_arrayRetrieveInfo(self, pathname: str, intValuesRead: List[int], floatValuesRead: List[int],
-                                  doubleValuesRead: List[int]):
+    def hec_dss_arrayRetrieveInfo(
+        self,
+        pathname: str,
+        intValuesRead: List[int],
+        floatValuesRead: List[int],
+        doubleValuesRead: List[int],
+    ):
         f = self.dll.hec_dss_arrayRetrieveInfo
         f.argtypes = [
             c_void_p(),  # dss_file* dss
             c_char_p,  # const char* pathname
             POINTER(c_int),  # int* intValuesRead
             POINTER(c_int),  # int* floatValuesRead
-            POINTER(c_int)  # int* doubleValuesRead
+            POINTER(c_int),  # int* doubleValuesRead
         ]
         f.restype = c_int
 
         c_intValuesRead = c_int()
         c_floatValuesRead = c_int()
         c_doubleValuesRead = c_int()
-        result = f(self.handle, pathname.encode("utf-8"), byref(c_intValuesRead), byref(c_floatValuesRead),
-                   byref(c_doubleValuesRead))
+        result = f(
+            self.handle,
+            pathname.encode("utf-8"),
+            byref(c_intValuesRead),
+            byref(c_floatValuesRead),
+            byref(c_doubleValuesRead),
+        )
 
         intValuesRead[0] = c_intValuesRead.value
         floatValuesRead[0] = c_floatValuesRead.value
@@ -865,8 +1025,13 @@ class _Native:
 
         return result
 
-    def hec_dss_arrayStore(self, pathname: str, intValues: List[int], floatValues: List[float],
-                           doubleValues: List[float]):
+    def hec_dss_arrayStore(
+        self,
+        pathname: str,
+        intValues: List[int],
+        floatValues: List[float],
+        doubleValues: List[float],
+    ):
         f = self.dll.hec_dss_arrayStore
         f.argtypes = [
             c_void_p,  # dss_file* dss
@@ -876,19 +1041,31 @@ class _Native:
             POINTER(c_float),  # float* floatValues
             c_int,  # const int floatValuesLength
             POINTER(c_double),  # double* doubleValues
-            c_int  # const int doubleValuesLength
+            c_int,  # const int doubleValuesLength
         ]
         f.restype = c_int
 
         c_intValues = (c_int32 * len(intValues))(*intValues)
         c_floatValues = (c_float * len(floatValues))(*floatValues)
         c_doubleValues = (c_double * len(doubleValues))(*doubleValues)
-        return f(self.handle, pathname.encode('utf-8'), c_intValues, len(intValues),
-                 c_floatValues, len(floatValues),
-                 c_doubleValues, len(doubleValues))
+        return f(
+            self.handle,
+            pathname.encode("utf-8"),
+            c_intValues,
+            len(intValues),
+            c_floatValues,
+            len(floatValues),
+            c_doubleValues,
+            len(doubleValues),
+        )
 
-    def hec_dss_arrayRetrieve(self, pathname, intValues: List[int], floatValues: List[float],
-                              doubleValues: List[float]):
+    def hec_dss_arrayRetrieve(
+        self,
+        pathname,
+        intValues: List[int],
+        floatValues: List[float],
+        doubleValues: List[float],
+    ):
         f = self.dll.hec_dss_arrayRetrieve
 
         f.argtypes = (
@@ -899,7 +1076,7 @@ class _Native:
             POINTER(c_float),  # float* floatValues
             c_int,  # const int floatValuesLength
             POINTER(c_double),  # double* doubleValues
-            c_int  # const int doubleValuesLength
+            c_int,  # const int doubleValuesLength
         )
         f.restype = c_int
 
@@ -907,19 +1084,30 @@ class _Native:
         c_floatValues = (c_float * len(floatValues))(*floatValues)
         c_doubleValues = (c_double * len(doubleValues))(*doubleValues)
 
-        status = f(self.handle, pathname.encode('utf-8'),
-                   c_intValues, len(intValues),
-                   c_floatValues, len(floatValues),
-                   c_doubleValues, len(doubleValues))
+        status = f(
+            self.handle,
+            pathname.encode("utf-8"),
+            c_intValues,
+            len(intValues),
+            c_floatValues,
+            len(floatValues),
+            c_doubleValues,
+            len(doubleValues),
+        )
 
         if status == 0:
             if len(intValues) > 0:
-                intValues[:] = np.ctypeslib.as_array(c_intValues, shape=(len(intValues),))
+                intValues[:] = np.ctypeslib.as_array(
+                    c_intValues, shape=(len(intValues),)
+                )
             if len(floatValues) > 0:
-                floatValues[:] = np.ctypeslib.as_array(c_floatValues, shape=(len(floatValues),))
+                floatValues[:] = np.ctypeslib.as_array(
+                    c_floatValues, shape=(len(floatValues),)
+                )
             if len(doubleValues) > 0:
-                doubleValues[:] = np.ctypeslib.as_array(c_doubleValues, shape=(len(doubleValues),))
-
+                doubleValues[:] = np.ctypeslib.as_array(
+                    c_doubleValues, shape=(len(doubleValues),)
+                )
 
         else:
             print("Error reading array status = {status}")

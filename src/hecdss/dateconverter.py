@@ -124,7 +124,7 @@ class DateConverter:
                 delta =timedelta(seconds=t)
             if time_granularity_seconds == 60:  # 60 seconds per minute
                 delta =timedelta(minutes=t)
-            if time_granularity_seconds == 3600:  # 600 seconds per hour
+            if time_granularity_seconds == 3600:  # 3600 seconds per hour
                 delta =timedelta(hours=t)
             if time_granularity_seconds == 86400:  # 86400 seconds per day
                 delta =timedelta(days=t)

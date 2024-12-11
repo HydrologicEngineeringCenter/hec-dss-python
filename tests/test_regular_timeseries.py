@@ -108,7 +108,6 @@ class TestRegularTimeSeries(unittest.TestCase):
         path = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute//"
         dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
         rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
-        #dss = HecDss("C:/Users/q0hecoah/Documents/data/examples-all-data-types.dss")
 
         path_modified = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute/test-store/"
 

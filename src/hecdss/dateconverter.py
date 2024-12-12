@@ -118,7 +118,7 @@ class DateConverter:
         
         times = []
         for t in times_julian:
-            baseDateTime =datetime(1900,1,1)- timedelta(days=1)     #datetime.fromtimestamp(julian_base_date)
+            baseDateTime =datetime(1900,1,1)- timedelta(days=1) 
             delta = 0
             if time_granularity_seconds == 1:  # 1 second
                 delta =timedelta(seconds=t)

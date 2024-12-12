@@ -138,16 +138,9 @@ class DateConverter:
         """"
         convert from DSS integer datetime array to python datetime array
         """
-        newarry=[]
         if date_times is None:
             raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
         start_date_base = start_date_base.replace(hour=0, minute=0, second=0, microsecond=0)-timedelta(days=1)
-        for i in date_times:
-            secondsday = (i-start_date_base).days*86400/time_granularity_seconds
-            seconds = (i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds
-            newtime = seconds+secondsday
-            newarry.append(newtime)
-        k = 0
         return [int(((i-start_date_base).days*86400 + i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
     @staticmethod
     def intervalString_to_sec(interval):

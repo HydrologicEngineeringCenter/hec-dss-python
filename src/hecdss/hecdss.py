@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
+import hecdss.record_type
 from hecdss.array_container import ArrayContainer
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
@@ -30,6 +31,7 @@ class HecDss:
         self._native = _Native()
         self._native.hec_dss_open(filename)
         self._catalog = None
+        self._filename = filename
 
     def close(self):
         """closes the DSS file and releases any locks
@@ -103,13 +105,7 @@ class HecDss:
             doubleValues = [0] * doubleValuesCount[0]
 
         status = self._native.hec_dss_arrayRetrieve(pathname, intValues, floatValues, doubleValues)
-        rval = None
-        if len(intValues) > 0:
-            rval = ArrayContainer.create_int_array(intValues)
-        if len(floatValues) > 0:
-            rval = ArrayContainer.create_float_array(floatValues)
-        if len(doubleValues) > 0:
-            rval = ArrayContainer.create_double_array(doubleValues)
+        rval = ArrayContainer.create_array_container(intValues, floatValues, doubleValues, path=pathname)
         return rval
 
     def _get_gridded_data(self, pathname):
@@ -436,7 +432,8 @@ class HecDss:
             quality = []  # TO DO
             julian_times = DateConverter.julian_array_from_date_times(its.times, its.time_granularity_seconds, start_date_base)
             if max(julian_times) >= 2147483647:
-                raise Exception("Julian times contains value larger than 2147483647, increase granularity or change start_date_base to fix.")
+                raise Exception("Julian times contains value larger than 2147483647, increase granularity or change "
+                                "start_date_base to fix.")
             status = self._native.hec_dss_tsStoreIrregular(
                 its.id,
                 startDate,
@@ -459,15 +456,10 @@ class HecDss:
             status = self._native.hec_dss_gridStore(gd)
             self._catalog = None
         elif type(container) is ArrayContainer:
-            if container.values.dtype.name == 'int32':
-                status = self._native.hec_dss_arrayStore(container.id, container.values, [], [])
-            elif container.values.dtype.name == 'float32':
-                status = self._native.hec_dss_arrayStore(container.id, [], container.values, [])
-            elif container.values.dtype.name == 'float64':
-                status = self._native.hec_dss_arrayStore(container.id, [], [], container.values)
-
+            status = self._native.hec_dss_arrayStore(container.id, container.int_values, container.float_values, container.double_values)
+            self._catalog = None
         else:
-            raise NotImplementedError(f"unsupported record_type: {type(container)}")
+            raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {RecordType.SUPPORTED_RECORD_TYPES.value}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

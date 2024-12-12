@@ -6,27 +6,18 @@ class ArrayContainer:
 
     def __init__(self):
         self.id = None
-        self.values = None
+        self.int_values = None
+        self.float_values = None
+        self.double_values = None
 
     @staticmethod
-    def create_int_array(values: List[int], path=None):
+    def create_array_container(int_values: List[int] = [], float_values: List[float] = [],
+                               double_values: List[float] = [], path=None):
         a = ArrayContainer()
         a.id = path
-        a.values = np.array(values, dtype=np.int)
-        return a
-
-    @staticmethod
-    def create_float_array(values: List[float], path=None):
-        a = ArrayContainer()
-        a.id = path
-        a.values = np.array(values, dtype=np.float32)
-        return a
-
-    @staticmethod
-    def create_double_array(values: List[float], path=None):
-        a = ArrayContainer()
-        a.id = path
-        a.values = np.array(values, dtype=np.float64)
+        a.int_values = np.array(int_values, dtype=np.int32)
+        a.float_values = np.array(float_values, dtype=np.float32)
+        a.double_values = np.array(double_values, dtype=np.float64)
         return a
 
     def __str__(self):
@@ -34,4 +25,6 @@ class ArrayContainer:
             identifier = f"id: {self.id}, "
         else:
             identifier = ""
-        return f"{identifier}type: {self.values.dtype}, shape: {self.values.shape}, values: {self.values.tolist()}"
+        return f"{identifier}\ntype: {self.int_values.dtype}, shape: {self.int_values.shape}, values: {self.int_values.tolist()}" \
+               f"\ntype: {self.float_values.dtype}, shape: {self.float_values.shape}, values: {self.float_values.tolist()}" \
+               f"\ntype: {self.double_values.dtype}, shape: {self.double_values.shape}, values: {self.double_values.tolist()}"

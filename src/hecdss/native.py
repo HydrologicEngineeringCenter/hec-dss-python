@@ -60,7 +60,7 @@ class _Native:
         if rval == 0:
             print("DSS file opened successfully.")
         else:
-            print("Error opening DSS file.")
+            raise Exception("Error opening DSS file.")
         return rval
 
     def hec_dss_close(self):

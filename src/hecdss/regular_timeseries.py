@@ -13,6 +13,7 @@ class RegularTimeSeries:
         self.data_type = ""
         self.interval = ""
         self.start_date = ""
+        self.time_granularity_seconds = 1
         self.id = ""
 
     def add_data_point(self, date, value, flag=None):
@@ -92,7 +93,7 @@ class RegularTimeSeries:
             self._interval_to_times(x[0])
 
     @staticmethod
-    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", path=None):
+    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None):
         rts = RegularTimeSeries()
         rts.times = [i.replace(microsecond=0) for i in times]
         rts.values = np.array(values)
@@ -101,6 +102,8 @@ class RegularTimeSeries:
         rts.data_type = data_type
         rts.interval = interval
         rts.start_date = start_date
+        rts.time_granularity_seconds = time_granularity_seconds
+        rts.julian_base_date = julian_base_date
         rts.id = path
         rts._generate_times()
 

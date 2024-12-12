@@ -1,7 +1,7 @@
 import copy
 from datetime import datetime, timedelta, time
 
-sec = [
+_sec = [
     31536000,
     2592000,
     1296000,
@@ -38,7 +38,7 @@ sec = [
     1,
     0
 ]
-time_string = [
+_time_string = [
     "1Year",
     "1Month",
     "Semi-Month",
@@ -134,22 +134,28 @@ class DateConverter:
         return times
 
     @staticmethod
-    def julian_array_from_date_times(date_times, time_granularity_seconds=60):
+    def julian_array_from_date_times(date_times, time_granularity_seconds=60, start_date_base=(datetime(1900, 1, 1))):
         """"
         convert from DSS integer datetime array to python datetime array
         """
+        newarry=[]
         if date_times is None:
             raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
-
-        base_date_time = datetime(1900, 1, 1) - timedelta(days=1) # datetime.fromtimestamp(julian_base_date)
-        return [int((i-base_date_time).days*86400/time_granularity_seconds+(i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
+        start_date_base = start_date_base.replace(hour=0, minute=0, second=0, microsecond=0)-timedelta(days=1)
+        for i in date_times:
+            secondsday = (i-start_date_base).days*86400/time_granularity_seconds
+            seconds = (i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds
+            newtime = seconds+secondsday
+            newarry.append(newtime)
+        k = 0
+        return [int(((i-start_date_base).days*86400 + i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
     @staticmethod
     def intervalString_to_sec(interval):
 
-        if time_string.__contains__(interval):
-            i = time_string.index(interval)
-            return sec[i]
-        elif sec.__contains__(interval):
+        if _time_string.__contains__(interval):
+            i = _time_string.index(interval)
+            return _sec[i]
+        elif _sec.__contains__(interval):
             return interval
 
         return "empty"
@@ -157,9 +163,9 @@ class DateConverter:
     @staticmethod
     def sec_to_intervalString(seconds: int):
 
-        i = sec.index(seconds)
+        i = _sec.index(seconds)
 
-        return time_string[i]
+        return _time_string[i]
 
 
 if __name__ == "__main__":

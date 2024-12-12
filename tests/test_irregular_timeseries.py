@@ -58,10 +58,7 @@ class TestRegularTimeSeries(unittest.TestCase):
         irts = IrregularTimeSeries()
         dates = [datetime.today().replace(second=0, microsecond=0)+(i * timedelta(hours=2)) for i in range(15)]
         dates[1] = dates[1] - timedelta(seconds=60)
-        irts.times = dates
-        irts.values = list(range(15))
-        irts.data_type = "INST-VAL"
-        irts.id = irpath
+        irts = IrregularTimeSeries.create(times=dates, values=list(range(15)), data_type="INST-VAL", path=irpath)
 
         dss.put(irts)
 
@@ -75,13 +72,9 @@ class TestRegularTimeSeries(unittest.TestCase):
         dss = HecDss(self.test_files.get_copy(file))
 
         irpath = "/irregular-time-series/GAPT/FLOW//IR-Day/forecast6/"
-        irts = IrregularTimeSeries()
-        dates = [datetime.today().replace(second=0, microsecond=0) + (i * timedelta(hours=2)) for i in range(15)]
+        dates = [datetime.today().replace(microsecond=0) + (i * timedelta(hours=2)) for i in range(15)]
         dates[1] = dates[1] - timedelta(seconds=60)
-        irts.times = dates
-        irts.values = list(range(15))
-        irts.data_type = "INST-VAL"
-        irts.id = irpath
+        irts = IrregularTimeSeries.create(times=dates, values=list(range(15)), data_type="INST-VAL", path=irpath)
 
         dss.put(irts)
 

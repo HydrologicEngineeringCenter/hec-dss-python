@@ -287,8 +287,8 @@ class HecDss:
             lastValidJulian,
             lastSeconds
         )
-        first = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
-        last = DateConverter.date_time_from_julian_second(lastValidJulian[0], lastSeconds[0])
+        first = DateConverter.date_times_from_julian_array(firstSeconds, 1, firstValidJulian[0])[0]
+        last = DateConverter.date_times_from_julian_array(lastSeconds, 1, lastValidJulian[0])[0]
 
         return (first, last)
 
@@ -387,8 +387,9 @@ class HecDss:
         units = units[0]
         data_type = dataType[0]
         start_date = [] if len(new_times) == 0 else new_times[0]
-        id = pathname
-        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, path=id)
+        time_granularity_seconds = timeGranularitySeconds[0]
+        julian_base_date = julianBaseDate[0]
+        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, path=pathname)
         return ts
 
     def put(self, container) -> int: 
@@ -430,14 +431,17 @@ class HecDss:
             its = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
-            baseDateTime = datetime(1900, 1, 1)
-            startDate, startTime = DateConverter.dss_datetime_from_string(baseDateTime)
+            start_date_base = (datetime(1900, 1, 1)+timedelta(days=its.julian_base_date))
+            startDate, startTime = DateConverter.dss_datetime_from_string(start_date_base)
             quality = []  # TO DO
+            julian_times = DateConverter.julian_array_from_date_times(its.times, its.time_granularity_seconds, start_date_base)
+            if max(julian_times) >= 2147483647:
+                raise Exception("Julian times contains value larger than 2147483647, increase granularity or change start_date_base to fix.")
             status = self._native.hec_dss_tsStoreIrregular(
                 its.id,
                 startDate,
-                DateConverter.julian_array_from_date_times(its.times),
-                60,
+                julian_times,
+                its.time_granularity_seconds,
                 its.values,
                 quality,
                 False,

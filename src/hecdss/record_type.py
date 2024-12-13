@@ -17,6 +17,14 @@ class RecordType(Enum):
     LocationInfo = 8
     Array = 9
 
+    SUPPORTED_RECORD_TYPES = [
+        "IrregularTimeSeries",
+        "RegularTimeSeries",
+        "PairedData",
+        "GriddedData",
+        "ArrayContainer",
+    ]
+
     @staticmethod
     def RecordTypeFromInt(recType):
         rval = RecordType.Unknown

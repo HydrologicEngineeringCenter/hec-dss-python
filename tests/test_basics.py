@@ -135,6 +135,10 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(77, len(tsc.values))
         dss.close()
 
+    def test_incorrect_path(self):
+        with self.assertRaises(Exception):
+            dss = HecDss(self.test_files.get_copy("incorrect_path.dss"))
+            dss.close()
 
 if __name__ == "__main__":
     unittest.main()

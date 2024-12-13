@@ -1,6 +1,9 @@
 """Docstring for public module."""
+from datetime import datetime, timedelta
+
 import numpy as np
 
+import hecdss.record_type
 from hecdss.array_container import ArrayContainer
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
@@ -28,6 +31,7 @@ class HecDss:
         self._native = _Native()
         self._native.hec_dss_open(filename)
         self._catalog = None
+        self._filename = filename
 
     def close(self):
         """closes the DSS file and releases any locks
@@ -70,7 +74,9 @@ class HecDss:
             varies: RegularTimeSeries, PairedData, Grid, or Array.  
         """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
-            return self._get_timeseries(pathname, startdatetime, enddatetime)
+            new_pathname = DssPath(pathname).path_without_date().__str__();
+            ts = self._get_timeseries(new_pathname, startdatetime, enddatetime)
+            return ts
         elif type == RecordType.PairedData:
             return self._get_paired_data(pathname)
             # read paired data
@@ -99,13 +105,7 @@ class HecDss:
             doubleValues = [0] * doubleValuesCount[0]
 
         status = self._native.hec_dss_arrayRetrieve(pathname, intValues, floatValues, doubleValues)
-        rval = None
-        if len(intValues) > 0:
-            rval = ArrayContainer.create_int_array(intValues)
-        if len(floatValues) > 0:
-            rval = ArrayContainer.create_float_array(floatValues)
-        if len(doubleValues) > 0:
-            rval = ArrayContainer.create_double_array(doubleValues)
+        rval = ArrayContainer.create_array_container(intValues, floatValues, doubleValues, path=pathname)
         return rval
 
     def _get_gridded_data(self, pathname):
@@ -179,7 +179,7 @@ class HecDss:
 
         gd = GriddedData()
         gd.type = gridType[0]
-        gd.dataType = dataType[0]
+        gd.data_type = dataType[0]
         gd.lowerLeftCellX = lowerLeftCellX[0]
         gd.lowerLeftCellY = lowerLeftCellY[0]
         gd.numberOfCellsX = numberOfCellsX[0]
@@ -270,21 +270,43 @@ class HecDss:
 
         return pd
 
+    def _get_date_time_range(self, pathname, boolFullSet):
+        firstValidJulian = [0]
+        firstSeconds = [0]
+        lastValidJulian = [0]
+        lastSeconds = [0]
+        self._native.hec_dss_tsGetDateTimeRange(
+            pathname,
+            boolFullSet,
+            firstValidJulian,
+            firstSeconds,
+            lastValidJulian,
+            lastSeconds
+        )
+        first = DateConverter.date_times_from_julian_array(firstSeconds, 1, firstValidJulian[0])[0]
+        last = DateConverter.date_times_from_julian_array(lastSeconds, 1, lastValidJulian[0])[0]
+
+        return (first, last)
+
+
     def _get_timeseries(self, pathname, startDateTime, endDateTime):
         # get sizes
         if not (startDateTime and endDateTime):
-            startDate = ""
-            startTime = ""
-            endDate = ""
-            endTime = ""
-        else:
-            startDate = startDateTime.strftime("%d%b%Y")
-            startTime = startDateTime.strftime("%H:%M")
-            endDate = endDateTime.strftime("%d%b%Y")
-            endTime = endDateTime.strftime("%H:%M")
+            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
+
+            if not startDateTime:
+                startDateTime = newStartDateTime
+            if not endDateTime:
+                endDateTime = newEndDateTime
+
+        startDate = startDateTime.strftime("%d%b%Y")
+        startTime = startDateTime.strftime("%H:%M:%S")
+        endDate = endDateTime.strftime("%d%b%Y")
+        endTime = endDateTime.strftime("%H:%M:%S")
+
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
-        self._native.hec_dss_tsGetSizes(
+        status = self._native.hec_dss_tsGetSizes(
             pathname,
             startDate,
             startTime,
@@ -335,18 +357,26 @@ class HecDss:
         # print(values)
         # print("julianBaseDate = " + str(julianBaseDate[0]))
         # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
-        ts = RegularTimeSeries()
-        ts.times = DateConverter.date_times_from_julian_array(
+        if RecordType.IrregularTimeSeries == self.get_record_type(pathname):
+            ts = IrregularTimeSeries()
+        else:
+            ts = RegularTimeSeries()
+        new_times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
         arr = np.array(values)
         indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
-        arr[indices] = None
-        ts.values = arr
-        ts.quality = quality
-        ts.units = units[0]
-        ts.data_type = dataType[0]
-        ts.id = pathname
+        arr = np.delete(arr, indices)
+        #ts.times = np.delete(ts.times, indices)
+        new_times = [new_times[i] for i in range(len(new_times)) if not np.isin(i, indices)]
+        values = arr
+        quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
+        units = units[0]
+        data_type = dataType[0]
+        start_date = [] if len(new_times) == 0 else new_times[0]
+        time_granularity_seconds = timeGranularitySeconds[0]
+        julian_base_date = julianBaseDate[0]
+        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, path=pathname)
         return ts
 
     def put(self, container) -> int: 
@@ -367,6 +397,9 @@ class HecDss:
             ts = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
+            if not len(ts.times):
+                raise Exception("Time Series has an empty times array")
+
             startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
             quality = []  # TO DO
 
@@ -385,14 +418,18 @@ class HecDss:
             its = container
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
-            startDate, startTime = DateConverter.dss_datetime_from_string(its.times[0])
+            start_date_base = (datetime(1900, 1, 1)+timedelta(days=its.julian_base_date))
+            startDate, startTime = DateConverter.dss_datetime_from_string(start_date_base)
             quality = []  # TO DO
-
+            julian_times = DateConverter.julian_array_from_date_times(its.times, its.time_granularity_seconds, start_date_base)
+            if max(julian_times) >= 2147483647:
+                raise Exception("Julian times contains value larger than 2147483647, increase granularity or change "
+                                "start_date_base to fix.")
             status = self._native.hec_dss_tsStoreIrregular(
                 its.id,
                 startDate,
-                its.times,
-                its.interval,
+                julian_times,
+                its.time_granularity_seconds,
                 its.values,
                 quality,
                 False,
@@ -410,15 +447,10 @@ class HecDss:
             status = self._native.hec_dss_gridStore(gd)
             self._catalog = None
         elif type(container) is ArrayContainer:
-            if container.values.dtype.name == 'int32':
-                status = self._native.hec_dss_arrayStore(container.id, container.values, [], [])
-            elif container.values.dtype.name == 'float32':
-                status = self._native.hec_dss_arrayStore(container.id, [], container.values, [])
-            elif container.values.dtype.name == 'float64':
-                status = self._native.hec_dss_arrayStore(container.id, [], [], container.values)
-
+            status = self._native.hec_dss_arrayStore(container.id, container.int_values, container.float_values, container.double_values)
+            self._catalog = None
         else:
-            raise NotImplementedError(f"unsupported record_type: {type(container)}")
+            raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {RecordType.SUPPORTED_RECORD_TYPES.value}")
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

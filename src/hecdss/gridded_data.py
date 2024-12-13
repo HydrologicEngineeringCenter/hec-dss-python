@@ -52,7 +52,7 @@ class GriddedData:
     def __init__(self):
         self.id = None
         self.type = 0
-        self.dataType = 0
+        self.data_type = 0
         self.lowerLeftCellX = 0
         self.lowerLeftCellY = 0
         self.numberOfCellsX = 0
@@ -147,7 +147,7 @@ class GriddedData:
         gd = GriddedData()
         gd.id = path
         gd.type = type
-        gd.dataType = dataType
+        gd.data_type = dataType
         gd.lowerLeftCellX = lowerLeftCellX
         gd.lowerLeftCellY = lowerLeftCellY
         gd.numberOfCellsX = numberOfCellsX

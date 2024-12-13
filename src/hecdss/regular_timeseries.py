@@ -12,7 +12,8 @@ class RegularTimeSeries:
         self.units = ""
         self.data_type = ""
         self.interval = ""
-        self.startDate = ""
+        self.start_date = ""
+        self.time_granularity_seconds = 1
         self.id = ""
 
     def add_data_point(self, date, value, flag=None):
@@ -73,12 +74,13 @@ class RegularTimeSeries:
             self.id = str(new_path)
 
     def _interval_to_times(self, new_interval):
-        if type(self.startDate) == datetime:
+        if type(self.start_date) == datetime:
+            self.times = []
             for i in range(len(self.values)):
-                self.times.append(self.startDate + (i * timedelta(seconds=new_interval)))
+                self.times.append((self.start_date + (i * timedelta(seconds=new_interval))).replace(microsecond=0))
     def _generate_times(self):
-        if(len(self.times) > 0 and self.startDate == ""):
-            self.startDate = self.times[0]
+        if(len(self.times) > 0 and self.start_date == ""):
+            self.start_date = self.times[0]
 
         x = [self._get_interval_times(), self._get_interval_path(), self._get_interval_interval()]
         x = [i for i in x if i != "empty"]
@@ -91,14 +93,17 @@ class RegularTimeSeries:
             self._interval_to_times(x[0])
 
     @staticmethod
-    def create(values, times=[], units="", dataType="", interval="", startDate="", path=None):
+    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None):
         rts = RegularTimeSeries()
-        rts.times = times
+        rts.times = [i.replace(microsecond=0) for i in times]
         rts.values = np.array(values)
+        rts.quality = quality
         rts.units = units
-        rts.data_type = dataType
+        rts.data_type = data_type
         rts.interval = interval
-        rts.startDate = startDate
+        rts.start_date = start_date
+        rts.time_granularity_seconds = time_granularity_seconds
+        rts.julian_base_date = julian_base_date
         rts.id = path
         rts._generate_times()
 

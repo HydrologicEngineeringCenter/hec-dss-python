@@ -1,6 +1,7 @@
+import copy
 from datetime import datetime, timedelta, time
 
-sec = [
+_sec = [
     31536000,
     2592000,
     1296000,
@@ -34,9 +35,10 @@ sec = [
     4,
     3,
     2,
-    1
+    1,
+    0
 ]
-time_string = [
+_time_string = [
     "1Year",
     "1Month",
     "Semi-Month",
@@ -70,7 +72,8 @@ time_string = [
     "4Second",
     "3Second",
     "2Second",
-    "1Second"
+    "1Second",
+    "0Second"
 ]
 class DateConverter:
 
@@ -86,12 +89,24 @@ class DateConverter:
         if dt.time() == time(0, 0, 0, 0): # midnight
             # subract one day
             dtm1 = dt - timedelta(days=1)
-            dtstr= dtm1.strftime('%d%b%Y 24:00')      
+            dtstr= dtm1.strftime('%d%b%Y 24:00:00')
         else:
-            dtstr = dt.strftime('%d%b%Y %H:%M')      
+            dtstr = dt.strftime('%d%b%Y %H:%M:%S')
         
-        return dtstr[:9],dtstr[-5:]
+        return dtstr[:9],dtstr[-8:]
 
+    @staticmethod
+    def date_time_from_julian_second(time_julian, seconds_julian):
+        """"
+        convert from DSS integer datetime to python datetime array
+        """
+
+        baseDateTime = datetime(1900, 1, 1) - timedelta(days=1)  # datetime.fromtimestamp(julian_base_date)
+
+        days = timedelta(days=time_julian)
+        seconds = timedelta(seconds=seconds_julian)
+
+        return baseDateTime + days + seconds
 
     @staticmethod
     def date_times_from_julian_array(times_julian, time_granularity_seconds, julian_base_date):
@@ -103,26 +118,37 @@ class DateConverter:
         
         times = []
         for t in times_julian:
-            baseDateTime =datetime(1900,1,1)- timedelta(days=1)     #datetime.fromtimestamp(julian_base_date)
+            baseDateTime =datetime(1900,1,1)- timedelta(days=1) 
             delta = 0
+            if time_granularity_seconds == 1:  # 1 second
+                delta =timedelta(seconds=t)
             if time_granularity_seconds == 60:  # 60 seconds per minute
                 delta =timedelta(minutes=t)
-            if time_granularity_seconds == 3600:  # 600 seconds per hour
+            if time_granularity_seconds == 3600:  # 3600 seconds per hour
                 delta =timedelta(hours=t)
             if time_granularity_seconds == 86400:  # 86400 seconds per day
                 delta =timedelta(days=t)
 
-            times.append(baseDateTime+delta)
+            times.append(baseDateTime+delta+timedelta(days=julian_base_date))
 
         return times
 
     @staticmethod
+    def julian_array_from_date_times(date_times, time_granularity_seconds=60, start_date_base=(datetime(1900, 1, 1))):
+        """"
+        convert from DSS integer datetime array to python datetime array
+        """
+        if date_times is None:
+            raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
+        start_date_base = start_date_base.replace(hour=0, minute=0, second=0, microsecond=0)-timedelta(days=1)
+        return [int(((i-start_date_base).days*86400 + i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
+    @staticmethod
     def intervalString_to_sec(interval):
 
-        if time_string.__contains__(interval):
-            i = time_string.index(interval)
-            return sec[i]
-        elif sec.__contains__(interval):
+        if _time_string.__contains__(interval):
+            i = _time_string.index(interval)
+            return _sec[i]
+        elif _sec.__contains__(interval):
             return interval
 
         return "empty"
@@ -130,9 +156,9 @@ class DateConverter:
     @staticmethod
     def sec_to_intervalString(seconds: int):
 
-        i = sec.index(seconds)
+        i = _sec.index(seconds)
 
-        return time_string[i]
+        return _time_string[i]
 
 
 if __name__ == "__main__":

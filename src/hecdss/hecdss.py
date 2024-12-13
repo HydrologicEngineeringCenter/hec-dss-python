@@ -293,26 +293,17 @@ class HecDss:
         # get sizes
         if not (startDateTime and endDateTime):
             newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
-            if not(startDateTime or endDateTime):
-                startDate = newStartDateTime.strftime("%d%b%Y")
-                startTime = newStartDateTime.strftime("%H:%M:%S")
-                endDate = newEndDateTime.strftime("%d%b%Y")
-                endTime = newEndDateTime.strftime("%H:%M:%S")
-            elif(endDateTime):
-                startDate = newStartDateTime.strftime("%d%b%Y")
-                startTime = newStartDateTime.strftime("%H:%M:%S")
-                endDate = endDateTime.strftime("%d%b%Y")
-                endTime = endDateTime.strftime("%H:%M:%S")
-            else:
-                startDate = startDateTime.strftime("%d%b%Y")
-                startTime = startDateTime.strftime("%H:%M:%S")
-                endDate = newEndDateTime.strftime("%d%b%Y")
-                endTime = newEndDateTime.strftime("%H:%M:%S")
-        else:
-            startDate = startDateTime.strftime("%d%b%Y")
-            startTime = startDateTime.strftime("%H:%M:%S")
-            endDate = endDateTime.strftime("%d%b%Y")
-            endTime = endDateTime.strftime("%H:%M:%S")
+
+            if not startDateTime:
+                startDateTime = newStartDateTime
+            if not endDateTime:
+                endDateTime = newEndDateTime
+
+        startDate = startDateTime.strftime("%d%b%Y")
+        startTime = startDateTime.strftime("%H:%M:%S")
+        endDate = endDateTime.strftime("%d%b%Y")
+        endTime = endDateTime.strftime("%H:%M:%S")
+
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
         status = self._native.hec_dss_tsGetSizes(

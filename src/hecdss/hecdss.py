@@ -365,12 +365,13 @@ class HecDss:
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
         arr = np.array(values)
-        indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
-        arr = np.delete(arr, indices)
-        #ts.times = np.delete(ts.times, indices)
-        new_times = [new_times[i] for i in range(len(new_times)) if not np.isin(i, indices)]
+        if RecordType.IrregularTimeSeries == type(ts):
+            indices = np.where(np.isclose(values, DSS_UNDEFINED_VALUE, rtol=0, atol=0, equal_nan=True))[0]
+            arr = np.delete(arr, indices)
+            new_times = [new_times[i] for i in range(len(new_times)) if not np.isin(i, indices)]
+            quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
+
         values = arr
-        quality = [quality[i] for i in range(len(quality)) if not np.isin(i, indices)]
         units = units[0]
         data_type = dataType[0]
         start_date = [] if len(new_times) == 0 else new_times[0]

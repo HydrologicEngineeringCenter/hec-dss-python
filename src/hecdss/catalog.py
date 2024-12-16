@@ -4,13 +4,29 @@ from datetime import datetime
 
 class Catalog:
     """manage list of objects inside a DSS database"""
-    def __init__(self, items, recordTypes):
-        self.rawCatalog = items
+    def __init__(self, uncondensed_paths, recordTypes):
+        self.uncondensed_paths = uncondensed_paths
         self.rawRecordTypes = recordTypes
-        self.timeSeriesDictNoDates = {}  # key is path without date, value is a list dates
+        self.timeSeriesDictNoDates = {}  # key is path without date, value is a list of dates
         self.recordTypeDict = {} # key is path w/o date, value is recordType
         self.__create_condensed_catalog()
- 
+
+    def get_record_type(self, pathname):
+        """gets the record type for a given path
+
+                Args:
+                    pathname (str): dss pathname
+
+                Returns:
+                    RecordType: the record type :class:`hecdss.RecordType` of DSS data stored in this pathname
+                """
+        if pathname.lower() in self.recordTypeDict:
+            rt = self.recordTypeDict[pathname.lower()]
+        else:
+            path = DssPath(pathname, RecordType.Unknown)
+            rt = self.recordTypeDict[path.path_without_date().__str__().lower()]
+        return rt
+
     def __create_condensed_catalog(self):
         """
           condensed catalog combines time-series records into a single condensed path
@@ -18,20 +34,20 @@ class Catalog:
           time-series records must match all parts except the D (date) part to be combined.
         """
         self.items = []
-        for i in range(len(self.rawCatalog)):
-            rawPath = self.rawCatalog[i]
+        for i in range(len(self.uncondensed_paths)):
+            rawPath = self.uncondensed_paths[i]
             recordType = RecordType.RecordTypeFromInt(self.rawRecordTypes[i])
             path = DssPath(rawPath,recordType)
             # if timeseries - accumulate dates within a dataset
             if path.is_time_series():
                 cleanPath = str(path.path_without_date())
-                self.recordTypeDict[cleanPath] = recordType
-                tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath,[])
+                self.recordTypeDict[cleanPath.lower()] = recordType
+                tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath.lower(),[])
                 t = datetime.strptime(path.D,"%d%b%Y")
                 tsRecords.append(t)
             elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text,
                                 RecordType.LocationInfo, RecordType.Array]:
-                self.recordTypeDict[str(path)] = recordType
+                self.recordTypeDict[str(path).lower()] = recordType
                 self.items.append(path)
             else:
                 raise Exception(f"unsupported record_type: {recordType}")
@@ -40,7 +56,7 @@ class Catalog:
 
         # go through each timeSeriesDictNoDates, and sort each list of dates
         # use first and last to create the condensed path 
-        for key in self.timeSeriesDictNoDates:
+        for key in self.timeSeriesDictNoDates.keys():
             dateList = sorted(self.timeSeriesDictNoDates[key])
             condensedDpart = dateList[0].strftime("%d%b%Y")
             if len(dateList) >1:

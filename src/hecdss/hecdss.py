@@ -61,7 +61,8 @@ class HecDss:
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         return rt
 
-    def get(self, pathname, startdatetime=None, enddatetime=None):
+    def get(self, pathname: str, startdatetime=None, enddatetime=None):
+        pathname = str(pathname)
         type = self.get_record_type(pathname)
         """gets various types of data from the current DSS file
 

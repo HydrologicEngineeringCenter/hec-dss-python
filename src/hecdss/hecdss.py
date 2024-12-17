@@ -48,21 +48,9 @@ class HecDss:
             self._closed = True
 
     def get_record_type(self, pathname:str) -> RecordType:
-        """gets the record type for a given path
-
-        Args:
-            pathname (str): dss pathname
-
-        Returns:
-            RecordType: the record type :class:`hecdss.RecordType` of DSS data stored in this pathname 
-        """
         if not self._catalog:
             self._catalog = self.get_catalog()
-        if pathname in self._catalog.recordTypeDict:
-            rt = self._catalog.recordTypeDict[pathname]
-        else:
-            path = DssPath(pathname, RecordType.Unknown)
-            rt = self._catalog.recordTypeDict[path.path_without_date().__str__()]
+        rt = self._catalog.get_record_type(pathname)
 
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         # TODO do native call.

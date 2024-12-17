@@ -62,6 +62,23 @@ class TestBasics(unittest.TestCase):
 
         dss.close()
 
+    def test_catalog_get(self):
+        dss = HecDss(self.test_files.get_copy("sample7.dss"))
+        catalog = dss.get_catalog()
+        ts = dss.get(catalog.items[0])
+
+        dss.close()
+
+    def test_with_block(self):
+
+        with HecDss(self.test_files.get_copy("sample7.dss")) as dss:
+            catalog = dss.get_catalog()
+            ts = dss.get(catalog.items[0])
+            dss.close()
+
+
+
+
     def test_new_catalog(self):
         rawPaths = [
             "//SACRAMENTO/TEMP-MIN/01Jan1989/1Day/OBS/",

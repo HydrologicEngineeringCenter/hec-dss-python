@@ -32,11 +32,20 @@ class HecDss:
         self._native.hec_dss_open(filename)
         self._catalog = None
         self._filename = filename
+        self._closed = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def close(self):
         """closes the DSS file and releases any locks
         """
-        self._native.hec_dss_close()
+        if not self._closed:
+            self._native.hec_dss_close()
+            self._closed = True
 
     def get_record_type(self, pathname:str) -> RecordType:
         """gets the record type for a given path
@@ -61,7 +70,8 @@ class HecDss:
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         return rt
 
-    def get(self, pathname, startdatetime=None, enddatetime=None):
+    def get(self, pathname: str, startdatetime=None, enddatetime=None):
+        pathname = str(pathname)
         type = self.get_record_type(pathname)
         """gets various types of data from the current DSS file
 

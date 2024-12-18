@@ -21,7 +21,9 @@ class TestRegularTimeSeries(unittest.TestCase):
         self.test_files = FileManager()
     
     def tearDown(self) -> None:
-        self.test_files.cleanup()
+        pass
+
+        #self.test_files.cleanup()
 
     def test_regular_timeseries_read(self):
         """
@@ -194,6 +196,21 @@ class TestRegularTimeSeries(unittest.TestCase):
         assert (rts.interval == rts_modified.interval), f"irts.interval is not equal to irts_modified.interval." \
                                                         f" irts.interval is {rts.interval}, irts_modified.interval is {rts_modified.interval}"
 
+
+    def test_regular_timeseries_empty_blocks(self):
+        """ test reading time-series with discontinuous blocks"""
+        pathname = "//SSPM5/ELEV/01Nov1991/1Hour/DCP-REV/"
+        filename = self.test_files.create_test_file(".dss")
+        with HecDss(filename) as dss:
+            rts = RegularTimeSeries.create(range(10), start_date=datetime(1988, 1, 1, 8, 0, 0), interval="1Hour",
+                                           units="cfs", path=pathname)
+            dss.put(rts)
+            rts = RegularTimeSeries.create(range(10), start_date=datetime(2016, 10, 11, 7, 0, 0), interval="1Hour",
+                                           units="cfs", path=pathname)
+            dss.put(rts)
+            ts = dss.get(pathname)
+            expected_count = 252273
+            assert ts.get_length() == expected_count, f" expected {expected_count} values, found {ts.get_length()}"
 
 
 

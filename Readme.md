@@ -44,17 +44,14 @@ from hecdss import HecDss
 
 # Open a DSS file
 file_path = "example.dss"
-dss = HecDss(file_path)
-
+with HecDss(file_path) as dss:
 # Retrieve and print data
-data_path = "/example/data/////"
-data = dss.get(data_path)
-print(data)
-
-data.values = data.values * 2
-# Save changes to DSS file
-dss.put(data_path)
-dss.close()
+  data_path = "/example/data/////"
+  data = dss.get(data_path)
+  print(data)
+  data.values = data.values * 2
+  # Save changes to DSS file
+  dss.put(data_path)
 ```
 
 ### Irregular TimeSeries Data
@@ -89,13 +86,13 @@ dss.close()
    
 ```python
   # Example working with an array
-  dss = HecDss("my-dss-file.dss")
-  print(f" record_count = {dss.record_count()}")
-  array_ints = ArrayContainer.create_float_array([1.0, 3.0, 5.0, 7.0])
-  array_ints.id = "/test/float-array/redshift////"
-  dss.put(array_ints)
-  print(f"record_type = {dss.get_record_type(array_ints.id)}")
-  read_array = dss.get(array_ints.id)
+  with HecDss("my-dss-file.dss") as dss:
+    print(f" record_count = {dss.record_count()}")
+    array_ints = ArrayContainer.create_float_array([1.0, 3.0, 5.0, 7.0])
+    array_ints.id = "/test/float-array/redshift////"
+    dss.put(array_ints)
+    print(f"record_type = {dss.get_record_type(array_ints.id)}")
+    read_array = dss.get(array_ints.id)
 ```
 
 

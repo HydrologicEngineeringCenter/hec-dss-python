@@ -28,9 +28,8 @@ class TestRegularTimeSeries(unittest.TestCase):
         read record from disk
         """
         path = "/regular-time-series-many-points/unknown/flow/01Sep2004/15Minute//"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = dss.get(path)
-        dss.close()
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(path)
         assert (553486 == rts.get_length()), f"irts.get_length() should be 553486. is {rts.get_length()}"
         assert (12.300 == rts.values[18]), f"irts.values[18] should be 39000. is {rts.values[18]}"
         assert ("2004-09-30 23:00:00" == str(rts.times[19])), f"irts.times[19] should be '2004-09-30 23:00:00'. is {rts.times[19]}"
@@ -43,9 +42,8 @@ class TestRegularTimeSeries(unittest.TestCase):
         Test if dss.get() returns a record of type IrregularTimeSeries
         """
         path = "/regular-time-series-many-points/unknown/flow/01Sep2004/15Minute//"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = dss.get(path, startdatetime=datetime(2004, 9, 1), enddatetime=datetime(2004, 9, 30))
-        dss.close()
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(path, startdatetime=datetime(2004, 9, 1), enddatetime=datetime(2004, 9, 30))
         assert (type(rts) is RegularTimeSeries), f"rts should be type RegularTimeSeries. is {type(rts)}"
 
     def test_regular_timeseries_create(self):
@@ -80,23 +78,20 @@ class TestRegularTimeSeries(unittest.TestCase):
         create IrregularTimeSeries and store to dss
         """
         path = "/regular-time-series/test/CFS//15Minute/store-test/"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = RegularTimeSeries.create(range(15), start_date=datetime.today(), units="CFS", path=path)
-        dss.put(rts)
-        dss.close()
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = RegularTimeSeries.create(range(15), start_date=datetime.today(), units="CFS", path=path)
+            dss.put(rts)
 
     def test_regular_timeseries_create_store_read(self):
         """
         Generates a IrregularTimeSeries object then stores data on disk and read result
         """
         path = "/regular-time-series/test/CFS//10Second/store-test/"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = RegularTimeSeries.create(range(15), start_date=datetime.today(), units="CFS", path=path)
-        dss.put(rts)
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = RegularTimeSeries.create(range(15), start_date=datetime.today(), units="CFS", path=path)
+            dss.put(rts)
 
-        read_rts = dss.get(path)
-
-        dss.close()
+            read_rts = dss.get(path)
 
         assert (read_rts.times == rts.times), f"saved and read times should be identical saved times are" \
                                                 f" \n{rts.times}\n and read times are \n{read_rts.times}"
@@ -106,17 +101,16 @@ class TestRegularTimeSeries(unittest.TestCase):
         Read a IrregularTimeSeries object then stores data on disk and read again
         """
         path = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute//"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
 
-        path_modified = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute/test-store/"
+            path_modified = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute/test-store/"
 
-        rts.id = path_modified
+            rts.id = path_modified
 
-        dss.put(rts)
+            dss.put(rts)
 
-        rts_modified = dss.get(path_modified)
-        dss.close()
+            rts_modified = dss.get(path_modified)
         np.set_printoptions(suppress=True)
         assert (rts.get_length() == rts_modified.get_length()), f"irts.get_length() is not equal to irts_modified.get_length()." \
                                                                   f" irts.get_length() is {rts.get_length()}, irts_modified.get_length() is {rts_modified.get_length()}"
@@ -136,20 +130,19 @@ class TestRegularTimeSeries(unittest.TestCase):
         Read a IrregularTimeSeries object, modify object then stores data on disk and read again
         """
         path = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute//"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
 
-        rts.values[3] = 75
-        rts.units = "FEET"
+            rts.values[3] = 75
+            rts.units = "FEET"
 
-        path_modified = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute/test-store/"
+            path_modified = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute/test-store/"
 
-        rts.id = path_modified
+            rts.id = path_modified
 
-        dss.put(rts)
+            dss.put(rts)
 
-        rts_modified = dss.get(path_modified)
-        dss.close()
+            rts_modified = dss.get(path_modified)
         np.set_printoptions(suppress=True)
         assert (rts.get_length() == rts_modified.get_length()), f"irts.get_length() is not equal to irts_modified.get_length()." \
                                                                   f" irts.get_length() is {rts.get_length()}, irts_modified.get_length() is {rts_modified.get_length()}"
@@ -169,16 +162,15 @@ class TestRegularTimeSeries(unittest.TestCase):
         Read a IrregularTimeSeries object, modify object then stores data on disk and read again
         """
         path = "/regular-time-series-many-points/unknown/flow/01Oct2004/15Minute//"
-        dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-        rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
 
-        rts.values[3] = 75
-        rts.units = "FEET"
+            rts.values[3] = 75
+            rts.units = "FEET"
 
-        dss.put(rts)
+            dss.put(rts)
 
-        rts_modified = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
-        dss.close()
+            rts_modified = dss.get(path, startdatetime=datetime(2004, 10, 1), enddatetime=datetime(2004, 10, 30))
         np.set_printoptions(suppress=True)
         assert (
                     rts.get_length() == rts_modified.get_length()), f"irts.get_length() is not equal to irts_modified.get_length()." \

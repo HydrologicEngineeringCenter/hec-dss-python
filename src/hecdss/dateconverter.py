@@ -79,7 +79,7 @@ class DateConverter:
 
 
     @staticmethod
-    def dss_datetime_from_string(dt):
+    def dss_datetime_strings_from_datetime(dt:datetime):
         """ 
         convert python datetime to DSS 24:00 style string
         2023-08-25 09:32:46.832952 -> 25Aug2023 09:23:47
@@ -163,9 +163,9 @@ class DateConverter:
 
 if __name__ == "__main__":
     dt = datetime.today()
-    x = DateConverter.dss_datetime_from_string(dt)
+    x = DateConverter.dss_datetime_strings_from_datetime(dt)
     print(x)
     midnight = datetime(2023,8,3,0,0,0)
-    x = DateConverter.dss_datetime_from_string(midnight)
+    x = DateConverter.dss_datetime_strings_from_datetime(midnight)
     print(x)
 

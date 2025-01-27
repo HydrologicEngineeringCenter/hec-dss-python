@@ -399,7 +399,7 @@ class HecDss:
             if not len(ts.times):
                 raise Exception("Time Series has an empty times array")
 
-            startDate, startTime = DateConverter.dss_datetime_from_string(ts.times[0])
+            startDate, startTime = DateConverter.dss_datetime_strings_from_datetime(ts.times[0])
             quality = []  # TO DO
 
             status = self._native.hec_dss_tsStoreRegular(
@@ -418,7 +418,7 @@ class HecDss:
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
             start_date_base = (datetime(1900, 1, 1)+timedelta(days=its.julian_base_date))
-            startDate, startTime = DateConverter.dss_datetime_from_string(start_date_base)
+            startDate, startTime = DateConverter.dss_datetime_strings_from_datetime(start_date_base)
             quality = []  # TO DO
             julian_times = DateConverter.julian_array_from_date_times(its.times, its.time_granularity_seconds, start_date_base)
             if max(julian_times) >= 2147483647:

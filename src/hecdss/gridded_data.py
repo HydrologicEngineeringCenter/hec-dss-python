@@ -2,6 +2,8 @@
 import numpy as np
 import math
 
+NULL_INT = -3.4028234663852886e+38
+
 class GriddedData:
     """container for gridded (Raster) data
 
@@ -87,7 +89,7 @@ class GriddedData:
         self.rangeLimitTable = [0] * bins
         self.numberEqualOrExceedingRangeLimit = [0] * bins
 
-        self.rangeLimitTable[0] = -3.4028234663852886e+38
+        self.rangeLimitTable[0] = NULL_INT
         self.rangeLimitTable[1] = minval
 
         step = range_ / bins
@@ -107,13 +109,15 @@ class GriddedData:
         self.numberOfCellsX = len(self.data[0])
         self.numberOfCellsY = len(self.data)
         n = np.size(self.data)
-        self.maxDataValue = np.max(self.data)
-        self.minDataValue = np.min(self.data)
-        bin_range = (int)(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
-        self.meanDataValue = np.mean(self.data)
+        self.maxDataValue = np.nanmax(self.data)
+        self.minDataValue = np.nanmin(self.data)
+        bin_range = int(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
+        self.meanDataValue = np.nanmean(self.data)
+        
+        self.data = np.nan_to_num(self.data, nan=NULL_INT)
         self.numberOfRanges = math.floor(1 + 3.322 * math.log10(n) + 1)
-        flatData = self.data.flatten()
-        self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flatData)
+        flat_data = self.data.flatten()
+        self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flat_data)
 
     @staticmethod
     def create(path=None,

@@ -675,6 +675,33 @@ class _Native:
 
         return result
 
+    def hec_dss_numberPeriods(
+            self,
+            intervalSeconds,
+            julianStart,
+            startSeconds,
+            julianEnd,
+            endSeconds,
+    ):
+        self.dll.hec_dss_numberPeriods.argtypes = [
+            c_int,  # intervalSeconds
+            c_int,  # julianStart
+            c_int,  # startSeconds
+            c_int,  # julianEnd
+            c_int,  # endSeconds
+        ]
+        self.dll.hec_dss_numberPeriods.restype = c_int
+
+        result = self.dll.hec_dss_numberPeriods(
+            intervalSeconds,
+            julianStart,
+            startSeconds,
+            julianEnd,
+            endSeconds,
+        )
+
+        return result
+
     def hec_dss_tsRetrieve(
             self,
             pathname: str,
@@ -688,8 +715,8 @@ class _Native:
             numberValuesRead,
             quality: List[int],
             qualityLength: int,
-            julianBaseDate: int,
-            timeGranularitySeconds: int,
+            julianBaseDate: List[int],
+            timeGranularitySeconds: List[int],
             units: List[str],
             unitsLength: int,
             dataType: List[str],

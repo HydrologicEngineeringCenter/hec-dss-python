@@ -268,7 +268,7 @@ class HecDss:
 
         return pd
 
-    def _get_date_time_range(self, pathname, boolFullSet):
+    def _get_julian_time_range(self, pathname, boolFullSet):
         firstValidJulian = [0]
         firstSeconds = [0]
         lastValidJulian = [0]
@@ -281,6 +281,13 @@ class HecDss:
             lastValidJulian,
             lastSeconds
         )
+
+        return (firstValidJulian, firstSeconds, lastValidJulian, lastSeconds)
+
+    def _get_date_time_range(self, pathname, boolFullSet):
+
+        firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, boolFullSet)
+
         first = DateConverter.date_times_from_julian_array(firstSeconds, 1, firstValidJulian[0])[0]
         last = DateConverter.date_times_from_julian_array(lastSeconds, 1, lastValidJulian[0])[0]
 
@@ -289,9 +296,11 @@ class HecDss:
 
     def _get_timeseries(self, pathname, startDateTime, endDateTime):
         # get sizes
+        firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
         if not (startDateTime and endDateTime):
-            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
-
+            #newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
+            newStartDateTime = DateConverter.date_times_from_julian_array(firstSeconds, 1, firstValidJulian[0])[0]
+            newEndDateTime = DateConverter.date_times_from_julian_array(lastSeconds, 1, lastValidJulian[0])[0]
             if not startDateTime:
                 startDateTime = newStartDateTime
             if not endDateTime:
@@ -316,6 +325,20 @@ class HecDss:
         # print("Number of values:", numberValues[0])
         # print("Quality element size:", qualityElementSize[0])
 
+        number_periods = numberValues[0]
+        if RecordType.RegularTimeSeries == self.get_record_type(pathname):
+            dsspath = DssPath(pathname)
+
+            interval_seconds = DateConverter.intervalString_to_sec(dsspath.E)
+
+            number_periods = self._native.hec_dss_numberPeriods(
+                interval_seconds,
+                firstValidJulian[0],
+                firstSeconds[0],
+                lastValidJulian[0],
+                lastSeconds[0],
+            )
+
         # tsRetrive
 
         times = [0]
@@ -336,7 +359,7 @@ class HecDss:
             endTime,
             times,
             values,
-            numberValues[0],
+            number_periods+1,
             numberValuesRead,
             quality,
             qualityElementSize[0],

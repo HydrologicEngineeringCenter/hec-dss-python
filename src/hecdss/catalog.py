@@ -42,9 +42,10 @@ class Catalog:
             if path.is_time_series():
                 cleanPath = str(path.path_without_date())
                 self.recordTypeDict[cleanPath.lower()] = recordType
-                tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath.lower(),[])
-                t = datetime.strptime(path.D,"%d%b%Y")
-                tsRecords.append(t)
+                if(path.D != "TS-Pattern"):
+                    tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath.lower(), [])
+                    t = datetime.strptime(path.D,"%d%b%Y")
+                    tsRecords.append(t)
             elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text,
                                 RecordType.LocationInfo, RecordType.Array]:
                 self.recordTypeDict[str(path).lower()] = recordType

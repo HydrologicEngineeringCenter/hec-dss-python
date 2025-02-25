@@ -30,7 +30,6 @@ class _Native:
             raise FileNotFoundError(f"{libname} not found Paths searched: {paths_to_try}")
         return ctypes.CDLL(found_libs[0])
 
-
     def __init__(self):
         """Loads the hecdss shared library from disk"""
 
@@ -39,6 +38,25 @@ class _Native:
             self.dll = self.load_hecdss_library("hecdss.dll")
         else:
             self.dll = self.load_hecdss_library("libhecdss.so")
+
+        ver = self.get_version()
+        ver_tuple = tuple(map(int, ver.split('.')))
+        MIN_VERSION = (0, 2, 0)
+        if ver_tuple < MIN_VERSION:
+            raise ValueError(f"The version of the hecdss shared library must be at least 0.2.0.  found {ver}")
+
+    def get_version(self):
+        """
+        returns the version of the hecdss.dll
+        or empty string if version is less than 0.2.0
+        """
+        f = getattr(self.dll, 'hec_dss_api_version', None)
+        if f is not None:
+            f.restype = ctypes.c_char_p
+            version = f()
+            return version.decode('utf-8')
+        else:
+            return "0.0.1"
 
     def hec_dss_open(self, dss_filename: str) -> int:
         """opens a DSS file and gets a handle
@@ -721,6 +739,8 @@ class _Native:
             unitsLength: int,
             dataType: List[str],
             typeLength: int,
+            timeZoneName: List[str],
+            timeZoneNameLength: int
     ):
 
         f = self.dll.hec_dss_tsRetrieve
@@ -743,6 +763,8 @@ class _Native:
             c_int,  # unitsLength
             c_char_p,  # dataType
             c_int,  # typeLength
+            c_char_p,  # timeZoneName
+            c_int,  # timeZoneNameLength
         ]
         f.restype = c_int
 
@@ -763,6 +785,11 @@ class _Native:
         buff_size = typeLength
         c_dataType = create_string_buffer(buff_size)
         c_typeLength = c_int(buff_size)
+
+        buff_size = timeZoneNameLength
+        c_timeZoneName = create_string_buffer(buff_size)
+        c_timeZoneNameLength = c_int(buff_size)
+
         c_julianBaseDate = c_int()
         c_timeGranularitySeconds = c_int()
 
@@ -785,6 +812,8 @@ class _Native:
             c_unitsLength,
             c_dataType,
             c_typeLength,
+            c_timeZoneName,
+            c_timeZoneNameLength
         )
 
         times.clear()
@@ -795,6 +824,7 @@ class _Native:
         quality.extend(list(c_quality[: c_numberValuesRead.value]))
         units[0] = c_units.value.decode("utf-8")
         dataType[0] = c_dataType.value.decode("utf-8")
+        timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
         julianBaseDate[0] = c_julianBaseDate.value
         timeGranularitySeconds[0] = c_timeGranularitySeconds.value
 

@@ -10,6 +10,9 @@ To install `hecdss`, use the following command:
 ```bash
 pip install -i https://test.pypi.org/simple/ hecdss
 ```
+## API full documentation
+
+[API Documentation](https://hydrologicengineeringcenter.github.io/hec-dss-python/)
 
 ### DSS file methods
 1. `HecDss(file_path: str)`: Opens a DSS file located at the provided file path.

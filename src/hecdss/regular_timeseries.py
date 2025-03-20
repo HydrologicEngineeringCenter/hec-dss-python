@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 
 class RegularTimeSeries:
     def __init__(self):
+        """
+        Initializes a new instance of the RegularTimeSeries class.
+        """
         self.times = []
         self.values = np.empty(0)
         self.quality = []
@@ -17,12 +20,29 @@ class RegularTimeSeries:
         self.id = ""
 
     def add_data_point(self, date, value, flag=None):
+        """
+        Adds a data point to the time series.
+
+        Args:
+            date (datetime): The date of the data point.
+            value (float): The value of the data point.
+            flag (int, optional): The quality flag of the data point. Defaults to None.
+        """
         self.times.append(date)
         self.values.append(value)
         if flag is not None:
             self.quality.append(flag)
 
     def get_value_at(self, date):
+        """
+        Retrieves the value at a specific date.
+
+        Args:
+            date (datetime): The date for which to retrieve the value.
+
+        Returns:
+            float: The value at the specified date, or None if the date is not found.
+        """
         if date in self.times:
             index = self.times.index(date)
             return self.values[index]
@@ -30,15 +50,36 @@ class RegularTimeSeries:
             return None
 
     def get_values(self):
+        """
+        Retrieves all values in the time series.
+
+        Returns:
+            numpy.ndarray: An array of all values in the time series.
+        """
         return self.values
 
     def get_dates(self):
+        """
+        Retrieves all dates in the time series.
+
+        Returns:
+            list: A list of all dates in the time series.
+        """
         return self.times
 
     def get_length(self):
+        """
+        Retrieves the number of data points in the time series.
+
+        Returns:
+            int: The number of data points in the time series.
+        """
         return len(self.times)
 
     def print_to_console(self):
+        """
+        Prints the time series data to the console.
+        """
         print("dsspath='" + self.id + "'")
         print("units='"+self.units+"'")
         print("dataType='" + self.data_type + "'")
@@ -51,34 +92,75 @@ class RegularTimeSeries:
                 print(f"{time}, {value}, {flag}")
 
     def _get_interval_interval(self):
+        """
+        Converts the interval string to seconds.
+
+        Returns:
+            int: The interval in seconds.
+        """
         result = DateConverter.intervalString_to_sec(self.interval)
         return result
 
     def _get_interval_path(self):
+        """
+        Converts the interval string of the DSS path to seconds.
+
+        Returns:
+            int: The interval in seconds, or "empty" if the id is None.
+        """
         if self.id is not None:
             return DateConverter.intervalString_to_sec(DssPath(self.id, type(self)).E)
         return "empty"
 
     def _get_interval_times(self):
+        """
+        Calculates the interval between the first two dates in the time series.
+
+        Returns:
+            int: The interval in seconds, or "empty" if there are fewer than two dates.
+        """
         if len(self.times) > 1 and type(self.times[0]) == datetime:
             interval = self.times[1]-self.times[0]
             return int(interval.total_seconds())
         return "empty"
+
     def _interval_to_interval(self, new_interval):
+        """
+        Sets the interval to a new value.
+
+        Args:
+            new_interval (int): The new interval in seconds.
+        """
         self.interval = new_interval
 
     def _interval_to_path(self, new_interval):
+        """
+        Updates the DSS path with a new interval.
+
+        Args:
+            new_interval (int): The new interval in seconds.
+        """
         if self.id != None:
             new_path = DssPath(self.id, type(self))
             new_path.E = DateConverter.sec_to_intervalString(new_interval)
             self.id = str(new_path)
 
     def _interval_to_times(self, new_interval):
+        """
+        Updates the times in the time series based on a new interval.
+
+        Args:
+            new_interval (int): The new interval in seconds.
+        """
         if type(self.start_date) == datetime:
             self.times = []
             for i in range(len(self.values)):
                 self.times.append((self.start_date + (i * timedelta(seconds=new_interval))).replace(microsecond=0))
+
     def _generate_times(self):
+        """
+        Generates times for the time series based on the interval and start date.
+        """
         if(len(self.times) > 0 and self.start_date == ""):
             self.start_date = self.times[0]
 
@@ -94,6 +176,24 @@ class RegularTimeSeries:
 
     @staticmethod
     def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None):
+        """
+        Creates a new instance of the RegularTimeSeries class with the specified parameters.
+
+        Args:
+            values (list): List of data values.
+            times (list, optional): List of time values. Defaults to [].
+            quality (list, optional): List of quality values. Defaults to [].
+            units (str, optional): Units of the data. Defaults to "".
+            data_type (str, optional): Type of the data. Defaults to "".
+            interval (str, optional): Interval of the time series. Defaults to "".
+            start_date (str, optional): Start date of the time series. Defaults to "".
+            time_granularity_seconds (int, optional): Time granularity in seconds. Defaults to 1.
+            julian_base_date (int, optional): Julian base date. Defaults to 0.
+            path (str, optional): DSS path. Defaults to None.
+
+        Returns:
+            RegularTimeSeries: A new instance of the RegularTimeSeries class.
+        """
         rts = RegularTimeSeries()
         rts.times = [i.replace(microsecond=0) for i in times]
         rts.values = np.array(values)

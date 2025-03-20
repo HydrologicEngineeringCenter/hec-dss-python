@@ -35,11 +35,24 @@ class HecDss:
         self._closed = False
 
     def __enter__(self):
+        """
+        Enter the runtime context related to this object.
+
+        Returns:
+            HecDss: The HecDss object itself.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        """
+        Exit the runtime context related to this object and close the DSS file.
 
+        Args:
+            exc_type (type): The exception type.
+            exc_val (Exception): The exception instance.
+            exc_tb (traceback): The traceback object.
+        """
+        self.close()
     def close(self):
         """closes the DSS file and releases any locks
         """
@@ -47,7 +60,16 @@ class HecDss:
             self._native.hec_dss_close()
             self._closed = True
 
-    def get_record_type(self, pathname:str) -> RecordType:
+    def get_record_type(self, pathname: str) -> RecordType:
+        """
+        Get the record type for a given DSS pathname.
+
+        Args:
+            pathname (str): The DSS pathname for which to get the record type.
+
+        Returns:
+            RecordType: The record type of the given DSS pathname.
+        """
         if not self._catalog:
             self._catalog = self.get_catalog()
         rt = self._catalog.get_record_type(pathname)

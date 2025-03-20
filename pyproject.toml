@@ -9,7 +9,7 @@ packages = [{ include = "hecdss", from = "src" }]
 # include = [{ path = "lib", format = ["sdist", "wheel"] }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 
 [tool.poetry.dev-dependencies]
 # Python Syntax highlighter, assume

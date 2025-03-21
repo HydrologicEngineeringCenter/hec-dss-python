@@ -22,7 +22,7 @@ class TestGriddedData(unittest.TestCase):
 
     def test_gridded_data_read(self):
         """
-        read record from disk
+        read GriddedData record from disk
         """
         path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS/"
         with HecDss(self.test_files.get_copy("grid-example.dss")) as dss:
@@ -41,7 +41,7 @@ class TestGriddedData(unittest.TestCase):
 
     def test_gridded_data_create(self):
         """
-        Generates a PairedData object
+        Generates a GriddedData object
         """
         data = [[j + (50 * i) for j in range(50)] for i in range(50)]
         gd = GriddedData.create(data=data)
@@ -51,7 +51,7 @@ class TestGriddedData(unittest.TestCase):
 
     def test_gridded_data_create_store(self):
         """
-        Generates a PairedData object then stores data on disk
+        Generates a GriddedData object then stores data on disk
         """
         path = "/grid/new/gradient/01MAY2024:1400/01MAY2024:1400/new2-grad/"
         file = self.test_files.get_copy("grid-example.dss")
@@ -69,7 +69,7 @@ class TestGriddedData(unittest.TestCase):
 
     def test_gridded_data_read_store_read(self):
         """
-        Generates a PairedData object then stores data on disk
+        Generates a GriddedData object then stores data on disk
         """
         path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS/"
         with HecDss(self.test_files.get_copy("grid-example.dss")) as dss:

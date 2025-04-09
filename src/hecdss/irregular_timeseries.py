@@ -18,6 +18,7 @@ class IrregularTimeSeries:
         self.time_granularity_seconds = 1
         self.julian_base_date = 0
         self.id = ""
+        self.location_info = None
 
     def add_data_point(self, date, value):
         self.times.append(date)
@@ -47,7 +48,7 @@ class IrregularTimeSeries:
             print(f"Time: {time}, Value: {value}")
 
     @staticmethod
-    def create(values, times, quality=[], units="", data_type="", interval=0, start_date="", time_granularity_seconds=1, julian_base_date=None, path=None):
+    def create(values, times, quality=[], units="", data_type="", interval=0, start_date="", time_granularity_seconds=1, julian_base_date=None, path=None, location_info=None):
         irts = IrregularTimeSeries()
         irts.times = times
         irts.values = np.array(values)
@@ -61,4 +62,5 @@ class IrregularTimeSeries:
         if julian_base_date is None and len(times):
             irts.julian_base_date = (times[0]-datetime(1900, 1, 1)).days
         irts.id = path
+        irts.location_info = location_info
         return irts

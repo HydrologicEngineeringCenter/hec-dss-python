@@ -12,7 +12,7 @@ class PairedData:
         self.type_dependent = ""
         self.units_independent = ""
         self.units_dependent = ""
-        self.location_information = None
+        self.location_info = None
 
     def curve_count(self):
         return len(self.values)

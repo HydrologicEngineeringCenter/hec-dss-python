@@ -79,6 +79,7 @@ class GriddedData:
         self.rangeLimitTable = []
         self.numberEqualOrExceedingRangeLimit = []
         self.data = np.zeros(0)
+        self.location_info = None
 
     def range_limit_table(self, minval, maxval, range_, bins, datasize, data):
         max_bins = 15
@@ -146,7 +147,8 @@ class GriddedData:
         meanDataValue = 0.0,
         rangeLimitTable = [],
         numberEqualOrExceedingRangeLimit = [],
-        data=np.zeros(0)):
+        data=np.zeros(0),
+        location_info=None):
 
         gd = GriddedData()
         gd.id = path
@@ -176,6 +178,7 @@ class GriddedData:
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
         gd.data = np.array(data)
+        gd.location_info = location_info
 
         gd.update_grid_info()
 

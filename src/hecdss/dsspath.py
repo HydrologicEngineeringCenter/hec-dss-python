@@ -38,6 +38,11 @@ class DssPath:
         rval = DssPath(s, self.recType)
         return rval
 
+    def path_location_info(self):
+        s = "/" + self.A + "/" + self.B + "/" + self.C + "////"
+        rval = DssPath(s, self.recType)
+        return rval
+
     def is_time_series(self):
         return self.recType in DssPath._timeSeriesFamily
 

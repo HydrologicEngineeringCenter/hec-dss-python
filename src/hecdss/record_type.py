@@ -27,6 +27,9 @@ class RecordType(Enum):
 
     @staticmethod
     def RecordTypeFromInt(recType):
+        """
+        Returns RecordType Enumeration from integer value
+        """
         rval = RecordType.Unknown
 
         if 90 <= recType <= 93 :

@@ -133,19 +133,5 @@ class TestLocationInfo(unittest.TestCase):
         assert IRTS.location_info.time_zone_name == IRTS2.location_info.time_zone_name, f"Expected time_zone_name: {IRTS.location_info.time_zone_name}, but got: {IRTS2.location_info.time_zone_name}"
         assert IRTS.location_info.supplemental == IRTS2.location_info.supplemental, f"Expected supplemental: {IRTS.location_info.supplemental}, but got: {IRTS2.location_info.supplemental}"
 
-    # def test_location_info_container_read_new_path_write_read2(self):
-    #     """
-    #     Read a IrregularTimeSeries object, modify object then stores data on disk and read again
-    #     """
-    #     path = "/irregular-time-series/FAIR OAKS CA/FLOW-ANNUAL PEAK/10Jan1862 - 10Feb2017/IR-Century/USGS/"
-    #     with HecDss("C:/Users/q0hecoah/Documents/data/examples-all-data-types.dss") as dss:
-    #         IRTS = dss.get(path)
-    #         path2 = "/irregular-time-series/FAIR OAKS CA/FLOW-ANNUAL PEAK/10Jan1862 - 10Feb2017/IR-Century/USGS_newPath/"
-    #         IRTS.id = path2
-    #         IRTS.location_info.time_zone_name="PST"
-    #         dss.put(IRTS)
-    #
-    #         IRTS2 = dss.get(IRTS.id)
-
 if __name__ == "__main__":
     unittest.main()

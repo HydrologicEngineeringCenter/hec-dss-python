@@ -201,38 +201,5 @@ class TestRegularTimeSeries(unittest.TestCase):
             expected_count = 252273
             assert ts.get_length() == expected_count, f" expected {expected_count} values, found {ts.get_length()}"
 
-    # def test_regular_now(self):
-    #     """
-    #     Read a IrregularTimeSeries object, modify object then stores data on disk and read again
-    #     """
-    #     path = "/regular-time-series/GAPT/FLOW/01Sep2021/6Hour/forecast1/"
-    #     dss = HecDss("C:/Users/q0hecoah/Documents/data/examples-all-data-types.dss")
-    #     #dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-    #     rts = dss.get(path)
-    #     rts.id = "/regular-time-series/GAPT/FLOW//6Hour/forecast_R/"
-    #     dss.put(rts)
-    #
-    #     rts2 = dss.get(rts.id)
-    #
-    #     hi =  rts2.times
-
-    # def test_regular_time_path(self):
-    #     """
-    #     Read a IrregularTimeSeries object, modify object then stores data on disk and read again
-    #     """
-    #     path = "/regular-time-series/GAPT/FLOW/01Sep2021/6Hour/forecast1/"
-    #     dss = HecDss(self.test_files.get_copy("examples-all-data-types.dss"))
-    #     rts = dss.get(path)
-    #     rts.id = "/regular-time-series/GAPT/FLOW/TS-Pattern/6Hour/forecast_R/"
-    #     print(rts.times)
-    #     dss.put(rts)
-    #
-    #     #dss.get_catalog().print()
-    #
-    #     pattern = dss.get(rts.id)
-    #
-    #     print(type(pattern))
-    #     print(pattern.times)
-
 if __name__ == "__main__":
     unittest.main()

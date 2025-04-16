@@ -19,6 +19,7 @@ from hecdss import HecDss
 # "sample7.dss" and "R703F3-PF_v7.dss" which are modified within these tests
 # MODIFIED_TEST_DIR=r"C:\Users\oskar\Documents\dss"
 
+
 class TestLocationInfo(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -52,22 +53,11 @@ class TestLocationInfo(unittest.TestCase):
         path = "/irregular-time-series/FAIR OAKS CA/Location Info////"
         with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
             location = dss.get(path)
-            location.id = path
             dss.put(location)
 
             location2 = dss.get(location.id)
 
-        assert location.x == location2.x, f"Expected x: {location.x}, but got: {location2.x}"
-        assert location.y == location2.y, f"Expected y: {location.y}, but got: {location2.y}"
-        assert location.z == location2.z, f"Expected z: {location.z}, but got: {location2.z}"
-        assert location.coordinate_system == location2.coordinate_system, f"Expected coordinate_system: {location.coordinate_system}, but got: {location2.coordinate_system}"
-        assert location.coordinate_id == location2.coordinate_id, f"Expected coordinate_id: {location.coordinate_id}, but got: {location2.coordinate_id}"
-        assert location.horizontal_units == location2.horizontal_units, f"Expected horizontal_units: {location.horizontal_units}, but got: {location2.horizontal_units}"
-        assert location.horizontal_datum == location2.horizontal_datum, f"Expected horizontal_datum: {location.horizontal_datum}, but got: {location2.horizontal_datum}"
-        assert location.vertical_units == location2.vertical_units, f"Expected vertical_units: {location.vertical_units}, but got: {location2.vertical_units}"
-        assert location.vertical_datum == location2.vertical_datum, f"Expected vertical_datum: {location.vertical_datum}, but got: {location2.vertical_datum}"
-        assert location.time_zone_name == location2.time_zone_name, f"Expected time_zone_name: {location.time_zone_name}, but got: {location2.time_zone_name}"
-        assert location.supplemental == location2.supplemental, f"Expected supplemental: {location.supplemental}, but got: {location2.supplemental}"
+        assert_location_info_equal(location, location2)
 
     def test_location_info_read_new_path_write_read(self):
         """
@@ -84,17 +74,7 @@ class TestLocationInfo(unittest.TestCase):
             location2 = dss.get(location.id)
 
 
-        assert location.x == location2.x, f"Expected x: {location.x}, but got: {location2.x}"
-        assert location.y == location2.y, f"Expected y: {location.y}, but got: {location2.y}"
-        assert location.z == location2.z, f"Expected z: {location.z}, but got: {location2.z}"
-        assert location.coordinate_system == location2.coordinate_system, f"Expected coordinate_system: {location.coordinate_system}, but got: {location2.coordinate_system}"
-        assert location.coordinate_id == location2.coordinate_id, f"Expected coordinate_id: {location.coordinate_id}, but got: {location2.coordinate_id}"
-        assert location.horizontal_units == location2.horizontal_units, f"Expected horizontal_units: {location.horizontal_units}, but got: {location2.horizontal_units}"
-        assert location.horizontal_datum == location2.horizontal_datum, f"Expected horizontal_datum: {location.horizontal_datum}, but got: {location2.horizontal_datum}"
-        assert location.vertical_units == location2.vertical_units, f"Expected vertical_units: {location.vertical_units}, but got: {location2.vertical_units}"
-        assert location.vertical_datum == location2.vertical_datum, f"Expected vertical_datum: {location.vertical_datum}, but got: {location2.vertical_datum}"
-        assert location.time_zone_name == location2.time_zone_name, f"Expected time_zone_name: {location.time_zone_name}, but got: {location2.time_zone_name}"
-        assert location.supplemental == location2.supplemental, f"Expected supplemental: {location.supplemental}, but got: {location2.supplemental}"
+        assert_location_info_equal(location, location2)
 
     def test_location_info_container_read_write(self):
         """
@@ -121,17 +101,23 @@ class TestLocationInfo(unittest.TestCase):
 
             IRTS2 = dss.get(IRTS.id)
 
-        assert IRTS.location_info.x == IRTS2.location_info.x, f"Expected x: {IRTS.location_info.x}, but got: {IRTS2.location_info.x}"
-        assert IRTS.location_info.y == IRTS2.location_info.y, f"Expected y: {IRTS.location_info.y}, but got: {IRTS2.location_info.y}"
-        assert IRTS.location_info.z == IRTS2.location_info.z, f"Expected z: {IRTS.location_info.z}, but got: {IRTS2.location_info.z}"
-        assert IRTS.location_info.coordinate_system == IRTS2.location_info.coordinate_system, f"Expected coordinate_system: {IRTS.location_info.coordinate_system}, but got: {IRTS2.location_info.coordinate_system}"
-        assert IRTS.location_info.coordinate_id == IRTS2.location_info.coordinate_id, f"Expected coordinate_id: {IRTS.location_info.coordinate_id}, but got: {IRTS2.location_info.coordinate_id}"
-        assert IRTS.location_info.horizontal_units == IRTS2.location_info.horizontal_units, f"Expected horizontal_units: {IRTS.location_info.horizontal_units}, but got: {IRTS2.location_info.horizontal_units}"
-        assert IRTS.location_info.horizontal_datum == IRTS2.location_info.horizontal_datum, f"Expected horizontal_datum: {IRTS.location_info.horizontal_datum}, but got: {IRTS2.location_info.horizontal_datum}"
-        assert IRTS.location_info.vertical_units == IRTS2.location_info.vertical_units, f"Expected vertical_units: {IRTS.location_info.vertical_units}, but got: {IRTS2.location_info.vertical_units}"
-        assert IRTS.location_info.vertical_datum == IRTS2.location_info.vertical_datum, f"Expected vertical_datum: {IRTS.location_info.vertical_datum}, but got: {IRTS2.location_info.vertical_datum}"
-        assert IRTS.location_info.time_zone_name == IRTS2.location_info.time_zone_name, f"Expected time_zone_name: {IRTS.location_info.time_zone_name}, but got: {IRTS2.location_info.time_zone_name}"
-        assert IRTS.location_info.supplemental == IRTS2.location_info.supplemental, f"Expected supplemental: {IRTS.location_info.supplemental}, but got: {IRTS2.location_info.supplemental}"
+        assert_location_info_equal(IRTS.location_info, IRTS2.location_info)
+
+def assert_location_info_equal(location1: LocationInfo, location2: LocationInfo):
+    """
+    Asserts that two LocationInfo objects are equal.
+    """
+    assert location1.x == location2.x, f"Expected x: {location1.x}, but got: {location2.x}"
+    assert location1.y == location2.y, f"Expected y: {location1.y}, but got: {location2.y}"
+    assert location1.z == location2.z, f"Expected z: {location1.z}, but got: {location2.z}"
+    assert location1.coordinate_system == location2.coordinate_system, f"Expected coordinate_system: {location1.coordinate_system}, but got: {location2.coordinate_system}"
+    assert location1.coordinate_id == location2.coordinate_id, f"Expected coordinate_id: {location1.coordinate_id}, but got: {location2.coordinate_id}"
+    assert location1.horizontal_units == location2.horizontal_units, f"Expected horizontal_units: {location1.horizontal_units}, but got: {location2.horizontal_units}"
+    assert location1.horizontal_datum == location2.horizontal_datum, f"Expected horizontal_datum: {location1.horizontal_datum}, but got: {location2.horizontal_datum}"
+    assert location1.vertical_units == location2.vertical_units, f"Expected vertical_units: {location1.vertical_units}, but got: {location2.vertical_units}"
+    assert location1.vertical_datum == location2.vertical_datum, f"Expected vertical_datum: {location1.vertical_datum}, but got: {location2.vertical_datum}"
+    assert location1.time_zone_name == location2.time_zone_name, f"Expected time_zone_name: {location1.time_zone_name}, but got: {location2.time_zone_name}"
+    assert location1.supplemental == location2.supplemental, f"Expected supplemental: {location1.supplemental}, but got: {location2.supplemental}"
 
 if __name__ == "__main__":
     unittest.main()

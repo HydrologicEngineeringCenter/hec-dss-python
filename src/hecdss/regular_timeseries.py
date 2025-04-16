@@ -18,6 +18,7 @@ class RegularTimeSeries:
         self.start_date = ""
         self.time_granularity_seconds = 1
         self.id = ""
+        self.location_info = None
 
     def add_data_point(self, date, value, flag=None):
         """
@@ -175,7 +176,7 @@ class RegularTimeSeries:
             self._interval_to_times(x[0])
 
     @staticmethod
-    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None):
+    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None, location_info = None):
         """
         Creates a new instance of the RegularTimeSeries class with the specified parameters.
 
@@ -190,6 +191,7 @@ class RegularTimeSeries:
             time_granularity_seconds (int, optional): Time granularity in seconds. Defaults to 1.
             julian_base_date (int, optional): Julian base date. Defaults to 0.
             path (str, optional): DSS path. Defaults to None.
+            location_info (LocationInfo, optional): Location info assotiated with record container.
 
         Returns:
             RegularTimeSeries: A new instance of the RegularTimeSeries class.
@@ -205,6 +207,7 @@ class RegularTimeSeries:
         rts.time_granularity_seconds = time_granularity_seconds
         rts.julian_base_date = julian_base_date
         rts.id = path
+        rts.location_info = location_info
         rts._generate_times()
 
         return rts

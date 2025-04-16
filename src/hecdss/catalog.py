@@ -24,7 +24,10 @@ class Catalog:
             rt = self.recordTypeDict[pathname.lower()]
         else:
             path = DssPath(pathname, RecordType.Unknown)
-            rt = self.recordTypeDict[path.path_without_date().__str__().lower()]
+            if( path.path_without_date().__str__().lower() in self.recordTypeDict):
+                rt = self.recordTypeDict[path.path_without_date().__str__().lower()]
+            else:
+                rt = self.recordTypeDict[path.path_location_info().__str__().lower()]
         return rt
 
     def __create_condensed_catalog(self):

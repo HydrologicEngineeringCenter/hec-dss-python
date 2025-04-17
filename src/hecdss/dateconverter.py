@@ -144,7 +144,8 @@ class DateConverter:
         return [int(((i-start_date_base).days*86400 + i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
     @staticmethod
     def intervalString_to_sec(interval):
-
+        if isinstance(interval, str):
+            interval = interval.title()
         if _time_string.__contains__(interval):
             i = _time_string.index(interval)
             return _sec[i]

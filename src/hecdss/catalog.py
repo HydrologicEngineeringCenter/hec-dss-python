@@ -37,6 +37,7 @@ class Catalog:
           time-series records must match all parts except the D (date) part to be combined.
         """
         self.items = []
+        raw_paths = {}
         for i in range(len(self.uncondensed_paths)):
             rawPath = self.uncondensed_paths[i]
             recordType = RecordType.RecordTypeFromInt(self.rawRecordTypes[i])
@@ -44,6 +45,7 @@ class Catalog:
             # if timeseries - accumulate dates within a dataset
             if path.is_time_series():
                 cleanPath = str(path.path_without_date())
+                raw_paths[cleanPath.lower()] = rawPath
                 self.recordTypeDict[cleanPath.lower()] = recordType
                 if(path.D != "TS-Pattern"):
                     tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath.lower(), [])
@@ -51,6 +53,7 @@ class Catalog:
                     tsRecords.append(t)
             elif recordType in [RecordType.PairedData, RecordType.Grid, RecordType.Text,
                                 RecordType.LocationInfo, RecordType.Array]:
+                raw_paths[rawPath] = rawPath
                 self.recordTypeDict[str(path).lower()] = recordType
                 self.items.append(path)
             else:
@@ -67,7 +70,7 @@ class Catalog:
                 condensedDpart +="-"+ dateList[-1].strftime("%d%b%Y")
             # insert condensed D part into path used as key
             rt = self.recordTypeDict[key]
-            p = DssPath(key,rt)
+            p = DssPath(raw_paths[key],rt)
             p.D = condensedDpart
             self.items.append(p)
 

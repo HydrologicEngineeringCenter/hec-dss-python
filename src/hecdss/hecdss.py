@@ -54,6 +54,15 @@ class HecDss:
             exc_tb (traceback): The traceback object.
         """
         self.close()
+    @staticmethod
+    def set_global_debug_level(level: int) -> None:
+        """
+        Sets the library debug level
+
+        Args:
+            level (int): a value between 0 and 15. Larger for more output
+        """
+        _Native().hec_dss_set_debug_level(level)
     def close(self):
         """closes the DSS file and releases any locks
         """
@@ -506,7 +515,7 @@ class HecDss:
                 raise Exception("Time Series has an empty times array")
 
             startDate, startTime = DateConverter.dss_datetime_strings_from_datetime(ts.times[0])
-            quality = []  # TO DO
+            quality = container.quality
 
             status = self._native.hec_dss_tsStoreRegular(
                 ts.id,
@@ -525,7 +534,7 @@ class HecDss:
             #                           saveAsFloat, units, type):
             start_date_base = (datetime(1900, 1, 1)+timedelta(days=its.julian_base_date))
             startDate, startTime = DateConverter.dss_datetime_strings_from_datetime(start_date_base)
-            quality = []  # TO DO
+            quality = container.quality
             julian_times = DateConverter.julian_array_from_date_times(its.times, its.time_granularity_seconds, start_date_base)
             if max(julian_times) >= 2147483647:
                 raise Exception("Julian times contains value larger than 2147483647, increase granularity or change "

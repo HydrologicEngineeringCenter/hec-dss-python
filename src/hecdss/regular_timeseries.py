@@ -17,6 +17,7 @@ class RegularTimeSeries:
         self.interval = ""
         self.start_date = ""
         self.time_granularity_seconds = 1
+        self.julian_base_date = 0
         self.id = ""
 
     def add_data_point(self, date, value, flag=None):
@@ -166,7 +167,6 @@ class RegularTimeSeries:
 
         x = [self._get_interval_times(), self._get_interval_path(), self._get_interval_interval()]
         x = [i for i in x if i != "empty"]
-        print(x)
         if(not all(i == x[0] for i in x)):
             raise ValueError("inconsistent interval within arguments")
         elif len(x) != 3 and len(x) != 0:

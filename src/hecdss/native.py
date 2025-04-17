@@ -57,9 +57,7 @@ class _Native:
         f.restype = c_int
         self.handle = c_void_p()
         rval = f(dss_filename.encode("utf-8"), ctypes.byref(self.handle))
-        if rval == 0:
-            print("DSS file opened successfully.")
-        else:
+        if rval != 0:
             raise Exception("Error opening DSS file.")
         return rval
 
@@ -522,7 +520,6 @@ class _Native:
             doubleValues.extend(list(c_doubleValues))
             numberOrdinates[0] = c_numberOrdinates
             numberCurves[0] = c_numberCurves
-            print(numberCurves[0])
             labels.extend(c_labels.raw.decode('utf-8').split("\0")[:c_numberCurves.value])
         else:
             print("Function call failed with result:", result)
@@ -884,7 +881,6 @@ class _Native:
         c_units = c_char_p(units.encode("utf-8"))
         c_type = c_char_p(dataType.encode("utf-8"))
 
-        print(valueArray)
         c_valueArray = (c_double * len(valueArray))(*valueArray)
         c_times = (c_int * len(times))(*times)
         c_qualityArray = (c_int * len(qualityArray))(*qualityArray)

@@ -10,6 +10,8 @@ import os
 import sys
 from typing import List
 
+# from hecdss.location_info import LocationInfo
+
 
 class _Native:
     """Wrapper for Native method calls to hecdss.dll or libhecdss.so
@@ -992,3 +994,115 @@ class _Native:
 
         else:
             print("Error reading array status = {status}")
+
+    def hec_dss_locationRetrieve(self, fullPath: str, x: List[float], y: List[float], z: List[float],
+                                 coordinateSystem: List[int], coordinateID: List[int], horizontalUnits: List[int],
+                                 horizontalDatum: List[int], verticalUnits: List[int], verticalDatum: List[int],
+                                 timeZoneName: List[str], timeZoneNameLength: int, supplemental: List[str],
+                                 supplementalLength: int):
+        self.dll.hec_dss_locationRetrieve.argtypes = [
+            c_void_p,  # dss
+            c_char_p,  # fullPath
+            POINTER(c_double),  # x
+            POINTER(c_double),  # y
+            POINTER(c_double),  # z
+            POINTER(c_int),  # coordinateSystem
+            POINTER(c_int),  # coordinateID
+            POINTER(c_int),  # horizontalUnits
+            POINTER(c_int),  # horizontalDatum
+            POINTER(c_int),  # verticalUnits
+            POINTER(c_int),  # verticalDatum
+            c_char_p,  # timeZoneName
+            c_int,  # timeZoneNameLength
+            c_char_p,  # supplemental
+            c_int  # supplementalLength
+        ]
+        self.dll.hec_dss_locationRetrieve.restype = c_int
+
+        c_x = c_double()
+        c_y = c_double()
+        c_z = c_double()
+        c_coordinateSystem = c_int()
+        c_coordinateID = c_int()
+        c_horizontalUnits = c_int()
+        c_horizontalDatum = c_int()
+        c_verticalUnits = c_int()
+        c_verticalDatum = c_int()
+        c_timeZoneName = create_string_buffer(timeZoneNameLength)
+        c_supplemental = create_string_buffer(supplementalLength)
+
+        result = self.dll.hec_dss_locationRetrieve(
+            self.handle,
+            fullPath.encode("utf-8"),
+            byref(c_x),
+            byref(c_y),
+            byref(c_z),
+            byref(c_coordinateSystem),
+            byref(c_coordinateID),
+            byref(c_horizontalUnits),
+            byref(c_horizontalDatum),
+            byref(c_verticalUnits),
+            byref(c_verticalDatum),
+            c_timeZoneName,
+            timeZoneNameLength,
+            c_supplemental,
+            supplementalLength
+        )
+
+        if result == 0:
+            x[0] = c_x.value
+            y[0] = c_y.value
+            z[0] = c_z.value
+            coordinateSystem[0] = c_coordinateSystem.value
+            coordinateID[0] = c_coordinateID.value
+            horizontalUnits[0] = c_horizontalUnits.value
+            horizontalDatum[0] = c_horizontalDatum.value
+            verticalUnits[0] = c_verticalUnits.value
+            verticalDatum[0] = c_verticalDatum.value
+            timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
+            supplemental[0] = c_supplemental.value.decode("utf-8")
+        else:
+            print("Unable to read location information, Function call failed with result:", result)
+
+        return result
+
+    def hec_dss_locationStore(self, location_info, replace: int) -> int:
+        self.dll.hec_dss_locationStore.argtypes = [
+            c_void_p,  # dss
+            c_char_p,  # fullPath
+            c_double,  # x
+            c_double,  # y
+            c_double,  # z
+            c_int,  # coordinateSystem
+            c_int,  # coordinateID
+            c_int,  # horizontalUnits
+            c_int,  # horizontalDatum
+            c_int,  # verticalUnits
+            c_int,  # verticalDatum
+            c_char_p,  # timeZoneName
+            c_char_p,  # supplemental
+            c_int  # replace
+        ]
+        self.dll.hec_dss_locationStore.restype = c_int
+
+        result = self.dll.hec_dss_locationStore(
+            self.handle,
+            location_info.id.encode("utf-8"),
+            location_info.x[0],
+            location_info.y[0],
+            location_info.z[0],
+            location_info.coordinate_system,
+            location_info.coordinate_id,
+            location_info.horizontal_units,
+            location_info.horizontal_datum,
+            location_info.vertical_units,
+            location_info.vertical_datum,
+            location_info.time_zone_name.encode("utf-8"),
+            location_info.supplemental.encode("utf-8"),
+            replace
+        )
+
+        if result != 0:
+            print("Function call failed with result:", result)
+
+        return result

@@ -5,6 +5,7 @@ import numpy as np
 
 import hecdss.record_type
 from hecdss.array_container import ArrayContainer
+from hecdss.location_info import LocationInfo
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
@@ -103,7 +104,7 @@ class HecDss:
             varies: RegularTimeSeries, PairedData, Grid, or Array.  
         """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
-            new_pathname = DssPath(pathname).path_without_date().__str__();
+            new_pathname = DssPath(pathname).path_without_date().__str__()
             ts = self._get_timeseries(new_pathname, startdatetime, enddatetime)
             return ts
         elif type == RecordType.PairedData:
@@ -113,6 +114,8 @@ class HecDss:
             return self._get_gridded_data(pathname)
         elif type == RecordType.Array:
             return self._get_array(pathname)
+        elif type == RecordType.LocationInfo:
+            return self._get_location_info(pathname)
         return None
 
     def _get_array(self, pathname: str):
@@ -134,7 +137,8 @@ class HecDss:
             doubleValues = [0] * doubleValuesCount[0]
 
         status = self._native.hec_dss_arrayRetrieve(pathname, intValues, floatValues, doubleValues)
-        rval = ArrayContainer.create_array_container(intValues, floatValues, doubleValues, path=pathname)
+        location_info = self._get_location_info(pathname)
+        rval = ArrayContainer.create_array_container(intValues, floatValues, doubleValues, path=pathname, location_info=location_info)
         return rval
 
     def _get_gridded_data(self, pathname):
@@ -235,6 +239,7 @@ class HecDss:
         # gd.data = [[data[(i*numberOfCellsX[0])+j] for j in range(numberOfCellsX[0])] for i in range(numberOfCellsY[0])]
         gd.data = np.array(data).reshape((numberOfCellsY[0], numberOfCellsX[0]))
         gd.id = pathname
+        gd.location_info = self._get_location_info(pathname)
 
         return gd
 
@@ -296,6 +301,7 @@ class HecDss:
         pd.units_independent = unitsIndependent2[0]
         pd.units_dependent = unitsDependent2[0]
         pd.id = pathname
+        pd.location_info = self._get_location_info(pathname)
 
         return pd
 
@@ -429,8 +435,63 @@ class HecDss:
         start_date = [] if len(new_times) == 0 else new_times[0]
         time_granularity_seconds = timeGranularitySeconds[0]
         julian_base_date = julianBaseDate[0]
-        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, path=pathname)
+        location_info = self._get_location_info(pathname)
+        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, path=pathname, location_info=location_info)
         return ts
+
+    def _get_location_info(self, pathname: str):
+        x = [0.0]
+        y = [0.0]
+        z = [0.0]
+        coordinateSystem = [0]
+        coordinateID = [0]
+        horizontalUnits = [0]
+        horizontalDatum = [0]
+        verticalUnits = [0]
+        verticalDatum = [0]
+        timeZoneName = [""]
+        supplemental = [""]
+
+        timeZoneNameLength = 40
+        supplementalLength = 256
+
+        status = self._native.hec_dss_locationRetrieve(
+            pathname,
+            x,
+            y,
+            z,
+            coordinateSystem,
+            coordinateID,
+            horizontalUnits,
+            horizontalDatum,
+            verticalUnits,
+            verticalDatum,
+            timeZoneName,
+            timeZoneNameLength,
+            supplemental,
+            supplementalLength
+        )
+
+        if status != 0:
+            print("Function call failed with result:", status)
+            return None
+
+        location_info = LocationInfo.create(
+            x_values=[x[0]],
+            y_values=[y[0]],
+            z_values=[z[0]],
+            coordinate_system=coordinateSystem[0],
+            coordinate_id=coordinateID[0],
+            horizontal_units=horizontalUnits[0],
+            horizontal_datum=horizontalDatum[0],
+            vertical_units=verticalUnits[0],
+            vertical_datum=verticalDatum[0],
+            time_zone_name=timeZoneName[0],
+            supplemental=supplemental[0],
+            path=pathname
+        )
+
+        return location_info
 
     def put(self, container) -> int: 
         """puts data into the DSS file
@@ -502,8 +563,14 @@ class HecDss:
         elif type(container) is ArrayContainer:
             status = self._native.hec_dss_arrayStore(container.id, container.int_values, container.float_values, container.double_values)
             self._catalog = None
+        elif type(container) is LocationInfo:
+            status = self._native.hec_dss_locationStore(container,1)
+            self._catalog = None
         else:
             raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {RecordType.SUPPORTED_RECORD_TYPES.value}")
+
+        if hasattr(container, "location_info") and container.location_info is not None:
+            status = self._native.hec_dss_locationStore(container.location_info,1)
 
         # TODO -- instead of invalidating catalog,with _catalog=None
         #  can we be smart?

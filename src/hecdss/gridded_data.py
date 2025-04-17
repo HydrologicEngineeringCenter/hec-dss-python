@@ -83,6 +83,7 @@ class GriddedData:
         self.rangeLimitTable = []
         self.numberEqualOrExceedingRangeLimit = []
         self.data = np.zeros(0)
+        self.location_info = None
 
     def range_limit_table(self, minval, maxval, range_, bins, datasize, data):
         """
@@ -139,32 +140,33 @@ class GriddedData:
 
     @staticmethod
     def create(path=None,
-               type=420,
-               dataType=1,
-               lowerLeftCellX=0,
-               lowerLeftCellY=0,
-               numberOfCellsX=0,
-               numberOfCellsY=0,
-               numberOfRanges=0,
-               srsDefinitionType=0,
-               timeZoneRawOffset=0,
-               isInterval=0,
-               isTimeStamped=0,
-               dataUnits="MM",
-               dataSource="",
-               srsName="WKT",
-               srsDefinition='PROJCS["USA_Contiguous_Albers_Equal_Area_Conic_USGS_version",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Albers"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-96.0],PARAMETER["Standard_Parallel_1",29.5],PARAMETER["Standard_Parallel_2",45.5],PARAMETER["Latitude_Of_Origin",23.0],UNIT["Meter",1.0]]',
-               timeZoneID="",
-               cellSize=2000.0,
-               xCoordOfGridCellZero=0.0,
-               yCoordOfGridCellZero=0.0,
-               nullValue=0.0,
-               maxDataValue=0.0,
-               minDataValue=0.0,
-               meanDataValue=0.0,
-               rangeLimitTable=[],
-               numberEqualOrExceedingRangeLimit=[],
-               data=np.zeros(0)):
+        type = 420,
+        dataType = 1,
+        lowerLeftCellX = 0,
+        lowerLeftCellY = 0,
+        numberOfCellsX = 0,
+        numberOfCellsY = 0,
+        numberOfRanges = 0,
+        srsDefinitionType = 0,
+        timeZoneRawOffset = 0,
+        isInterval = 0,
+        isTimeStamped = 0,
+        dataUnits = "MM",
+        dataSource = "",
+        srsName = "WKT",
+        srsDefinition = 'PROJCS["USA_Contiguous_Albers_Equal_Area_Conic_USGS_version",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Albers"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-96.0],PARAMETER["Standard_Parallel_1",29.5],PARAMETER["Standard_Parallel_2",45.5],PARAMETER["Latitude_Of_Origin",23.0],UNIT["Meter",1.0]]',
+        timeZoneID = "",
+        cellSize = 2000.0,
+        xCoordOfGridCellZero = 0.0,
+        yCoordOfGridCellZero = 0.0,
+        nullValue = 0.0,
+        maxDataValue = 0.0,
+        minDataValue = 0.0,
+        meanDataValue = 0.0,
+        rangeLimitTable = [],
+        numberEqualOrExceedingRangeLimit = [],
+        data=np.zeros(0),
+        location_info=None):
         """
         Create a new GriddedData object with the specified parameters.
 
@@ -196,6 +198,7 @@ class GriddedData:
             rangeLimitTable (list, optional): Range limit table. Defaults to [].
             numberEqualOrExceedingRangeLimit (list, optional): Number equal or exceeding range limit. Defaults to [].
             data (numpy.ndarray, optional): Data array. Defaults to np.zeros(0).
+            location_info (LocationInfo, optional): Location info assotiated with record container.
 
         Returns:
             GriddedData: A new GriddedData object.
@@ -228,6 +231,7 @@ class GriddedData:
         gd.rangeLimitTable = rangeLimitTable
         gd.numberEqualOrExceedingRangeLimit = numberEqualOrExceedingRangeLimit
         gd.data = np.array(data)
+        gd.location_info = location_info
 
         gd.update_grid_info()
 

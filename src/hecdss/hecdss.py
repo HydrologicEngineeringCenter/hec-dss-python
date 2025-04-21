@@ -376,6 +376,13 @@ class HecDss:
                 lastSeconds[0],
             )
 
+            startDateTime = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
+            endDateTime =  DateConverter.date_time_from_julian_second(lastValidJulian[0], lastSeconds[0])
+            startDate = startDateTime.strftime("%d%b%Y")
+            startTime = startDateTime.strftime("%H:%M:%S")
+            endDate = endDateTime.strftime("%d%b%Y")
+            endTime = endDateTime.strftime("%H:%M:%S")
+
         # tsRetrive
 
         times = [0]

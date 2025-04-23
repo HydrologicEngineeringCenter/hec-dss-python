@@ -422,20 +422,21 @@ class HecDss:
         # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
         if RecordType.IrregularTimeSeries == self.get_record_type(pathname):
             ts = IrregularTimeSeries()
-        elif trim or not startDateTime or not endDateTime:
-            trimmed_indices = [i for i, v in enumerate(values) if values[i] != DSS_UNDEFINED_VALUE]
-            if not trimmed_indices:
-                times = []
-                values = []
-                quality = []
-            else:
-                start = 0 if startDateTime and not trim else trimmed_indices[0]
-                end = len(times) if endDateTime and not trim else trimmed_indices[-1]+1
-                times = times[start:end]
-                values = values[start:end]
-                if quality != []:
-                    quality = quality[start:end]
-        ts = RegularTimeSeries()
+        else:
+            ts = RegularTimeSeries()
+            if trim or not startDateTime or not endDateTime:
+                trimmed_indices = [i for i, v in enumerate(values) if values[i] != DSS_UNDEFINED_VALUE]
+                if not trimmed_indices:
+                    times = []
+                    values = []
+                    quality = []
+                else:
+                    start = 0 if startDateTime and not trim else trimmed_indices[0]
+                    end = len(times) if endDateTime and not trim else trimmed_indices[-1]+1
+                    times = times[start:end]
+                    values = values[start:end]
+                    if quality != []:
+                        quality = quality[start:end]
         new_times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )

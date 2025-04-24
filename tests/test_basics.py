@@ -142,6 +142,45 @@ class TestBasics(unittest.TestCase):
             tsc.print_to_console()
             self.assertEqual(77, len(tsc.values))
 
+    def test_regular_time_window_and_trim(self):
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            pathname = "/regular-time-series/GAPT/FLOW//6Hour/forecast1/"
+            # -------------- #
+            # no time window #
+            # -------------- #
+            tsc = dss.get(pathname)
+            self.assertEqual(77, len(tsc.values))
+            t1 = datetime(2021, 9, 15, 7)
+            t2 = datetime(2021, 10, 4, 7)
+            # ------------------------ #
+            # time window matches data #
+            # ------------------------ #
+            tsc = dss.get(pathname, t1, t2)
+            self.assertEqual(77, len(tsc.values))
+            t1 = datetime(2021, 9, 1, 1)
+            t2 = datetime(2021, 11, 1, 0)
+            # ----------------------------- #
+            # start time (before data) only #
+            # ----------------------------- #
+            tsc = dss.get(pathname, t1, None)
+            self.assertEqual(134, len(tsc.values))
+            tsc = dss.get(pathname, t1, None, True)
+            self.assertEqual(77, len(tsc.values))
+            # -------------------------- #
+            # end time (after data) only #
+            # -------------------------- #
+            tsc = dss.get(pathname, None, t2)
+            self.assertEqual(187, len(tsc.values))
+            tsc = dss.get(pathname, None, t2, True)
+            self.assertEqual(77, len(tsc.values))
+            # -------------------------------------------------- #
+            # start time (before data) and end time (after data) #
+            # -------------------------------------------------- #
+            tsc = dss.get(pathname, t1, t2)
+            self.assertEqual(244, len(tsc.values))
+            tsc = dss.get(pathname, t1, t2, True)
+            self.assertEqual(77, len(tsc.values))
+
     def test_incorrect_path(self):
         with self.assertRaises(Exception):
             with HecDss(self.test_files.get_copy("incorrect_path.dss")) as dss:

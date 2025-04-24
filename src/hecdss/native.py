@@ -475,12 +475,14 @@ class _Native:
                            typeIndependent: List[str], typeIndependentLength: int,
                            unitsDependent: List[str], unitsDependentLength: int,
                            typeDependent: List[str], typeDependentLength: int,
-                           labels: List[str], labelsLength: int):
+                           labels: List[str], labelsLength: int,
+                           timeZoneName: List[str], timeZoneNameLength: int):
 
         self.dll.hec_dss_pdRetrieve.argtypes = [c_void_p, c_char_p,
                                                 POINTER(c_double), c_int,
                                                 POINTER(c_double), c_int,
                                                 POINTER(c_int), POINTER(c_int),
+                                                c_char_p, c_int,
                                                 c_char_p, c_int,
                                                 c_char_p, c_int,
                                                 c_char_p, c_int,
@@ -500,6 +502,8 @@ class _Native:
         c_typeIndependent = create_string_buffer(typeIndependentLength)
         c_typeDependent = create_string_buffer(typeDependentLength)
 
+        c_timeZoneName = create_string_buffer(timeZoneNameLength)
+
         result = self.dll.hec_dss_pdRetrieve(self.handle,
                                              pathname.encode("utf-8"),
                                              c_doubleOrdinates, doubleOrdinatesLength,
@@ -510,7 +514,8 @@ class _Native:
                                              c_typeIndependent, typeIndependentLength,
                                              c_unitsDependent, unitsDependentLength,
                                              c_typeDependent, typeDependentLength,
-                                             c_labels, labelsLength)
+                                             c_labels, labelsLength,
+                                             c_timeZoneName, timeZoneNameLength)
 
         if result == 0:
             unitsIndependent[0] = c_unitsIndependent.value.decode('utf-8')
@@ -523,6 +528,8 @@ class _Native:
             numberOrdinates[0] = c_numberOrdinates
             numberCurves[0] = c_numberCurves
             labels.extend(c_labels.raw.decode('utf-8').split("\0")[:c_numberCurves.value])
+
+            timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
         else:
             print("Function call failed with result:", result)
 
@@ -549,6 +556,7 @@ class _Native:
             c_char_p,  # typeDependent (const char*)
             c_char_p,  # labels (const char*)
             c_int,  # labelsLength (int)
+            c_char_p,  # timeZoneName (const char*) - New argument
         ]
 
         c_pathname = c_char_p(pd.id.encode("utf-8"))
@@ -566,6 +574,7 @@ class _Native:
         flat_labels = "\0".join(pd.labels)
         c_labels = c_char_p(flat_labels.encode("utf-8"))
         c_labelsLength = len(flat_labels)
+        c_timeZoneName = c_char_p(pd.time_zone_name.encode("utf-8"))  # New argument
 
         return self.dll.hec_dss_pdStore(
             self.handle,
@@ -582,6 +591,7 @@ class _Native:
             c_typeDependent,
             c_labels,
             c_labelsLength,
+            c_timeZoneName,  # Pass the new argument
         )
 
     def hec_dss_tsGetSizes(
@@ -720,6 +730,8 @@ class _Native:
             unitsLength: int,
             dataType: List[str],
             typeLength: int,
+            timeZoneName: List[str],
+            timeZoneNameLength: int,
     ):
 
         f = self.dll.hec_dss_tsRetrieve
@@ -742,6 +754,8 @@ class _Native:
             c_int,  # unitsLength
             c_char_p,  # dataType
             c_int,  # typeLength
+            c_char_p,  # timeZoneName
+            c_int,  # timeZoneNameLength
         ]
         f.restype = c_int
 
@@ -765,6 +779,8 @@ class _Native:
         c_julianBaseDate = c_int()
         c_timeGranularitySeconds = c_int()
 
+        c_timeZoneName = create_string_buffer(timeZoneNameLength)
+
         rval = f(
             self.handle,
             pathname.encode("utf-8"),
@@ -784,6 +800,8 @@ class _Native:
             c_unitsLength,
             c_dataType,
             c_typeLength,
+            c_timeZoneName,
+            timeZoneNameLength,
         )
 
         times.clear()
@@ -796,6 +814,7 @@ class _Native:
         dataType[0] = c_dataType.value.decode("utf-8")
         julianBaseDate[0] = c_julianBaseDate.value
         timeGranularitySeconds[0] = c_timeGranularitySeconds.value
+        timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
 
         return rval
 
@@ -809,6 +828,8 @@ class _Native:
             saveAsFloat,
             units,
             dataType,
+            timeZoneName,
+            storageFlag,
     ):
 
         self.dll.hec_dss_tsStoreRegular.restype = c_int
@@ -824,6 +845,8 @@ class _Native:
             c_int,  # saveAsFloat (int)
             c_char_p,  # units (const char*)
             c_char_p,  # type (const char*)
+            c_char_p,  # timeZoneName (const char*)
+            c_int,  # storageFlag (int)
         ]
 
         c_pathname = c_char_p(pathname.encode("utf-8"))
@@ -831,10 +854,11 @@ class _Native:
         c_startTime = c_char_p(startTime.encode("utf-8"))
         c_units = c_char_p(units.encode("utf-8"))
         c_type = c_char_p(dataType.encode("utf-8"))
+        c_timeZoneName = c_char_p(timeZoneName.encode("utf-8"))  # New argument
 
         c_valueArray = (c_double * len(valueArray))(*valueArray)
         c_qualityArray = (c_int * len(qualityArray))(*qualityArray)
-        # import pdb;pdb.set_trace()
+
         return self.dll.hec_dss_tsStoreRegular(
             self.handle,
             c_pathname,
@@ -847,6 +871,8 @@ class _Native:
             int(saveAsFloat),
             c_units,
             c_type,
+            c_timeZoneName,
+            int(storageFlag),
         )
 
     def hec_dss_tsStoreIrregular(
@@ -860,6 +886,8 @@ class _Native:
             saveAsFloat,
             units,
             dataType,
+            timeZoneName,
+            storageFlag,
     ):
 
         self.dll.hec_dss_tsStoreIregular.restype = c_int
@@ -876,17 +904,20 @@ class _Native:
             c_int,  # saveAsFloat (int)
             c_char_p,  # units (const char*)
             c_char_p,  # type (const char*)
+            c_char_p,  # timeZoneName (const char*)
+            c_int, # storageFlag (int)
         ]
 
         c_pathname = c_char_p(pathname.encode("utf-8"))
         c_startDateBase = c_char_p(startDateBase.encode("utf-8"))
         c_units = c_char_p(units.encode("utf-8"))
         c_type = c_char_p(dataType.encode("utf-8"))
+        c_timeZoneName = c_char_p(timeZoneName.encode("utf-8"))  # New argument
 
         c_valueArray = (c_double * len(valueArray))(*valueArray)
         c_times = (c_int * len(times))(*times)
         c_qualityArray = (c_int * len(qualityArray))(*qualityArray)
-        # import pdb;pdb.set_trace()
+
         return self.dll.hec_dss_tsStoreIregular(
             self.handle,
             c_pathname,
@@ -900,6 +931,8 @@ class _Native:
             int(saveAsFloat),
             c_units,
             c_type,
+            c_timeZoneName,
+            int(storageFlag),
         )
 
     def hec_dss_recordType(self, pathname):
@@ -1106,3 +1139,27 @@ class _Native:
             print("Function call failed with result:", result)
 
         return result
+
+    def hec_dss_delete(self, pathname: str) -> int:
+            """
+            Deletes a record from the DSS file.
+
+            Args:
+                pathname (str): The pathname of the record to delete.
+
+            Returns:
+                int: Status of zero when successful, non-zero on error.
+            """
+            f = self.dll.hec_dss_delete
+            f.argtypes = [
+                c_void_p,  # dss_file* dss
+                c_char_p   # const char* pathname
+            ]
+            f.restype = c_int
+
+            result = f(self.handle, pathname.encode("utf-8"))
+
+            if result != 0:
+                print("Function call failed with result:", result)
+
+            return result

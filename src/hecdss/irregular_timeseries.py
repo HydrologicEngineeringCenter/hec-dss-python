@@ -21,6 +21,7 @@ class IrregularTimeSeries:
         self.start_date = ""
         self.time_granularity_seconds = 1
         self.julian_base_date = 0
+        self.time_zone_name = ""
         self.id = ""
         self.location_info = None
 
@@ -85,7 +86,7 @@ class IrregularTimeSeries:
         for time, value in zip(self.times, self.values):
             print(f"Time: {time}, Value: {value}")
     @staticmethod
-    def create(values, times, quality=[], units="", data_type="", interval=0, start_date="", time_granularity_seconds=1, julian_base_date=None, path=None, location_info=None):
+    def create(values, times, quality=[], units="", data_type="", interval=0, start_date="", time_granularity_seconds=1, julian_base_date=None, time_zone_name="", path=None, location_info=None):
         """
          Retrieve the value at a specific date in the time-series.
 
@@ -107,6 +108,7 @@ class IrregularTimeSeries:
         irts.julian_base_date = 0
         if julian_base_date is None and len(times):
             irts.julian_base_date = (times[0]-datetime(1900, 1, 1)).days
+        irts.time_zone_name = time_zone_name
         irts.id = path
         irts.location_info = location_info
         return irts

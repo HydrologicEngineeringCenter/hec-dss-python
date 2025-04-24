@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import numpy as np
-from Tools.scripts.texi2html import increment
 
 import hecdss.record_type
 from hecdss.array_container import ArrayContainer

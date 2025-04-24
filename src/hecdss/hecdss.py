@@ -30,7 +30,7 @@ class HecDss:
         Args:
             filename (str): DSS filename to be opened; it will be created if it doesn't exist.
         """
-    
+
         self._native = _Native()
         self._native.hec_dss_open(filename)
         self._catalog = None
@@ -92,7 +92,7 @@ class HecDss:
         # print(f"hec_dss_recordType for '{pathname}' is {rt}")
         return rt
 
-    def get(self, pathname: str, startdatetime=None, enddatetime=None):
+    def get(self, pathname: str, startdatetime=None, enddatetime=None, trim=False):
         pathname = str(pathname)
         type = self.get_record_type(pathname)
         """gets various types of data from the current DSS file
@@ -103,11 +103,11 @@ class HecDss:
             enddatetime (datetime): end date for the query
 
         Returns:
-            varies: RegularTimeSeries, PairedData, Grid, or Array.  
+            varies: RegularTimeSeries, PairedData, Grid, or Array.
         """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
             new_pathname = DssPath(pathname).path_without_date().__str__()
-            ts = self._get_timeseries(new_pathname, startdatetime, enddatetime)
+            ts = self._get_timeseries(new_pathname, startdatetime, enddatetime, trim)
             return ts
         elif type == RecordType.PairedData:
             return self._get_paired_data(pathname)
@@ -337,22 +337,28 @@ class HecDss:
         return (first, last)
 
 
-    def _get_timeseries(self, pathname, startDateTime, endDateTime):
+    def _get_timeseries(self, pathname, startDateTime, endDateTime, trim):
         # get sizes
         firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
-        if not (startDateTime and endDateTime):
-            #newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
-            newStartDateTime = DateConverter.date_times_from_julian_array(firstSeconds, 1, firstValidJulian[0])[0]
-            newEndDateTime = DateConverter.date_times_from_julian_array(lastSeconds, 1, lastValidJulian[0])[0]
-            if not startDateTime:
-                startDateTime = newStartDateTime
-            if not endDateTime:
-                endDateTime = newEndDateTime
+        if startDateTime is None:
+            _startDateTime = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
+            firstSeconds, firstJulian = firstSeconds, firstValidJulian
+        else:
+            _startDateTime = startDateTime
+            minutes = DateConverter.julian_array_from_date_times([startDateTime])[0]
+            firstSeconds, firstJulian = [minutes % 1440 * 60], [minutes // 1440]
+        if endDateTime is None:
+            _endDateTime =  DateConverter.date_time_from_julian_second(lastValidJulian[0], lastSeconds[0])
+            lastSeconds, lastJulian = lastSeconds, lastValidJulian
+        else:
+            _endDateTime = endDateTime
+            minutes = DateConverter.julian_array_from_date_times([endDateTime])[0]
+            lastSeconds, lastJulian = [minutes % 1440 * 60], [minutes // 1440]
 
-        startDate = startDateTime.strftime("%d%b%Y")
-        startTime = startDateTime.strftime("%H:%M:%S")
-        endDate = endDateTime.strftime("%d%b%Y")
-        endTime = endDateTime.strftime("%H:%M:%S")
+        startDate = _startDateTime.strftime("%d%b%Y")
+        startTime = _startDateTime.strftime("%H:%M:%S")
+        endDate = _endDateTime.strftime("%d%b%Y")
+        endTime = _endDateTime.strftime("%H:%M:%S")
 
         numberValues = [0]  # using array to allow modification
         qualityElementSize = [0]
@@ -371,14 +377,13 @@ class HecDss:
         number_periods = numberValues[0]
         if RecordType.RegularTimeSeries == self.get_record_type(pathname):
             dsspath = DssPath(pathname)
-
             interval_seconds = DateConverter.intervalString_to_sec(dsspath.E)
 
             number_periods = self._native.hec_dss_numberPeriods(
                 interval_seconds,
-                firstValidJulian[0],
+                firstJulian[0],
                 firstSeconds[0],
-                lastValidJulian[0],
+                lastJulian[0],
                 lastSeconds[0],
             )
 
@@ -428,6 +433,19 @@ class HecDss:
             ts = IrregularTimeSeries()
         else:
             ts = RegularTimeSeries()
+            if trim or not startDateTime or not endDateTime:
+                trimmed_indices = [i for i, v in enumerate(values) if values[i] != DSS_UNDEFINED_VALUE]
+                if not trimmed_indices:
+                    times = []
+                    values = []
+                    quality = []
+                else:
+                    start = 0 if startDateTime and not trim else trimmed_indices[0]
+                    end = len(times) if endDateTime and not trim else trimmed_indices[-1]+1
+                    times = times[start:end]
+                    values = values[start:end]
+                    if quality != []:
+                        quality = quality[start:end]
         new_times = DateConverter.date_times_from_julian_array(
             times, timeGranularitySeconds[0], julianBaseDate[0]
         )
@@ -505,7 +523,7 @@ class HecDss:
 
         return location_info
 
-    def put(self, container) -> int: 
+    def put(self, container) -> int:
         """puts data into the DSS file
 
         Args:
@@ -701,7 +719,7 @@ class HecDss:
         return self._native.hec_dss_record_count()
 
     def set_debug_level(self, level) -> int:
-        """sets the DSS debug level. 
+        """sets the DSS debug level.
 
         Args:
             level (int): a value between 0 and 15. Larger for more output

@@ -201,5 +201,13 @@ class TestRegularTimeSeries(unittest.TestCase):
             expected_count = 252273
             assert ts.get_length() == expected_count, f" expected {expected_count} values, found {ts.get_length()}"
 
+    def test_regular_timeseries_timezone(self):
+        """ test reading time-series with timezone information """
+        pathname = "/regular-time-series/GAPT/FLOW/01Sep2021 - 31Oct2021/6Hour/forecast1/"
+        with HecDss(self.test_files.get_copy("examples-all-data-types.dss")) as dss:
+            rts = dss.get(pathname)
+            assert rts.times[0].tzinfo is not None, f"expected timezone information, found None"
+            assert rts.times[0].tzinfo.key == "UTC", f"expected UTC timezone, found {rts.times[0].tzinfo.zone}"
+
 if __name__ == "__main__":
     unittest.main()

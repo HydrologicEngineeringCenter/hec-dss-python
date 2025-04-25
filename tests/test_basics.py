@@ -186,6 +186,29 @@ class TestBasics(unittest.TestCase):
             with HecDss(self.test_files.get_copy("incorrect_path.dss")) as dss:
                 pass
 
+    def test_delete(self):
+        with HecDss(self.test_files.get_copy("sample7.dss")) as dss:
+            print("record count = " + str(dss.record_count()))
+            t1 = datetime(2005, 1, 1)
+            t2 = datetime(2005, 1, 4)
+            tsc = dss.get("//SACRAMENTO/PRECIP-INC//1Day/OBS/", t1, t2)
+            assert len(tsc.values) > 0
+            # save to a new path
+            tsc.id = "//SACRAMENTO/PRECIP-INC//1Day/OBS-modified/"
+            dss.put(tsc)
+            dss.delete(tsc.id, True)
+            with self.assertRaises(Exception):
+                dss.get(tsc.id, t1, t2)
+
+    def test_delete_range(self):
+        with HecDss(self.test_files.get_copy("sample7.dss")) as dss:
+            assert ("//SACRAMENTO/PRECIP-INC/01Jan1882/1Day/OBS/" in dss.get_catalog().uncondensed_paths)
+            path = "//SACRAMENTO/PRECIP-INC/01Jan1877/1Day/OBS/"
+            t1 = datetime(1879, 1, 1)
+            t2 = datetime(1885, 1, 1)
+            dss.delete(path, False, t1, t2)
+            assert (not("//SACRAMENTO/PRECIP-INC/01Jan1882/1Day/OBS/" in dss.get_catalog().uncondensed_paths))
+
 if __name__ == "__main__":
     unittest.main()
     # test_catalog()

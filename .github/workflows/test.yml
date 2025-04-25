@@ -24,17 +24,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install requests
-        run: pip install requests
+      # On all platforms install the PyPI tzdata distribution
+      # (stdlib zoneinfo will auto‐pick it up; the backport will too)
+      - name: Install tzdata (Python)
+        run: pip install tzdata
+
+      - name: Install runtime dependencies
+        run: |
+          pip install requests
+          pip install numpy
+          pip install pytest
 
       - name: add dll
         run: python3 src/hecdss/download_hecdss.py
-
-      - name: Install Packages
-        run: pip install pytest
-
-      - name: Install numpy
-        run: pip install numpy
 
       - name: Run tests
         run: pytest tests

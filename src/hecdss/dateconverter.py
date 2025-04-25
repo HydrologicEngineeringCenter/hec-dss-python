@@ -77,7 +77,6 @@ _time_string = [
 ]
 class DateConverter:
 
-
     @staticmethod
     def dss_datetime_strings_from_datetime(dt:datetime):
         """ 
@@ -94,6 +93,22 @@ class DateConverter:
             dtstr = dt.strftime('%d%b%Y %H:%M:%S')
         
         return dtstr[:9],dtstr[-8:]
+
+    @staticmethod
+    def datetime_from_dss_datetime_string(datestr: str):
+        """
+        convert DSS 24:00 style string to python datetime
+        25Aug2023 09:23:47 -> 2023-08-25 09:23:47
+        24Aug2023 24:00 -> 2023-08-25 00:00:00
+        25Aug2023 00:10 -> 2023-08-25 00:10:00
+        """
+        date_part, time_part = datestr.split()
+        dt = datetime.strptime(date_part, "%d%b%Y")
+        if time_part == "24:00":
+            dt += timedelta(days=1)
+            time_part = "00:00"
+        time_obj = datetime.strptime(time_part, "%H:%M").time()
+        return datetime.combine(dt.date(), time_obj)
 
     @staticmethod
     def date_time_from_julian_second(time_julian, seconds_julian):
@@ -142,6 +157,7 @@ class DateConverter:
             raise ValueError("Time Series Times array was None. Something didn't work right in DSS.")
         start_date_base = start_date_base.replace(hour=0, minute=0, second=0, microsecond=0)-timedelta(days=1)
         return [int(((i-start_date_base).days*86400 + i.hour * 3600 + i.minute * 60 + i.second)/time_granularity_seconds) for i in date_times]
+
     @staticmethod
     def intervalString_to_sec(interval):
         if isinstance(interval, str):

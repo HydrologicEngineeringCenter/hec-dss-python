@@ -3,6 +3,7 @@ import numpy as np
 from .dateconverter import DateConverter
 from .dsspath import DssPath
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 class RegularTimeSeries:
     def __init__(self):
@@ -18,6 +19,7 @@ class RegularTimeSeries:
         self.start_date = ""
         self.time_granularity_seconds = 1
         self.julian_base_date = 0
+        self.time_zone_name = ""
         self.id = ""
         self.location_info = None
 
@@ -157,7 +159,7 @@ class RegularTimeSeries:
         if type(self.start_date) == datetime:
             self.times = []
             for i in range(len(self.values)):
-                self.times.append((self.start_date + (i * timedelta(seconds=new_interval))).replace(microsecond=0))
+                self.times.append((self.start_date + (i * timedelta(seconds=new_interval))).replace(microsecond=0, tzinfo=ZoneInfo(self.time_zone_name) if self.time_zone_name else None))
 
     def _generate_times(self):
         """
@@ -176,7 +178,7 @@ class RegularTimeSeries:
             self._interval_to_times(x[0])
 
     @staticmethod
-    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, path=None, location_info = None):
+    def create(values, times=[], quality=[], units="", data_type="", interval="", start_date="", time_granularity_seconds=1, julian_base_date=0, time_zone_name="", path=None, location_info = None):
         """
         Creates a new instance of the RegularTimeSeries class with the specified parameters.
 
@@ -206,6 +208,7 @@ class RegularTimeSeries:
         rts.start_date = start_date
         rts.time_granularity_seconds = time_granularity_seconds
         rts.julian_base_date = julian_base_date
+        rts.time_zone_name = time_zone_name
         rts.id = path
         rts.location_info = location_info
         rts._generate_times()

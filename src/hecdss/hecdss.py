@@ -1,5 +1,6 @@
 """Docstring for public module."""
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import numpy as np
 
@@ -275,6 +276,8 @@ class HecDss:
         unitsDependent2 = [""]
         typeIndependent2 = [""]
         typeDependent2 = [""]
+        timeZoneName = [""]
+        timeZoneNameLength = [""]
         status = self._native.hec_dss_pdRetrieve(pathname,
                                                  doubleOrdinates, numberOrdinates[0],
                                                  doubleValues, numberCurves[0] * numberOrdinates[0],
@@ -283,7 +286,8 @@ class HecDss:
                                                  typeIndependent2, len(typeIndependent[0]) + 1,
                                                  unitsDependent2, len(unitsDependent[0]) + 1,
                                                  typeDependent2, len(typeDependent[0]) + 1,
-                                                 labels, labelsLength[0])
+                                                 labels, labelsLength[0],
+                                                 timeZoneName, len(timeZoneNameLength[0]) + 1)
 
         if status != 0:
             print(f"Error reading paired-data from '{pathname}'")
@@ -300,6 +304,7 @@ class HecDss:
         pd.type_dependent = typeDependent2[0]
         pd.units_independent = unitsIndependent2[0]
         pd.units_dependent = unitsDependent2[0]
+        pd.time_zone_name = timeZoneName[0]
         pd.id = pathname
         pd.location_info = self._get_location_info(pathname)
 
@@ -392,6 +397,7 @@ class HecDss:
         units = [""]
         bufferLength = 40
         dataType = [""]
+        timeZoneName = [""]
 
         status = self._native.hec_dss_tsRetrieve(
             pathname,
@@ -411,6 +417,8 @@ class HecDss:
             bufferLength,
             dataType,
             bufferLength,
+            timeZoneName,
+            bufferLength
         )
 
         # print("units = "+units[0])
@@ -453,8 +461,11 @@ class HecDss:
         start_date = [] if len(new_times) == 0 else new_times[0]
         time_granularity_seconds = timeGranularitySeconds[0]
         julian_base_date = julianBaseDate[0]
+        timeZoneName = timeZoneName[0]
+        if(timeZoneName):
+            new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
         location_info = self._get_location_info(pathname)
-        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, path=pathname, location_info=location_info)
+        ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, time_zone_name=timeZoneName, path=pathname, location_info=location_info)
         return ts
 
     def _get_location_info(self, pathname: str):
@@ -544,6 +555,8 @@ class HecDss:
                 False,
                 ts.units,
                 ts.data_type,
+                ts.time_zone_name,
+                0
             )
             self._catalog = None
         elif type(container) is IrregularTimeSeries:
@@ -567,6 +580,8 @@ class HecDss:
                 False,
                 its.units,
                 its.data_type,
+                its.time_zone_name,
+                1
             )
             self._catalog = None
         elif type(container) is PairedData:
@@ -598,6 +613,91 @@ class HecDss:
         # if not self._catalog is None:
         #     self._catalog.recordTypeDict[pd.id] = RecordType.PairedData
 
+        return status
+
+    def delete(self, pathname: str, allrecords: bool = False, startdatetime=None, enddatetime=None) -> int:
+        """deletes a record from the DSS file
+        Args:
+            pathname (str): dss pathname, if only the pathname is provided, delete only the record with this pathname
+            allRecords (bool): if True, delete all records with this pathname that have different dates
+            startdatetime (datetime): start date for query, if only start date is provided, delete all records at or after this date
+            enddatetime (datetime): end date for the query, if only end date is provided, delete all records at or before this date
+        Returns:
+            int: status of zero when successful. Non zero for errors.
+        """
+        rt = self.get_record_type(pathname)
+        delete_path = DssPath(pathname)
+        if (rt == RecordType.RegularTimeSeries or rt == RecordType.IrregularTimeSeries) and allrecords:
+            for i in self.get_catalog().uncondensed_paths:
+                uncondensed_path = DssPath(i)
+                if uncondensed_path.path_without_date().__eq__(delete_path.path_without_date()):
+                    status = self._native.hec_dss_delete(i)
+                    if status == 0:
+                        self._catalog = None
+        elif rt == RecordType.RegularTimeSeries and (startdatetime or enddatetime):
+            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
+            if startdatetime:
+                newStartDateTime = startdatetime
+            if enddatetime:
+                newEndDateTime = enddatetime
+
+            interval_seconds=DateConverter.intervalString_to_sec(delete_path.E)
+
+            firstMinutes = DateConverter.julian_array_from_date_times([newStartDateTime])[0]
+            firstSeconds, firstJulian = [firstMinutes % 1440 * 60], [firstMinutes // 1440]
+
+            lastMinutes = DateConverter.julian_array_from_date_times([newEndDateTime])[0]
+            lastSeconds, lastJulian = [lastMinutes % 1440 * 60], [lastMinutes // 1440]
+
+            number_periods = self._native.hec_dss_numberPeriods(
+                interval_seconds,
+                firstJulian[0],
+                firstSeconds[0],
+                lastJulian[0],
+                lastSeconds[0],
+            )
+
+            RTS = RegularTimeSeries()
+            RTS.values = [DSS_UNDEFINED_VALUE]*number_periods
+            RTS.times = [newStartDateTime, newEndDateTime]
+            RTS.start_date = startdatetime
+            RTS.id = pathname
+
+            startDate, startTime = DateConverter.dss_datetime_strings_from_datetime(RTS.times[0])
+
+            status = self._native.hec_dss_tsStoreRegular(
+                RTS.id,
+                startDate,
+                startTime,
+                RTS.values,
+                RTS.quality,
+                False,
+                RTS.units,
+                RTS.data_type,
+                RTS.time_zone_name,
+                3
+            )
+            self._catalog = None
+        elif rt == RecordType.IrregularTimeSeries and (startdatetime or enddatetime):
+            newStartDateTime, newEndDateTime = self._get_date_time_range(pathname, 1)
+            if startdatetime:
+                newStartDateTime = startdatetime
+            if enddatetime:
+                newEndDateTime = enddatetime
+
+            IRTS = IrregularTimeSeries()
+            IRTS.values = [DSS_UNDEFINED_VALUE, DSS_UNDEFINED_VALUE]
+            IRTS.times = [newStartDateTime, newEndDateTime]
+            IRTS.start_date = startdatetime
+            IRTS.id = pathname
+
+            dss.put(IRTS)
+        else:
+            status = self._native.hec_dss_delete(pathname)
+            if status == 0:
+                self._catalog = None
+            else:
+                print(f"Error deleting record from '{pathname}', Record does not exist or timeseries path must be uncondensed")
         return status
 
     def get_catalog(self) -> Catalog:

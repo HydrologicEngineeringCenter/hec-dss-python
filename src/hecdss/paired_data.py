@@ -15,6 +15,7 @@ class PairedData:
         self.type_dependent = ""
         self.units_independent = ""
         self.units_dependent = ""
+        self.time_zone_name = ""
         self.location_info = None
 
     def curve_count(self):
@@ -47,7 +48,7 @@ class PairedData:
     #     return pd.DataFrame(data)
 
     @staticmethod
-    def create(x_values, y_values, labels=[], x_units="", x_type="", y_units="", y_type="", path=None):
+    def create(x_values, y_values, labels=[], x_units="", x_type="", y_units="", y_type="", time_zone_name="", path=None):
         """
         Create a PairedData object with the provided data.
 
@@ -73,4 +74,5 @@ class PairedData:
         pd.units_dependent = y_units
         pd.type_independent = x_type
         pd.type_dependent = y_type
+        pd.time_zone_name = time_zone_name
         return pd

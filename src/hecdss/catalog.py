@@ -1,6 +1,7 @@
 from .record_type import RecordType
 from .dsspath import DssPath
 from datetime import datetime
+import re
 
 class Catalog:
     """manage list of objects inside a DSS database"""
@@ -47,7 +48,7 @@ class Catalog:
                 cleanPath = str(path.path_without_date())
                 raw_paths[cleanPath.lower()] = rawPath
                 self.recordTypeDict[cleanPath.lower()] = recordType
-                if(path.D != "TS-Pattern"):
+                if re.match(r"^\d{2}[A-Za-z]{3}\d{4}$", path.D):  # Check if path.D matches the format 'DDMMMYYYY'
                     tsRecords = self.timeSeriesDictNoDates.setdefault(cleanPath.lower(), [])
                     t = datetime.strptime(path.D,"%d%b%Y")
                     tsRecords.append(t)

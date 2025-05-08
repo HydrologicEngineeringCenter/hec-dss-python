@@ -209,6 +209,22 @@ class TestBasics(unittest.TestCase):
             dss.delete(path, False, t1, t2)
             assert (not("//SACRAMENTO/PRECIP-INC/01Jan1882/1Day/OBS/" in dss.get_catalog().uncondensed_paths))
 
+    def test_TS_Pattern(self):
+        with HecDss(self.test_files.get_copy("Depth_Area_01.dss")) as dss:
+            paths = dss.get_catalog().uncondensed_paths
+            for path in paths:
+                if "TS-Pattern" in path:
+                    print(path)
+            dss.set_debug_level(14)
+            path = "//010010-B/FLOW-UNIT GRAPH/TS-Pattern/5Minute/DAA:Depth-Area 01>010005-C/"
+            tsc = dss.get(path, datetime(2023, 1, 1), datetime(2023, 1, 2))
+            assert(len(tsc.values) > 0)
+
+    def test_path_empty_parts(self):
+        with HecDss(self.test_files.get_copy("Depth_Area_01.dss")) as dss:
+            path = "//010020-R/STORAGE-FLOW///DAA:Depth-Area 01>010025-R/"
+            tsc = dss.get(path)
+
 if __name__ == "__main__":
     unittest.main()
     # test_catalog()

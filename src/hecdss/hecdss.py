@@ -105,7 +105,9 @@ class HecDss:
             varies: RegularTimeSeries, PairedData, Grid, or Array.
         """
         if type == RecordType.RegularTimeSeries or type == RecordType.IrregularTimeSeries:
-            new_pathname = DssPath(pathname).path_without_date().__str__()
+            new_pathname = pathname
+            if(DssPath(pathname).D.lower() != "ts-pattern"):
+                new_pathname = DssPath(pathname).path_without_date().__str__()
             ts = self._get_timeseries(new_pathname, startdatetime, enddatetime, trim)
             return ts
         elif type == RecordType.PairedData:
@@ -338,7 +340,8 @@ class HecDss:
 
     def _get_timeseries(self, pathname, startDateTime, endDateTime, trim):
         # get sizes
-        firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
+        if (DssPath(pathname).D.lower() != "ts-pattern"):
+            firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
         if startDateTime is None:
             _startDateTime = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
             firstSeconds, firstJulian = firstSeconds, firstValidJulian

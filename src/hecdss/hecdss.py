@@ -108,6 +108,8 @@ class HecDss:
             new_pathname = pathname
             if(DssPath(pathname).D.lower() != "ts-pattern"):
                 new_pathname = DssPath(pathname).path_without_date().__str__()
+            elif type == RecordType.IrregularTimeSeries:
+                raise ValueError("ts-pattern is not fully supported for irregular time series")
             ts = self._get_timeseries(new_pathname, startdatetime, enddatetime, trim)
             return ts
         elif type == RecordType.PairedData:
@@ -317,7 +319,7 @@ class HecDss:
         firstSeconds = [0]
         lastValidJulian = [0]
         lastSeconds = [0]
-        self._native.hec_dss_tsGetDateTimeRange(
+        status = self._native.hec_dss_tsGetDateTimeRange(
             pathname,
             boolFullSet,
             firstValidJulian,
@@ -340,8 +342,7 @@ class HecDss:
 
     def _get_timeseries(self, pathname, startDateTime, endDateTime, trim):
         # get sizes
-        if (DssPath(pathname).D.lower() != "ts-pattern"):
-            firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
+        firstValidJulian, firstSeconds, lastValidJulian, lastSeconds = self._get_julian_time_range(pathname, 1)
         if startDateTime is None:
             _startDateTime = DateConverter.date_time_from_julian_second(firstValidJulian[0], firstSeconds[0])
             firstSeconds, firstJulian = firstSeconds, firstValidJulian
@@ -467,8 +468,17 @@ class HecDss:
         timeZoneName = timeZoneName[0]
         if(timeZoneName):
             new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
+        elif (DssPath(pathname).D.lower() == "ts-pattern"):
+            new_times = []
+            start_date = _startDateTime - timedelta(seconds=interval_seconds)
+
         location_info = self._get_location_info(pathname)
         ts = ts.create(values=values, times=new_times, quality=quality, units=units, data_type=data_type, start_date=start_date, time_granularity_seconds=time_granularity_seconds, julian_base_date=julian_base_date, time_zone_name=timeZoneName, path=pathname, location_info=location_info)
+
+        if (DssPath(pathname).D.lower() == "ts-pattern"):
+            new_interval = ts._get_interval_path()
+            ts._interval_to_times(new_interval)
+
         return ts
 
     def _get_location_info(self, pathname: str):
@@ -564,6 +574,8 @@ class HecDss:
             self._catalog = None
         elif type(container) is IrregularTimeSeries:
             its = container
+            if (DssPath(its.id).D.lower() == "ts-pattern"):
+                raise ValueError("ts-pattern is not fully supported for irregular time series")
             # def hec_dss_tsStoreRegular(dss, pathname, startDate, startTime, valueArray, qualityArray,
             #                           saveAsFloat, units, type):
             start_date_base = (datetime(1900, 1, 1)+timedelta(days=its.julian_base_date))

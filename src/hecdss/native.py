@@ -559,14 +559,22 @@ class _Native:
             c_char_p,  # timeZoneName (const char*) - New argument
         ]
 
+        numberCurves = len(pd.values[0])
+        if numberCurves > 1:
+            _values = pd.values.tolist()
+            if len(_values[0]) > 1:
+                _values = [[_values[i][j] for i in range(len(_values))] for j in range(len(_values[0]))]
+            values2 = np.array(_values)
+        else:
+            values2 = pd.values
         c_pathname = c_char_p(pd.id.encode("utf-8"))
         c_Ordinates = (c_double * len(pd.ordinates))(*pd.ordinates)
         c_OrdinatesLength = len(pd.ordinates)
-        flat_list = pd.values.flatten()
+        flat_list = values2.flatten()
         c_Values = (c_double * len(flat_list))(*flat_list)
         c_ValuesLength = len(flat_list)
         c_numberOrdinates = len(pd.ordinates)
-        c_numberCurves = len(pd.values[0])
+        c_numberCurves = numberCurves
         c_unitsIndependent = c_char_p(pd.units_independent.encode("utf-8"))
         c_typeIndependent = c_char_p(pd.type_independent.encode("utf-8"))
         c_unitsDependent = c_char_p(pd.units_dependent.encode("utf-8"))
@@ -1094,8 +1102,8 @@ class _Native:
             verticalDatum[0] = c_verticalDatum.value
             timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
             supplemental[0] = c_supplemental.value.decode("utf-8")
-        else:
-            print("Unable to read location information, Function call failed with result:", result)
+        # else:
+        #     print("Unable to read location information, Function call failed with result:", result)
 
         return result
 

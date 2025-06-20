@@ -301,6 +301,13 @@ class HecDss:
         pd.ordinates = np.array(doubleOrdinates)
 
         n = numberCurves2[0].value
+        ordinateCount = len(doubleOrdinates)
+        if n > 1:
+            # ---------------------------------------------------------------------------------------- #
+            # rearrange from consecutive values for each curve to consecutive curves for each ordinate #
+            # ---------------------------------------------------------------------------------------- #
+            groups = [doubleValues[i*ordinateCount:(i+1)*ordinateCount] for i in range(n)]
+            doubleValues = list(map(list, zip(*groups)))
         pd.values = np.array(doubleValues).reshape((len(doubleOrdinates), n))
         # pd.values = [doubleValues[i:i+n] for i in range(0, len(doubleValues), n)]
         pd.labels = labels
@@ -515,7 +522,7 @@ class HecDss:
         )
 
         if status != 0:
-            print("Function call failed with result:", status)
+            # print("Function call failed with result:", status)
             return None
 
         location_info = LocationInfo.create(

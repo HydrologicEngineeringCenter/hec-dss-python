@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hec-dss-python"
-version = "0.1.22"
+version = "0.1.23"
 description = "Python wrapper for the HEC-DSS file database C library."
 authors = ["Hydrologic Engineering Center"]
 license = "MIT"

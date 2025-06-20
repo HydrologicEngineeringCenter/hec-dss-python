@@ -1094,8 +1094,8 @@ class _Native:
             verticalDatum[0] = c_verticalDatum.value
             timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
             supplemental[0] = c_supplemental.value.decode("utf-8")
-        else:
-            print("Unable to read location information, Function call failed with result:", result)
+        # else:
+        #     print("Unable to read location information, Function call failed with result:", result)
 
         return result
 

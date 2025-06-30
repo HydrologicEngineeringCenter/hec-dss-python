@@ -1,15 +1,10 @@
 """Pytest module."""
 
 import unittest
-import os
-import sys
 
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
-
+from hecdss import DssPath
 from hecdss.cwms_utility import CwmsUtility
 from hecdss.dss_type import DssType
-from hecdss import DssPath
 
 
 class TestDssPath(unittest.TestCase):

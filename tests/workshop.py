@@ -1,14 +1,9 @@
-
 """Pytest module."""
 
-import sys
-import os
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
-
+import copy
 
 from file_manager import FileManager
-import copy
+
 from hecdss import HecDss
 
 

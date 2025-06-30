@@ -1,9 +1,5 @@
 import unittest
-import os
-import sys
 
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
 from hecdss.dss_type import DssType
 
 

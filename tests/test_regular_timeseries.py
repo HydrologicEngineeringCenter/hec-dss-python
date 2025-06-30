@@ -1,19 +1,14 @@
 """Pytest module."""
 
 import unittest
-import sys
-import os
+from datetime import datetime, timedelta
 
 import numpy as np
+from file_manager import FileManager
 
 from hecdss import HecDss
-
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
-
-from file_manager import FileManager
 from hecdss.regular_timeseries import RegularTimeSeries
-from datetime import datetime, timedelta
+
 
 class TestRegularTimeSeries(unittest.TestCase):
 

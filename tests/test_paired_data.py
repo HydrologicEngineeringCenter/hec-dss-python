@@ -1,17 +1,13 @@
 """Pytest module."""
 
-import unittest
-import sys
-import os
-import numpy as np
-
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
-
-from file_manager import FileManager
 import copy
-from hecdss.paired_data import PairedData
+import unittest
+
+import numpy as np
+from file_manager import FileManager
+
 from hecdss import HecDss
+from hecdss.paired_data import PairedData
 
 
 # update MODIFIED_TEST_DIR to be the path the folder containing dss files

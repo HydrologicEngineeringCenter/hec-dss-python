@@ -1,16 +1,11 @@
 """Pytest module."""
 
 import unittest
-import sys
-import os
-
-from hecdss.record_type import RecordType
-
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
 
 from file_manager import FileManager
-from hecdss import Catalog, HecDss
+
+from hecdss import HecDss
+from hecdss.record_type import RecordType
 
 
 class TestText(unittest.TestCase):

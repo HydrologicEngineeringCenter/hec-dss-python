@@ -1,14 +1,11 @@
 """Pytest module."""
 
 import unittest
-import os
-import sys
-import numpy as np
 
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
+import numpy as np
 from file_manager import FileManager
-from hecdss import HecDss, ArrayContainer
+
+from hecdss import ArrayContainer, HecDss
 
 
 class TestArray(unittest.TestCase):

@@ -1,15 +1,12 @@
 """Pytest module."""
 
 import unittest
-import sys
-import os
-import numpy as np
 
-sys.path.append(r'src')
-sys.path.append(os.path.dirname(__file__))
+import numpy as np
 from file_manager import FileManager
-from hecdss.gridded_data import GriddedData
+
 from hecdss import HecDss
+from hecdss.gridded_data import GriddedData
 
 
 class TestGriddedData(unittest.TestCase):

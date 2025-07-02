@@ -125,6 +125,9 @@ class RegularTimeSeries:
         """
         if len(self.times) > 1 and type(self.times[0]) == datetime:
             interval = self.times[1]-self.times[0]
+            total_seconds = interval.total_seconds()
+            if total_seconds > 86400:
+                return "empty"
             return int(interval.total_seconds())
         return "empty"
 

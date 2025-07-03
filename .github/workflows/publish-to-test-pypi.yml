@@ -1,4 +1,4 @@
-name: Test Deployment
+name: Deployment
 
 # The deployment workflow should only run when changes are merged into the `main` branch.
 # Since a branch protection rule prevents directly pushing to `main` this workflow will
@@ -7,15 +7,9 @@ on:
   push:
     branches:
       - main
-      - feature/grid
 
   # Allow the workflow to be manually triggered from the Actions tab.
   workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'If you want to run a release, type an existing or new tag (eg. v1.2.0)'
-        required: false
-        default: ''
 
 jobs:
   # Build and test the distribution before deploying to the various platforms. This allows
@@ -147,9 +141,9 @@ jobs:
     runs-on: ubuntu-latest
 
     # Require a tag push to publish a release distribution.
-    if: >
-      startsWith(github.ref, 'refs/tags/')
-      || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name != '')
+#    if: >
+#      startsWith(github.ref, 'refs/tags/')
+#      || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name != '')
 
     # The distribution will only be published if the tests have passed.
     needs:
@@ -180,7 +174,9 @@ jobs:
     runs-on: ubuntu-latest
 
     # GitHub releases are only uploaded for release (tagged) distributions.
-    needs: [deploy-release]
+    needs:
+      - deploy-release
+      - build
 
     permissions:
       contents: write # IMPORTANT: mandatory for making GitHub Releases

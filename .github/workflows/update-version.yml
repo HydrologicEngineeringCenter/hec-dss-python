@@ -1,0 +1,45 @@
+name: update-version
+
+# The deployment workflow should only run when changes are merged into the `main` branch.
+# Since a branch protection rule prevents directly pushing to `main` this workflow will
+# only run on a successful merge request.
+on:
+  # Allow the workflow to be manually triggered from the Actions tab.
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'If you want to update the version and release, type an existing or new version tag (eg. 1.2.0)'
+        required: false
+        default: ''
+
+jobs:
+
+  update-version:
+    name: Update Version
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update version in pyproject.toml
+        run: |
+          sed -i "s/^version = .*/version = \"${{ github.event.inputs.tag_name }}\"/" pyproject.toml
+
+      - name: Update version in setup.cfg
+        run: |
+          sed -i "s/^version = .*/version = ${{ github.event.inputs.tag_name }}/" setup.cfg
+
+      - name: Commit and push version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml setup.cfg
+          git commit -m "chore: update version to ${{ github.event.inputs.tag_name }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

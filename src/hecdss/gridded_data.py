@@ -114,12 +114,12 @@ class GriddedData:
             self.rangeLimitTable[i] = minval + step * i
 
         self.rangeLimitTable[bins - 1] = maxval
-
         # Exceedance
-        for idx in range(datasize):
-            for jdx in range(bins):
-                if data[idx] >= self.rangeLimitTable[jdx]:
-                    self.numberEqualOrExceedingRangeLimit[jdx] += 1
+        sorted_data = np.sort(data)
+        n = len(sorted_data)
+        for jdx in range(bins):
+            idx = np.searchsorted(sorted_data, self.rangeLimitTable[jdx], side="left")
+            self.numberEqualOrExceedingRangeLimit[jdx] = n - idx
 
     def update_grid_info(self):
         """
@@ -135,7 +135,7 @@ class GriddedData:
 
         self.data = np.nan_to_num(self.data, nan=NULL_INT)
         self.numberOfRanges = math.floor(1 + 3.322 * math.log10(n) + 1)
-        flat_data = self.data.flatten()
+        flat_data = self.data.ravel()
         self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flat_data)
 
     @staticmethod

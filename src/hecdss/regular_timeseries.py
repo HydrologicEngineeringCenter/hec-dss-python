@@ -159,10 +159,55 @@ class RegularTimeSeries:
         Args:
             new_interval (int): The new interval in seconds.
         """
+        is_leap = lambda y: y % 4 == 0 and y % 100 != 0 or y % 400 == 0
+        last_day = lambda y, m: 31 if m in (1,3,5,7,8,10,12) else 30 if m in (4,6,9,11) else 29 if is_leap(y) else 28
         if type(self.start_date) == datetime:
-            self.times = []
-            for i in range(len(self.values)):
-                self.times.append((self.start_date + (i * timedelta(seconds=new_interval))).replace(microsecond=0, tzinfo=ZoneInfo(self.time_zone_name) if self.time_zone_name else None))
+            tz = ZoneInfo(self.time_zone_name) if self.time_zone_name else None
+            first_time = self.start_date.replace(microsecond=0, tzinfo=tz)
+            count = len(self.values)
+            if new_interval <= 604800:
+                # --------------------- #
+                # non-calendar interval #
+                # --------------------- #
+                span = timedelta(seconds=new_interval)
+                self.times = [(first_time + i * span) for i in range(count)]
+            elif new_interval == 864000:
+                # ------------------ #
+                # Tri-Month interval #
+                # ------------------ #
+                raise ValueError("Tri-Month interval not currently supported")
+            elif new_interval == 1296000:
+                # ------------------- #
+                # Semi-Month interval #
+                # ------------------- #
+                raise ValueError("Semi-Month interval not currently supported")
+            elif new_interval == 2592000:
+                # ---------------- #
+                # 1-Month interval #
+                # ---------------- #
+                self.times = [first_time]
+                for i in range(1, count):
+                    y, m, d, h, n, s = self.times[-1].timetuple()[:6]
+                    if m == 12:
+                        y += 1
+                        m = 1
+                    else:
+                        m += 1
+                    d = min(last_day(y, m), first_time.day)
+                    self.times.append(datetime(y, m, d, h, n, s, tzinfo=tz))
+            elif new_interval == 31536000:
+                # --------------- #
+                # 1-Year interval #
+                # --------------- #
+                self.times = [first_time]
+                for i in range(1, count):
+                    y, m, d, h, n, s = self.times[-1].timetuple()[:6]
+                    y += 1
+                    d = min(last_day(y, m), first_time.day)
+                    self.times.append(datetime(y, m, d, h, n, s, tzinfo=tz))
+            else:
+                raise ValueError(f"Invalid interval seconds: {new_interval}")
+
 
     def _generate_times(self):
         """

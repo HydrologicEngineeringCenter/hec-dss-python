@@ -102,24 +102,17 @@ class GriddedData:
         if bins > max_bins:
             bins = max_bins
 
-        self.rangeLimitTable = [0] * bins
-        self.numberEqualOrExceedingRangeLimit = [0] * bins
-
+        self.rangeLimitTable = np.empty(bins, dtype=float)
         self.rangeLimitTable[0] = NULL_INT
         self.rangeLimitTable[1] = minval
 
         step = range_ / bins
-
-        for i in range(2, bins):
-            self.rangeLimitTable[i] = minval + step * i
+        self.rangeLimitTable[2:] = minval + step * np.arange(2, bins)
 
         self.rangeLimitTable[bins - 1] = maxval
         # Exceedance
-        sorted_data = np.sort(data)
-        n = len(sorted_data)
-        for jdx in range(bins):
-            idx = np.searchsorted(sorted_data, self.rangeLimitTable[jdx], side="left")
-            self.numberEqualOrExceedingRangeLimit[jdx] = n - idx
+        mask = data[None, :] >= self.rangeLimitTable[:, None]
+        self.numberEqualOrExceedingRangeLimit = mask.sum(axis=1)
 
     def update_grid_info(self):
         """
@@ -134,8 +127,8 @@ class GriddedData:
         self.meanDataValue = np.nanmean(self.data)
 
         self.data = np.nan_to_num(self.data, nan=NULL_INT)
-        self.numberOfRanges = math.floor(1 + 3.322 * math.log10(n) + 1)
-        flat_data = self.data.ravel()
+        self.numberOfRanges = math.floor(2 + 3.322 * math.log10(n))
+        flat_data = self.data.flatten()
         self.range_limit_table(self.minDataValue, self.maxDataValue, bin_range, self.numberOfRanges, n, flat_data)
 
     @staticmethod

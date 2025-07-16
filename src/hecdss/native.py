@@ -331,7 +331,6 @@ class _Native:
             self,
             gd,
     ):
-
         self.dll.hec_dss_pdStore.restype = c_int
         self.dll.hec_dss_pdStore.argtypes = [
             ctypes.POINTER(ctypes.c_void_p),  # dss (dss file pointer)
@@ -395,8 +394,9 @@ class _Native:
         c_rangeLimitTable = (c_float * len(gd.rangeLimitTable))(*gd.rangeLimitTable)
         c_numberEqualOrExceedingRangeLimit = (c_int * len(gd.numberEqualOrExceedingRangeLimit))(
             *gd.numberEqualOrExceedingRangeLimit)
-        flat_list = gd.data.flatten()
-        c_data = (c_float * len(flat_list))(*flat_list)
+
+        arr = gd.data.astype('float32', copy=False)
+        c_data = arr.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
 
         return self.dll.hec_dss_gridStore(self.handle, c_pathname, c_gridType, c_dataType,
                                           c_lowerLeftCellX, c_lowerLeftCellY,

@@ -8,7 +8,7 @@ Read about HEC-DSS [here.](https://www.hec.usace.army.mil/software/hec-dss/)
 
 To install `hecdss`, use the following command:
 ```bash
-pip install -i https://test.pypi.org/simple/ hecdss
+pip install hecdss
 ```
 ## API full documentation
 

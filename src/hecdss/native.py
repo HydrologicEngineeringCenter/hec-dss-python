@@ -90,6 +90,8 @@ class _Native:
     # set debug level (0-15)
     # 0 - no output
     # 15 - max output
+    # for additional levels: see zdssMessages.h of the heclib source code,
+    # or documentation from the HEC-DSS Programmers Guide for C on `mlvl` parameter of the `zset` utility function.
     def hec_dss_set_debug_level(self, value: int):
         self.__hec_dss_set_value("mlvl", value)
 

@@ -61,7 +61,9 @@ class HecDss:
         Sets the library debug level
 
         Args:
-            level (int): a value between 0 and 15. Larger for more output
+            level (int): a value between 0 and 15. Larger for more output.
+                For level descriptions, see zdssMessages.h of the heclib source code,
+                or documentation from the HEC-DSS Programmers Guide for C on the `mlvl` parameter of the `zset` utility function.
         """
         _Native().hec_dss_set_debug_level(level)
     def close(self):
@@ -743,7 +745,9 @@ class HecDss:
         """sets the DSS debug level.
 
         Args:
-            level (int): a value between 0 and 15. Larger for more output
+            level (int): a value between 0 and 15. Larger for more output.
+                For level descriptions, see zdssMessages.h of the heclib source code,
+                or documentation from the HEC-DSS Programmers Guide for C on the `mlvl` parameter of the `zset` utility function.
 
         Returns:
             int: _description_

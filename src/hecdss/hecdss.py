@@ -477,8 +477,7 @@ class HecDss:
             try:
                 new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
             except ZoneInfoNotFoundError as e: 
-                print(f"Warning: The timezone '{timeZoneName}' was not found. Using no zone instead.")
-                print(e)
+                print(f"Warning: {e}. Using no zone instead.")
                 timeZoneName = False
         elif (DssPath(pathname).D.lower() == "ts-pattern"):
             new_times = []

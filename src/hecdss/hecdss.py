@@ -1,6 +1,6 @@
 """Docstring for public module."""
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import numpy as np
 
@@ -474,7 +474,11 @@ class HecDss:
         julian_base_date = julianBaseDate[0]
         timeZoneName = timeZoneName[0]
         if(timeZoneName):
-            new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
+            try:
+                new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
+            except ZoneInfoNotFoundError as e: 
+                print(f"Warning: {e}. Using no zone instead.")
+                timeZoneName = False
         elif (DssPath(pathname).D.lower() == "ts-pattern"):
             new_times = []
             start_date = _startDateTime - timedelta(seconds=interval_seconds)

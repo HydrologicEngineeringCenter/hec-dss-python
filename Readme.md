@@ -121,6 +121,21 @@ This library uses (`hecdss.dll` on Windows and `libhecdss.so` on Unix/Linux).  h
    ```
 
 
+## Message Levels
+
+Message levels can be set using `set_global_debug_level` or `set_debug_level`, for example:
+
+```python
+from hecdss import HecDss
+mlvl: int = 4
+HecDss.set_global_debug_level(mlvl)
+```
+
+Common levels are described in the documentation for the `mlvl` parameter of the `zset` utility function from the [HEC-DSS Programmers Guide for C](https://www.hec.usace.army.mil/confluence/dssdocs/dsscprogrammer)
+
+Additional levels are described in the heclib source code C headers in [zdssMessages.h](https://github.com/HydrologicEngineeringCenter/hec-dss/blob/master/heclib/heclib_c/src/headers/zdssMessages.h)
+
+
 ## how to generate documentation
 
 pdoc -o docs -d google --no-show-source .\src

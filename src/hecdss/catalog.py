@@ -1,7 +1,11 @@
+import logging
 from .record_type import RecordType
 from .dsspath import DssPath
 from datetime import datetime
 import re
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 class Catalog:
     """manage list of objects inside a DSS database"""
@@ -76,8 +80,18 @@ class Catalog:
             self.items.append(p)
 
     def print(self):
+        """Print all items in the catalog to stdout."""
         for ds in self.items:
             print(ds)
+
+    def log_items(self, level=logging.INFO):
+        """Log all items in the catalog at the specified logging level.
+
+        Args:
+            level: Logging level (default: logging.INFO)
+        """
+        for ds in self.items:
+            logger.log(level, "Catalog item: %s", ds)
 
     def __iter__(self):
         self.index = 0  # Initialize the index to 0

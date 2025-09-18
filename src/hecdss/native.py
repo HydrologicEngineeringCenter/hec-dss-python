@@ -1,3 +1,4 @@
+import logging
 import ctypes
 from ctypes import c_float, c_double, c_char_p, c_int, c_void_p, POINTER
 from ctypes import c_int32
@@ -9,6 +10,9 @@ import io
 import os
 import sys
 from typing import List
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 # from hecdss.location_info import LocationInfo
 
@@ -94,6 +98,41 @@ class _Native:
     # or documentation from the HEC-DSS Programmers Guide for C on `mlvl` parameter of the `zset` utility function.
     def hec_dss_set_debug_level(self, value: int):
         self.__hec_dss_set_value("mlvl", value)
+
+    def hec_dss_open_log_file(self, log_file_path: str) -> int:
+        """Open a log file for DLL message output.
+
+        Args:
+            log_file_path: Path to the log file
+
+        Returns:
+            Status code (0 for success)
+        """
+        try:
+            # Try to call zopenLog if it exists
+            f = self.dll.zopenLog
+            f.argtypes = [c_char_p]
+            f.restype = c_int
+            return f(log_file_path.encode("utf-8"))
+        except AttributeError:
+            logger.warning("zopenLog function not found in DLL, messages will go to stdout")
+            return -1
+
+    def hec_dss_close_log_file(self) -> int:
+        """Close the DLL log file.
+
+        Returns:
+            Status code (0 for success)
+        """
+        try:
+            # Try to call zcloseLog if it exists
+            f = self.dll.zcloseLog
+            f.argtypes = []
+            f.restype = c_int
+            return f()
+        except AttributeError:
+            logger.warning("zcloseLog function not found in DLL")
+            return -1
 
     def hec_dss_export_to_file(
             self, path: str, outputFile: str, startDate: str, startTime: str, endDate: str, endTime: str
@@ -258,7 +297,7 @@ class _Native:
                                                c_numberEqualOrExceedingRangeLimit,
                                                c_data, dataLength)
         if result != 0:
-            print("boolRetriveData False, Function call failed with result:", result)
+            logger.error("boolRetriveData False, Function call failed with result: %s", result)
             return result
 
         rangeTablesLength = c_numberOfRanges.value
@@ -325,7 +364,7 @@ class _Native:
 
             # print("Function call successful:")
         else:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -465,7 +504,7 @@ class _Native:
             typeIndependent[0] = c_typeIndependent.value.decode('utf-8')
             typeDependent[0] = c_typeDependent.value.decode('utf-8')
         else:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -533,7 +572,7 @@ class _Native:
 
             timeZoneName[0] = c_timeZoneName.value.decode("utf-8")
         else:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -644,7 +683,7 @@ class _Native:
             numberValues[0] = nv.value
             qualityElementSize[0] = qes.value
         else:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -690,7 +729,7 @@ class _Native:
             lastValidJulian[0] = ljul.value
             lastSeconds[0] = lsec.value
         else:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -1036,7 +1075,7 @@ class _Native:
 
 
         else:
-            print("Error reading array status = {status}")
+            logger.error("Error reading array status = %s", status)
 
     def hec_dss_locationRetrieve(self, fullPath: str, x: List[float], y: List[float], z: List[float],
                                  coordinateSystem: List[int], coordinateID: List[int], horizontalUnits: List[int],
@@ -1146,7 +1185,7 @@ class _Native:
         )
 
         if result != 0:
-            print("Function call failed with result:", result)
+            logger.error("Function call failed with result: %s", result)
 
         return result
 
@@ -1170,6 +1209,6 @@ class _Native:
             result = f(self.handle, pathname.encode("utf-8"))
 
             if result != 0:
-                print("Function call failed with result:", result)
+                logger.error("Function call failed with result: %s", result)
 
             return result

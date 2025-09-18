@@ -1,4 +1,5 @@
 """Docstring for public module."""
+import logging
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -16,21 +17,32 @@ from hecdss.irregular_timeseries import IrregularTimeSeries
 from hecdss.catalog import Catalog
 from hecdss.gridded_data import GriddedData
 from hecdss.dsspath import DssPath
+from hecdss.logging_config import get_dll_monitor
 
 DSS_UNDEFINED_VALUE = -340282346638528859811704183484516925440.000000
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 
 class HecDss:
     """ Main class for working with DSS files
     """
-    def __init__(self, filename:str):
+    def __init__(self, filename:str, enable_dll_logging:bool = False):
         """constructor for HecDSS
 
         Args:
             filename (str): DSS filename to be opened; it will be created if it doesn't exist.
+            enable_dll_logging (bool): If True, capture DLL messages to Python logging. Default False.
         """
 
         self._native = _Native()
+        self._dll_monitor = None
+
+        # Setup DLL logging if requested
+        if enable_dll_logging:
+            self._setup_dll_logging()
+
         self._native.hec_dss_open(filename)
         self._catalog = None
         self._filename = filename
@@ -55,23 +67,58 @@ class HecDss:
             exc_tb (traceback): The traceback object.
         """
         self.close()
+
+    def _setup_dll_logging(self):
+        """Setup temporary log file for DLL output monitoring."""
+        self._dll_monitor = get_dll_monitor()
+
+        # Create temp log file
+        log_file_path = self._dll_monitor.setup_temp_log_file()
+
+        # Tell DLL to use this log file
+        status = self._native.hec_dss_open_log_file(log_file_path)
+        if status == 0:
+            # Start monitoring
+            self._dll_monitor.start_monitoring()
+            logger.debug("DLL logging enabled, monitoring: %s", log_file_path)
+        else:
+            logger.warning("Could not enable DLL log file, messages will not be captured")
+            self._dll_monitor = None
     @staticmethod
     def set_global_debug_level(level: int) -> None:
         """
-        Sets the library debug level
+        Sets the library debug level and syncs with Python logging.
 
         Args:
-            level (int): a value between 0 and 15. Larger for more output.
-                For level descriptions, see zdssMessages.h of the heclib source code,
-                or documentation from the HEC-DSS Programmers Guide for C on the `mlvl` parameter of the `zset` utility function.
+            level (int): HEC-DSS message level (0-15)
+                0: No messages (not recommended)
+                1: Critical errors only
+                2: Terse output (errors + file operations)
+                3: General log messages (default)
+                4: User diagnostic messages
+                5: Internal debug level 1 (not recommended for users)
+                6: Internal debug level 2 (full debug)
+                7-15: Extended debug levels
         """
+        # Set the native DLL level (controls what gets written)
         _Native().hec_dss_set_debug_level(level)
+
+        # Update the monitor's awareness of current level
+        from hecdss.logging_config import get_dll_monitor
+        monitor = get_dll_monitor()
+        monitor.set_dll_level(level)
     def close(self):
         """closes the DSS file and releases any locks
         """
         if not self._closed:
             self._native.hec_dss_close()
             self._closed = True
+
+            # Clean up DLL logging if active
+            if self._dll_monitor:
+                self._native.hec_dss_close_log_file()
+                self._dll_monitor.stop_monitoring()
+                self._dll_monitor = None
 
     def get_record_type(self, pathname: str) -> RecordType:
         """
@@ -87,10 +134,10 @@ class HecDss:
             self._catalog = self.get_catalog()
         rt = self._catalog.get_record_type(pathname)
 
-        # print(f"hec_dss_recordType for '{pathname}' is {rt}")
+        logger.debug("hec_dss_recordType for '%s' is %s", pathname, rt)
         # TODO do native call.
         # rt = self._native.hec_dss_recordType(pathname)
-        # print(f"hec_dss_recordType for '{pathname}' is {rt}")
+        # logger.debug("hec_dss_recordType for '%s' is %s", pathname, rt)
         return rt
 
     def get(self, pathname: str, startdatetime=None, enddatetime=None, trim=False):
@@ -214,7 +261,7 @@ class HecDss:
         )
 
         if status != 0:
-            print(f"Error reading gridded-data from '{pathname}'")
+            logger.error("Error reading gridded-data from '%s'", pathname)
             return None
 
         gd = GriddedData()
@@ -268,9 +315,9 @@ class HecDss:
             typeDependent,
             labelsLength
         )
-        # print("Number of Ordinates:", numberOrdinates[0])
-        # print("Number of Curves:", numberCurves[0])
-        # print("length of labels:", labelsLength[0])
+        logger.debug("Number of Ordinates: %s", numberOrdinates[0])
+        logger.debug("Number of Curves: %s", numberCurves[0])
+        logger.debug("Length of labels: %s", labelsLength[0])
 
         doubleOrdinates = []
         doubleValues = []
@@ -296,7 +343,7 @@ class HecDss:
                                                  timeZoneName, len(timeZoneNameLength[0]) + 1)
 
         if status != 0:
-            print(f"Error reading paired-data from '{pathname}'")
+            logger.error("Error reading paired-data from '%s'", pathname)
             return None
 
         pd = PairedData()
@@ -383,8 +430,8 @@ class HecDss:
             numberValues,
             qualityElementSize,
         )
-        # print("Number of values:", numberValues[0])
-        # print("Quality element size:", qualityElementSize[0])
+        logger.debug("Number of values: %s", numberValues[0])
+        logger.debug("Quality element size: %s", qualityElementSize[0])
 
         number_periods = numberValues[0]
         if RecordType.RegularTimeSeries == self.get_record_type(pathname):
@@ -434,12 +481,11 @@ class HecDss:
             bufferLength
         )
 
-        # print("units = "+units[0])
-        # print("datatype = "+dataType[0])
-        # print("times: ")
-        # print(times)
-        # print(values)
-        # print("julianBaseDate = " + str(julianBaseDate[0]))
+        logger.debug("units = %s", units[0])
+        logger.debug("datatype = %s", dataType[0])
+        logger.debug("times: %s", times)
+        logger.debug("values: %s", values)
+        logger.debug("julianBaseDate = %s", julianBaseDate[0])
         # print("timeGranularitySeconds = " + str(timeGranularitySeconds[0]))
         if RecordType.IrregularTimeSeries == self.get_record_type(pathname):
             ts = IrregularTimeSeries()
@@ -479,7 +525,7 @@ class HecDss:
             try:
                 new_times = [i.replace(tzinfo=ZoneInfo(timeZoneName)) for i in new_times]
             except ZoneInfoNotFoundError as e: 
-                print(f"Warning: {e}. Using no zone instead.")
+                logger.warning("Warning: %s. Using no zone instead.", e)
                 timeZoneName = False
         elif (DssPath(pathname).D.lower() == "ts-pattern"):
             new_times = []
@@ -725,7 +771,7 @@ class HecDss:
             if status == 0:
                 self._catalog = None
             else:
-                print(f"Error deleting record from '{pathname}', Record does not exist or timeseries path must be uncondensed")
+                logger.error("Error deleting record from '%s', Record does not exist or timeseries path must be uncondensed", pathname)
         return status
 
     def get_catalog(self) -> Catalog:
@@ -764,6 +810,6 @@ if __name__ == "__main__":
     dss = HecDss("sample7.dss")
     catalog = dss.get_catalog()
     for p in catalog:
-        print(p)
+        print(p)  # This is in test code, keep as is
     # print(catalog[0:5])
     # dss.set_debug_level(15)

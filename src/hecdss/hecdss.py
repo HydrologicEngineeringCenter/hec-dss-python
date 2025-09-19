@@ -28,16 +28,20 @@ logger = logging.getLogger(__name__)
 class HecDss:
     """ Main class for working with DSS files
     """
-    def __init__(self, filename:str, enable_dll_logging:bool = False):
+    def __init__(self, filename:str, enable_dll_logging:bool = False, message_level:int = 0):
         """constructor for HecDSS
 
         Args:
             filename (str): DSS filename to be opened; it will be created if it doesn't exist.
             enable_dll_logging (bool): If True, capture DLL messages to Python logging. Default False.
+            message_level (int): DLL message level (0-15). Default 0 (silent).
         """
 
         self._native = _Native()
         self._dll_monitor = None
+
+        # Set DLL message level (0 = silent by default)
+        self._native.hec_dss_set_debug_level(message_level)
 
         # Setup DLL logging if requested
         if enable_dll_logging:
@@ -75,14 +79,17 @@ class HecDss:
         # Create temp log file
         log_file_path = self._dll_monitor.setup_temp_log_file()
 
-        # Tell DLL to use this log file
+        # Tell DLL to use this log file (requires zopenLog function in DLL)
         status = self._native.hec_dss_open_log_file(log_file_path)
+
         if status == 0:
-            # Start monitoring
+            # zopenLog worked, monitor the file
             self._dll_monitor.start_monitoring()
             logger.debug("DLL logging enabled, monitoring: %s", log_file_path)
         else:
-            logger.warning("Could not enable DLL log file, messages will not be captured")
+            # zopenLog not available, can't capture DLL output to file
+            logger.warning("zopenLog not available in DLL, cannot capture DLL output to file")
+            self._dll_monitor.stop_monitoring()
             self._dll_monitor = None
     @staticmethod
     def set_global_debug_level(level: int) -> None:

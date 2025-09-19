@@ -3,7 +3,7 @@
 import unittest
 
 import numpy as np
-from file_manager import FileManager
+from .file_manager import FileManager
 
 from hecdss import ArrayContainer, HecDss
 

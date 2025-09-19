@@ -91,6 +91,17 @@ class _Native:
         f.restype = c_int
         f(name.encode("utf-8"), value)
 
+    def __hec_dss_set_string(self, name: str, value: str):
+        """Set a string parameter via zset."""
+        try:
+            f = self.dll.hec_dss_set_string
+            f.argtypes = [c_char_p, c_char_p]
+            f.restype = c_int
+            return f(name.encode("utf-8"), value.encode("utf-8"))
+        except AttributeError:
+            logger.warning("hec_dss_set_string function not found in DLL")
+            return -1
+
     # set debug level (0-15)
     # 0 - no output
     # 15 - max output

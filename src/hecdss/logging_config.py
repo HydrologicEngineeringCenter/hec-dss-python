@@ -205,7 +205,7 @@ from typing import Optional
 class DllLogMonitor:
     """
     Monitors HEC-DSS log file and routes messages to Python logging.
-    Uses a temporary log file approach to capture DLL output.
+    Uses a temporary log file approach to capture DLL output when zopenLog is available.
     """
 
     def __init__(self, logger: logging.Logger):

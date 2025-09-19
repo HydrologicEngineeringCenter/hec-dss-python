@@ -170,6 +170,11 @@ The library can capture native DLL messages and route them through Python's logg
 4. Routes messages to Python logging with `[DLL]` prefix
 5. Cleans up the temporary file on close
 
+**Requirements:** Your HEC-DSS DLL must include the `zopenLog` function for DLL
+output capture to work. If `zopenLog` is not available, DLL messages will go
+directly to the console. To suppress console output when `zopenLog` is not
+available, set `message_level=0` (which is the default).
+
 ### Enabling DLL Capture
 
 ```python

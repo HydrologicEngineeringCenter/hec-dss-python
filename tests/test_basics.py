@@ -3,7 +3,7 @@
 import unittest
 from datetime import datetime
 
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import Catalog, HecDss
 

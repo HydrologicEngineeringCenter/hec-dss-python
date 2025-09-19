@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime, timedelta
 
 import numpy as np
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import HecDss
 from hecdss.regular_timeseries import RegularTimeSeries

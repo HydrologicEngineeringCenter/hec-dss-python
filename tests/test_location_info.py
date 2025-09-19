@@ -2,7 +2,7 @@
 
 import unittest
 
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import HecDss
 from hecdss.location_info import LocationInfo

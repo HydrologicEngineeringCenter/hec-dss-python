@@ -4,7 +4,7 @@ import copy
 import unittest
 
 import numpy as np
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import HecDss
 from hecdss.paired_data import PairedData

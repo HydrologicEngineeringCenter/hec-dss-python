@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout, redirect_stderr
 
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import (
     HecDss,

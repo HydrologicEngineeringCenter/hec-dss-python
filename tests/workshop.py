@@ -2,7 +2,7 @@
 
 import copy
 
-from .file_manager import FileManager
+from file_manager import FileManager
 
 from hecdss import HecDss
 

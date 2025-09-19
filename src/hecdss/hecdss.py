@@ -91,6 +91,7 @@ class HecDss:
             logger.warning("zopenLog not available in DLL, cannot capture DLL output to file")
             self._dll_monitor.stop_monitoring()
             self._dll_monitor = None
+
     @staticmethod
     def set_global_debug_level(level: int) -> None:
         """
@@ -114,6 +115,7 @@ class HecDss:
         from hecdss.logging_config import get_dll_monitor
         monitor = get_dll_monitor()
         monitor.set_dll_level(level)
+
     def close(self):
         """closes the DSS file and releases any locks
         """

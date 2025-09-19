@@ -1,320 +1,309 @@
-#!/usr/bin/env python
-"""
-Test script to demonstrate the new logging functionality in hec-dss-python.
-"""
+"""Pytest module for testing logging functionality in hec-dss-python."""
 
 import logging
-import sys
 import os
+import io
+import tempfile
+import unittest
+from contextlib import redirect_stdout, redirect_stderr
 
-# Add src to path for testing
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from .file_manager import FileManager
 
 from hecdss import (
     HecDss,
     configure_logging,
-    DLL_MESSAGE
+    DLL_MESSAGE,
+    setup_default_logging,
+    DssPath
 )
 
 
-def test_basic_logging():
-    """Test basic logging configuration."""
-    print("\n=== Test 1: Basic Logging Configuration ===")
+class TestLogging(unittest.TestCase):
 
-    # Configure to show Python INFO and DLL general messages
-    configure_logging(
-        python_level=logging.INFO,
-        dll_level=3,  # MESS_LEVEL_GENERAL
-        format_string='%(name)s - %(levelname)s - %(message)s'
-    )
+    def setUp(self) -> None:
+        """Set up test environment before each test."""
+        self.test_files = FileManager()
+        # Clear any existing logging handlers, closing them first
+        root_logger = logging.getLogger('hecdss')
+        dll_logger = logging.getLogger('hecdss.dll')
 
-    # Get a logger and test it
-    logger = logging.getLogger('hecdss.test')
-    logger.info("This is an INFO message from Python code")
-    logger.debug("This DEBUG message should not appear (level too low)")
+        # Close file handlers before clearing
+        for handler in root_logger.handlers[:]:
+            handler.close()
+            root_logger.removeHandler(handler)
 
-    print("Basic logging test completed.\n")
+        for handler in dll_logger.handlers[:]:
+            handler.close()
+            dll_logger.removeHandler(handler)
 
+        # Reset DLL debug level to silent
+        HecDss.set_global_debug_level(0)
 
-def test_separate_levels():
-    """Test separate control of Python and DLL logging."""
-    print("\n=== Test 2: Separate Python and DLL Levels ===")
+    def tearDown(self) -> None:
+        """Clean up after each test."""
+        self.test_files.cleanup()
 
-    # Show only errors from Python but diagnostic messages from DLL
-    configure_logging(
-        python_level=logging.ERROR,
-        dll_level=4  # MESS_LEVEL_USER_DIAG
-    )
+        # Close any remaining handlers
+        root_logger = logging.getLogger('hecdss')
+        dll_logger = logging.getLogger('hecdss.dll')
 
-    logger = logging.getLogger('hecdss.test')
-    logger.info("This INFO should NOT appear")
-    logger.error("This ERROR should appear")
+        for handler in root_logger.handlers[:]:
+            handler.close()
+            root_logger.removeHandler(handler)
 
-    # Test setting DLL level directly
-    HecDss.set_global_debug_level(5)  # MESS_LEVEL_INTERNAL_DIAG_1
-    print("DLL debug level set to 5 (internal diagnostics)\n")
+        for handler in dll_logger.handlers[:]:
+            handler.close()
+            dll_logger.removeHandler(handler)
 
+        # Clean up any log files created during tests
+        for log_file in ['test_python.log', 'test_dll.log']:
+            if os.path.exists(log_file):
+                try:
+                    os.remove(log_file)
+                except PermissionError:
+                    pass  # File might still be in use
 
-def test_file_logging():
-    """Test logging to files."""
-    print("\n=== Test 3: File Logging ===")
+    def test_basic_logging(self):
+        """Test basic logging configuration."""
+        # Configure to show Python INFO and DLL general messages
+        configure_logging(
+            python_level=logging.INFO,
+            dll_level=3,  # MESS_LEVEL_GENERAL
+            format_string='%(name)s - %(levelname)s - %(message)s'
+        )
 
-    # Configure separate files for Python and DLL
-    configure_logging(
-        python_file='test_python.log',
-        dll_file='test_dll.log',
-        python_level=logging.DEBUG,
-        dll_level=4,
-        console=False  # Don't output to console
-    )
+        # Get a logger and test it
+        logger = logging.getLogger('hecdss.test')
 
-    logger = logging.getLogger('hecdss.test')
-    logger.debug("Debug message to Python log file")
-    logger.info("Info message to Python log file")
+        # Capture log output
+        with self.assertLogs('hecdss.test', level=logging.INFO) as cm:
+            logger.info("This is an INFO message from Python code")
+            logger.debug("This DEBUG message should not appear (level too low)")
 
-    print("Check test_python.log and test_dll.log files for output.\n")
+        # Check that only INFO message was logged
+        self.assertEqual(len(cm.output), 1)
+        self.assertIn("INFO", cm.output[0])
+        self.assertIn("This is an INFO message", cm.output[0])
 
+    def test_separate_levels(self):
+        """Test separate control of Python and DLL logging."""
+        # Show only errors from Python but diagnostic messages from DLL
+        configure_logging(
+            python_level=logging.ERROR,
+            dll_level=4  # MESS_LEVEL_USER_DIAG
+        )
 
-def test_custom_levels():
-    """Test custom DLL message level."""
-    print("\n=== Test 4: Custom DLL Message Level ===")
+        logger = logging.getLogger('hecdss.test')
 
-    # Configure to show DLL messages
-    configure_logging(
-        dll_level=4,  # Set DLL to user diagnostic level
-        format_string='%(levelname)-15s - %(message)s'
-    )
+        # INFO should not appear, but ERROR should
+        with self.assertLogs('hecdss.test', level=logging.ERROR) as cm:
+            logger.info("This INFO should NOT appear")
+            logger.error("This ERROR should appear")
 
-    # Get DLL logger to demonstrate the single DLL level
-    dll_logger = logging.getLogger('hecdss.dll')
+        self.assertEqual(len(cm.output), 1)
+        self.assertIn("ERROR", cm.output[0])
+        self.assertIn("This ERROR should appear", cm.output[0])
 
-    # Use the single DLL message method
-    dll_logger.dll_message("This is a DLL message")
-    dll_logger.dll_message("All DLL messages use the same Python log level")
-    dll_logger.dll_message("The DLL itself controls what gets written based on its debug level")
+    def test_file_logging(self):
+        """Test logging to files."""
+        # Use temporary directory for log files
+        with tempfile.TemporaryDirectory() as tmpdir:
+            python_log = os.path.join(tmpdir, 'test_python.log')
+            dll_log = os.path.join(tmpdir, 'test_dll.log')
 
-    print("Custom level test completed.\n")
+            # Configure separate files for Python and DLL
+            configure_logging(
+                python_file=python_log,
+                dll_file=dll_log,
+                python_level=logging.DEBUG,
+                dll_level=4,
+                console=False  # Don't output to console
+            )
 
+            logger = logging.getLogger('hecdss.test')
+            logger.debug("Debug message to Python log file")
+            logger.info("Info message to Python log file")
 
-def test_no_logging():
-    """Test that logging can be completely disabled."""
-    print("\n=== Test 5: No Logging (Default Behavior) ===")
+            # Check that log file was created and has content
+            self.assertTrue(os.path.exists(python_log))
+            with open(python_log, 'r') as f:
+                content = f.read()
+                self.assertIn("Debug message", content)
+                self.assertIn("Info message", content)
 
-    # Reset to default (no output)
-    root_logger = logging.getLogger('hecdss')
-    dll_logger = logging.getLogger('hecdss.dll')
+            # Important: Close and remove all file handlers before exiting
+            root_logger = logging.getLogger('hecdss')
+            dll_logger = logging.getLogger('hecdss.dll')
 
-    # Clear handlers
-    root_logger.handlers.clear()
-    dll_logger.handlers.clear()
+            handlers_to_remove = []
 
-    # Add only NullHandler (no output)
-    root_logger.addHandler(logging.NullHandler())
+            # Collect all file handlers
+            for handler in root_logger.handlers:
+                if isinstance(handler, logging.FileHandler):
+                    handlers_to_remove.append((root_logger, handler))
 
-    logger = logging.getLogger('hecdss.test')
-    logger.info("This should not appear anywhere")
-    logger.error("This error should also not appear")
+            for handler in dll_logger.handlers:
+                if isinstance(handler, logging.FileHandler):
+                    handlers_to_remove.append((dll_logger, handler))
 
-    print("No output should have appeared from logging calls.")
-    print("This maintains backward compatibility - no output by default.\n")
+            # Close and remove them
+            for logger_ref, handler in handlers_to_remove:
+                handler.close()
+                logger_ref.removeHandler(handler)
 
+    def test_custom_dll_message_level(self):
+        """Test custom DLL message level."""
+        # Configure to show DLL messages
+        configure_logging(
+            dll_level=4,  # Set DLL to user diagnostic level
+            format_string='%(levelname)-15s - %(message)s'
+        )
 
-def test_with_dss_file():
-    """Test logging with actual DSS file operations if available."""
-    print("\n=== Test 6: DSS File Operations with Logging ===")
+        # Get DLL logger to demonstrate the single DLL level
+        dll_logger = logging.getLogger('hecdss.dll')
 
-    # Configure logging to see what's happening
-    configure_logging(
-        python_level=logging.INFO,
-        dll_level=3,  # General log messages
-        format_string='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+        # Test that dll_message method exists and works
+        with self.assertLogs('hecdss.dll', level=DLL_MESSAGE) as cm:
+            dll_logger.dll_message("This is a DLL message")
+            dll_logger.dll_message("All DLL messages use the same Python log level")
 
-    test_file = "test_logging.dss"
+        self.assertEqual(len(cm.output), 2)
+        self.assertIn("DLL", cm.output[0])
 
-    try:
-        # This will test the logging in actual DSS operations
+    def test_no_logging_by_default(self):
+        """Test that logging can be completely disabled."""
+        # Reset to default (no output)
+        setup_default_logging()
+
+        logger = logging.getLogger('hecdss.test')
+
+        # Should not raise because of NullHandler
+        logger.info("This should not appear anywhere")
+        logger.error("This error should also not appear")
+
+        # Check that root logger has NullHandler
+        root_logger = logging.getLogger('hecdss')
+        self.assertTrue(any(isinstance(h, logging.NullHandler) for h in root_logger.handlers))
+
+    def test_with_dss_file(self):
+        """Test logging with actual DSS file operations."""
+        # Configure logging to see what's happening
+        configure_logging(
+            python_level=logging.INFO,
+            dll_level=3,  # General log messages
+            format_string='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+
+        test_file = self.test_files.create_test_file(".dss")
+
         with HecDss(test_file) as dss:
             logger = logging.getLogger('hecdss.test')
-            logger.info(f"Successfully opened {test_file}")
 
-            # Get catalog (this might trigger some logging)
-            catalog = dss.get_catalog()
-            logger.info(f"Catalog has {len(catalog.items)} items")
+            with self.assertLogs('hecdss', level=logging.INFO) as cm:
+                logger.info(f"Successfully opened {test_file}")
+                catalog = dss.get_catalog()
+                logger.info(f"Catalog has {len(catalog.items)} items")
 
-            # Test the new log_items method if catalog has items
-            if catalog.items:
-                catalog.log_items(logging.INFO)
+            # Should have at least the two info messages
+            self.assertGreaterEqual(len(cm.output), 2)
 
-    except Exception as e:
-        logger = logging.getLogger('hecdss.test')
-        logger.error(f"Error during DSS operations: {e}")
+    def test_dll_output_capture_without_zopen_log(self):
+        """Test that DLL output capture fails gracefully without zopenLog."""
+        # Configure logging with DLL output capture
+        configure_logging(
+            python_level=logging.INFO,
+            dll_level=4,  # User diagnostic messages
+            capture_dll_output=True  # Enable DLL capture setup
+        )
 
-    # Clean up test file if it was created
-    if os.path.exists(test_file):
-        os.remove(test_file)
-        print(f"Cleaned up {test_file}")
+        test_file = self.test_files.create_test_file(".dss")
 
-    print("DSS file test completed.\n")
-
-
-def test_dll_output_capture():
-    """Test capturing DLL output to Python logging."""
-    print("\n=== Test 7: DLL Output Capture ===")
-
-    # Configure logging with DLL output capture
-    configure_logging(
-        python_level=logging.INFO,
-        dll_level=4,  # User diagnostic messages
-        format_string='%(name)-20s - %(levelname)-10s - %(message)s',
-        capture_dll_output=True  # Enable DLL capture setup
-    )
-
-    test_file = "test_dll_capture.dss"
-
-    try:
         # Create HecDss with DLL logging enabled
-        with HecDss(test_file, enable_dll_logging=True) as dss:
-            logger = logging.getLogger('hecdss.test')
-            logger.info(f"Opened {test_file} with DLL logging enabled")
-
-            # Set higher debug level to see more DLL messages
-            HecDss.set_global_debug_level(5)  # Internal diagnostics level 1
-
-            # Perform operations that should trigger DLL messages
+        # This should fail gracefully if zopenLog is not available
+        with HecDss(test_file, enable_dll_logging=True, message_level=0) as dss:
+            # Should work without errors even if zopenLog isn't available
             catalog = dss.get_catalog()
-            logger.info(f"Retrieved catalog with {len(catalog.items)} items")
+            self.assertIsNotNone(catalog)
 
-            # The DLL messages should now appear in the Python logs with [DLL] prefix
+    def test_silent_by_default(self):
+        """Test that hec-dss-python produces NO output by default."""
+        # Capture all output
+        stdout_capture = io.StringIO()
+        stderr_capture = io.StringIO()
 
-    except Exception as e:
-        logger = logging.getLogger('hecdss.test')
-        logger.error(f"Error during DLL capture test: {e}")
+        test_file = self.test_files.create_test_file(".dss")
 
-    # Clean up
-    if os.path.exists(test_file):
-        os.remove(test_file)
-        print(f"Cleaned up {test_file}")
-
-    print("DLL output capture test completed.\n")
-
-
-def test_silent_by_default():
-    """Test that hec-dss-python produces NO output by default."""
-    print("\n=== Test 8: Silent by Default (Best Practice) ===")
-
-    import io
-    from contextlib import redirect_stdout, redirect_stderr
-
-    # Capture all output
-    stdout_capture = io.StringIO()
-    stderr_capture = io.StringIO()
-
-    test_file = "test_silent.dss"
-
-    try:
         with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
-            # Fresh import simulation - clear any existing handlers
+            # Fresh setup - clear any existing handlers
             root_logger = logging.getLogger('hecdss')
             dll_logger = logging.getLogger('hecdss.dll')
             root_logger.handlers.clear()
             dll_logger.handlers.clear()
 
             # Re-setup default (what happens on import)
-            from hecdss import setup_default_logging
             setup_default_logging()
 
             # Use the library normally
-            dss = HecDss(test_file)
-            catalog = dss.get_catalog()
+            with HecDss(test_file, message_level=0) as dss:
+                catalog = dss.get_catalog()
 
-            # Try logging - should produce nothing
-            logger = logging.getLogger('hecdss')
-            logger.info("This should not appear")
-            logger.error("This should not appear either")
+                # Try logging - should produce nothing
+                logger = logging.getLogger('hecdss')
+                logger.info("This should not appear")
+                logger.error("This should not appear either")
 
-            # DLL logger too
-            dll_logger = logging.getLogger('hecdss.dll')
-            dll_logger.dll_message("This DLL message should not appear")
+                # DLL logger too
+                dll_logger = logging.getLogger('hecdss.dll')
+                dll_logger.dll_message("This DLL message should not appear")
 
-            dss.close()
+        # Get captured output
+        stdout_text = stdout_capture.getvalue()
+        stderr_text = stderr_capture.getvalue()
 
-    finally:
-        # Clean up
-        if os.path.exists(test_file):
-            os.remove(test_file)
+        # Should be completely silent
+        self.assertEqual(stdout_text, "")
+        self.assertEqual(stderr_text, "")
 
-    # Get captured output
-    stdout_text = stdout_capture.getvalue()
-    stderr_text = stderr_capture.getvalue()
+    def test_explicit_print_still_works(self):
+        """Test that explicit print methods work when called."""
+        stdout_capture = io.StringIO()
 
-    # Report results
-    if stdout_text == "" and stderr_text == "":
-        print("✓ PASS: No output produced by default (follows Python best practices)")
-    else:
-        print("✗ FAIL: Unexpected output detected!")
-        if stdout_text:
-            print(f"  stdout: {repr(stdout_text[:100])}")
-        if stderr_text:
-            print(f"  stderr: {repr(stderr_text[:100])}")
+        with redirect_stdout(stdout_capture):
+            # Create a path and explicitly call print
+            path = DssPath("/A/B/C/01Jan2024/1Hour/F/")
+            path.print()  # This SHOULD produce output
 
-    print("This ensures the library is silent unless explicitly configured.\n")
+        output = stdout_capture.getvalue()
 
+        # Should see the path parts
+        self.assertIn("a:", output)
+        self.assertIn("b:", output)
+        self.assertIn("c:", output)
 
-def test_explicit_print_still_works():
-    """Test that explicit print methods work when called."""
-    print("\n=== Test 9: Explicit print() Methods Still Work ===")
+    def test_set_global_debug_level(self):
+        """Test setting global DLL debug level."""
+        # This should work without errors
+        HecDss.set_global_debug_level(0)  # Silent
+        HecDss.set_global_debug_level(3)  # General
 
-    import io
-    from contextlib import redirect_stdout
-    from hecdss import DssPath
+        # Test higher levels briefly
+        HecDss.set_global_debug_level(6)  # Full debug
+        # Immediately set back to silent to avoid debug output
+        HecDss.set_global_debug_level(0)
 
-    stdout_capture = io.StringIO()
+        # Test that level is clamped to valid range
+        HecDss.set_global_debug_level(-1)  # Should become 0
+        HecDss.set_global_debug_level(20)  # Should become 15
+        # Set back to silent
+        HecDss.set_global_debug_level(0)
 
-    with redirect_stdout(stdout_capture):
-        # Create a path and explicitly call print
-        path = DssPath("/A/B/C/01Jan2024/1Hour/F/")
-        path.print()  # This SHOULD produce output
+        # No assertions needed - just checking it doesn't crash
 
-    output = stdout_capture.getvalue()
-
-    # Should see the path parts
-    if "a:" in output and "b:" in output:
-        print("✓ PASS: Explicit print() methods work when called")
-    else:
-        print("✗ FAIL: print() method did not produce expected output")
-        print(f"  Output: {repr(output[:100])}")
-
-    print("Users can still use print() methods when they want output.\n")
-
-
-def main():
-    """Run all logging tests."""
-    print("=" * 60)
-    print("HEC-DSS Python Logging Test Suite")
-    print("=" * 60)
-
-    # Run tests
-    test_basic_logging()
-    test_separate_levels()
-    test_file_logging()
-    test_custom_levels()
-    test_no_logging()
-    test_with_dss_file()
-    test_dll_output_capture()
-    test_silent_by_default()
-    test_explicit_print_still_works()
-
-    print("=" * 60)
-    print("All tests completed!")
-    print("=" * 60)
-
-    # Clean up any log files created
-    for log_file in ['test_python.log', 'test_dll.log']:
-        if os.path.exists(log_file):
-            os.remove(log_file)
-            print(f"Cleaned up {log_file}")
+    def test_dll_message_level_enum(self):
+        """Test that DLL_MESSAGE level is properly defined."""
+        self.assertEqual(DLL_MESSAGE, 25)
+        self.assertTrue(logging.INFO < DLL_MESSAGE < logging.WARNING)
 
 
 if __name__ == "__main__":
-    main()
+    unittest.main()

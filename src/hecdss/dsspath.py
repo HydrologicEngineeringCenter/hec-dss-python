@@ -1,6 +1,10 @@
+import logging
 from .dateconverter import DateConverter
 from .dss_type import DssType
 from .record_type import RecordType
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 class DssPath:
     """
@@ -79,11 +83,25 @@ class DssPath:
 
     def print(self):
         """
-        Print the parts of the DSS path.
+        Print the parts of the DSS path to stdout.
         """
-        print("a:" + self.path.A)
-        print("b:" + self.path.B)
-        print("c:" + self.path.C)
-        print("d:" + self.path.D)
-        print("e:" + self.path.E)
-        print("f:" + self.path.F)
+        print("a:" + self.A)
+        print("b:" + self.B)
+        print("c:" + self.C)
+        print("d:" + self.D)
+        print("e:" + self.E)
+        print("f:" + self.F)
+
+    def log_path(self, level=logging.INFO):
+        """Log the DSS path parts at the specified logging level.
+
+        Args:
+            level: Logging level (default: logging.INFO)
+        """
+        logger.log(level, "DssPath: %s", str(self))
+        logger.log(level, "  A (Group/Project/Watershed): %s", self.A)
+        logger.log(level, "  B (Location): %s", self.B)
+        logger.log(level, "  C (Parameter): %s", self.C)
+        logger.log(level, "  D (Block Start Date/Time): %s", self.D)
+        logger.log(level, "  E (Time Interval/Block Length): %s", self.E)
+        logger.log(level, "  F (Descriptor): %s", self.F)

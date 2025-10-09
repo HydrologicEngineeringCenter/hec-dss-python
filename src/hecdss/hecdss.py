@@ -842,8 +842,6 @@ class HecDss:
         """
         return self._native.hec_dss_set_debug_level(level)
     
-    def 
-
 
 if __name__ == "__main__":
     # import pdb;pdb.set_trace()

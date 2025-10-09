@@ -8,6 +8,7 @@ import numpy as np
 import hecdss.record_type
 from hecdss.array_container import ArrayContainer
 from hecdss.location_info import LocationInfo
+from hecdss.text import Text
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
@@ -179,7 +180,31 @@ class HecDss:
             return self._get_array(pathname)
         elif type == RecordType.LocationInfo:
             return self._get_location_info(pathname)
+        elif type == RecordType.Text:
+            return self._get_text(pathname)
         return None
+
+    def _get_text(self, pathname: str):
+        textLength = 1024
+
+
+        BUFFER_TOO_SMALL = -1
+        textArray = []
+        status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
+        while status == BUFFER_TOO_SMALL:
+            textLength *= 2
+            status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
+            if textLength > 2*1048576:  # 2 MB
+                logger.error("Text record too large to read from '%s'", pathname)
+                return None
+
+        if status != 0:
+            logger.error("Error reading text from '%s'", pathname)
+            return None
+        text = Text()
+        text.id = pathname
+        text.text = textArray[0]
+        return text
 
     def _get_array(self, pathname: str):
         intValuesCount = [0]
@@ -682,6 +707,10 @@ class HecDss:
         elif type(container) is LocationInfo:
             status = self._native.hec_dss_locationStore(container,1)
             self._catalog = None
+        elif type(container) is Text:
+            text = container
+            status = self._native.hec_dss_textStore(text.id, text.text, len(text.text))
+            self._catalog = None
         else:
             raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {RecordType.SUPPORTED_RECORD_TYPES.value}")
 
@@ -812,6 +841,8 @@ class HecDss:
             int: _description_
         """
         return self._native.hec_dss_set_debug_level(level)
+    
+    def 
 
 
 if __name__ == "__main__":

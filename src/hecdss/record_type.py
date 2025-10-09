@@ -23,6 +23,7 @@ class RecordType(Enum):
         "PairedData",
         "GriddedData",
         "ArrayContainer",
+        "Text"
     ]
 
     @staticmethod

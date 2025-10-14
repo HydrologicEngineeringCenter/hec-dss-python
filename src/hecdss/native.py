@@ -1,4 +1,3 @@
-import logging
 import ctypes
 from ctypes import c_float, c_double, c_char_p, c_int, c_void_p, POINTER
 from ctypes import c_int32

@@ -149,7 +149,7 @@ class HecDss:
                 return None
 
         if status != 0:
-            print(f"Error reading text from '{pathname}'")}
+            print(f"Error reading text from '{pathname}'")
             return None
         text = Text()
         text.id = pathname

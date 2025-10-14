@@ -1173,3 +1173,51 @@ class _Native:
                 print("Function call failed with result:", result)
 
             return result
+
+    def hec_dss_textStore(self, pathname, text, length=None):
+        """
+        Store text data in a DSS file.
+        Args:
+            pathname (str): The DSS pathname where the text will be stored.
+            text (str): The text data to store.
+            length (int, optional): The length of the text. If None, it will be set to the length of the text.
+        """
+        f = self.dll.hec_dss_textStore
+        f.argtypes = [
+            c_void_p,  # dss
+            c_char_p,  # pathname
+            c_char_p,  # text
+            c_int      # length
+        ]
+        f.restype = c_int
+
+        result = f(self.handle, pathname.encode("utf-8"),
+                    text.encode("utf-8"), 
+                    length if length is not None else len(text))
+    
+        return result
+    
+    def hec_dss_textRetrieve(self, pathname, buffer :List[str], buff_size: int) -> int:
+        """
+        Store text data in a DSS file.
+        Args:
+            pathname (str): The DSS pathname where the text will be stored.
+            text (str): The text data to store.
+            length (int, optional): The length of the text. If None, it will be set to the length of the text.
+        """
+        f = self.dll.hec_dss_textRetrieve
+        f.argtypes = [
+            c_void_p,  # dss
+            c_char_p,  # pathname
+            c_char_p,  # buffer
+            c_int      # buff_size
+        ]
+        f.restype = c_int
+
+        c_buffer = create_string_buffer(buff_size)
+        result = f(self.handle, pathname.encode("utf-8"),
+                    c_buffer, 
+                    buff_size)
+    
+        buffer.append(c_buffer.value.decode("utf-8"))
+        return result

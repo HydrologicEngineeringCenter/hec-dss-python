@@ -7,6 +7,7 @@ import numpy as np
 import hecdss.record_type
 from hecdss.array_container import ArrayContainer
 from hecdss.location_info import LocationInfo
+from hecdss.text import Text
 from hecdss.paired_data import PairedData
 from hecdss.native import _Native
 from hecdss.dateconverter import DateConverter
@@ -59,12 +60,18 @@ class HecDss:
     def set_global_debug_level(level: int) -> None:
         """
         Sets the library debug level
-
         Args:
-            level (int): a value between 0 and 15. Larger for more output.
-                For level descriptions, see zdssMessages.h of the heclib source code,
-                or documentation from the HEC-DSS Programmers Guide for C on the `mlvl` parameter of the `zset` utility function.
+            level (int): HEC-DSS message level (0-15)
+                0: No messages (not recommended)
+                1: Critical errors only
+                2: Terse output (errors + file operations)
+                3: General log messages (default)
+                4: User diagnostic messages
+                5: Internal debug level 1 (not recommended for users)
+                6: Internal debug level 2 (full debug)
+                7-15: Extended debug levels
         """
+        # Set the native DLL level (controls what gets written)
         _Native().hec_dss_set_debug_level(level)
     def close(self):
         """closes the DSS file and releases any locks
@@ -123,7 +130,31 @@ class HecDss:
             return self._get_array(pathname)
         elif type == RecordType.LocationInfo:
             return self._get_location_info(pathname)
+        elif type == RecordType.Text:
+            return self._get_text(pathname)
         return None
+
+    def _get_text(self, pathname: str):
+        textLength = 1024
+
+
+        BUFFER_TOO_SMALL = -1
+        textArray = []
+        status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
+        while status == BUFFER_TOO_SMALL:
+            textLength *= 2
+            status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
+            if textLength > 2*1048576:  # 2 MB
+                print(f"Text record too large to read from '{pathname}'")
+                return None
+
+        if status != 0:
+            print(f"Error reading text from '{pathname}'")}
+            return None
+        text = Text()
+        text.id = pathname
+        text.text = textArray[0]
+        return text
 
     def _get_array(self, pathname: str):
         intValuesCount = [0]
@@ -626,6 +657,10 @@ class HecDss:
             self._catalog = None
         elif type(container) is LocationInfo:
             status = self._native.hec_dss_locationStore(container,1)
+            self._catalog = None
+        elif type(container) is Text:
+            text = container
+            status = self._native.hec_dss_textStore(text.id, text.text, len(text.text))
             self._catalog = None
         else:
             raise NotImplementedError(f"unsupported record_type: {type(container)}. Expected types are: {RecordType.SUPPORTED_RECORD_TYPES.value}")

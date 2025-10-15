@@ -138,15 +138,16 @@ class HecDss:
         textLength = 1024
 
 
-        BUFFER_TOO_SMALL = -1
+        BUFFER_TOO_SMALL = -17
         textArray = []
         status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
         while status == BUFFER_TOO_SMALL:
             textLength *= 2
-            status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
             if textLength > 2*1048576:  # 2 MB
                 print(f"Text record too large to read from '{pathname}'")
                 return None
+            textArray = [] # otherwise we get an entry for each attempt
+            status = self._native.hec_dss_textRetrieve(pathname, textArray, textLength)
 
         if status != 0:
             print(f"Error reading text from '{pathname}'")

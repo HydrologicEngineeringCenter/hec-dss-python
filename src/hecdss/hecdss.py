@@ -679,6 +679,24 @@ class HecDss:
 
         return status
 
+
+    def writePrecompressedGrid(self, gd, compressedData, CompressionSize):
+        """
+        puts pre-compressed gridded data into the DSS file
+
+        Args
+            compressedData (bytes): Compressed data.
+            CompressionSize (int): Size of the compressed data.
+        Returns:
+            int: 0 if successful, -1 otherwise.
+        """
+
+        if compressedData and CompressionSize > 0:
+            status = self._native.hec_dss_gridStore(gd, compressedData, CompressionSize)
+            self._catalog = None
+            return status
+        return -1
+
     def delete(self, pathname: str, allrecords: bool = False, startdatetime=None, enddatetime=None) -> int:
         """deletes a record from the DSS file
         Args:

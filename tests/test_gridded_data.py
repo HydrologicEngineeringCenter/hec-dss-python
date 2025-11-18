@@ -86,6 +86,44 @@ class TestGriddedData(unittest.TestCase):
             assert (
                     gd.dataUnits == gd2.dataUnits), f"gd2.dataUnits is not equal to {gd.dataUnits}. gd2.dataUnits is {gd2.dataUnits}"
 
+    def test_gridded_data_write_precompressed(self):
+        """
+        Test writing precompressed gridded data using zlib deflate.
+        Reads existing grid data, compresses it, writes using writePrecompressedGrid, and compares.
+        """
+        import zlib
+
+        # Read existing gridded data
+        original_path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS/"
+        file = self.test_files.get_copy("grid-example.dss")
+
+        with HecDss(file) as dss:
+            # Read the original grid
+            gd_original = dss.get(original_path)
+
+            # Compress the data using zlib deflate
+            raw_bytes = gd_original.data.astype(np.float32).tobytes()
+            compressed_data = zlib.compress(raw_bytes)
+            compression_size = len(compressed_data)
+
+            # Create a new GriddedData object with metadata from original
+            # but pointing to a new path
+            new_path = "/grid/EAU GALLA RIVER/SNOW MELT/02FEB2020:0600/03FEB2020:0600/SHG-SNODAS-COMPRESSED/"
+            gd_original.id = new_path
+
+
+            # Write the precompressed grid
+            status = dss.writePrecompressedGrid(gd_original, compressed_data, compression_size)
+
+            # Read back the compressed grid
+            gd_readback = dss.get(new_path)
+
+            # Compare the two grids
+            assert status == 0, f"writePrecompressedGrid status should be 0, is {status}"
+            assert np.array_equal(gd_original.data, gd_readback.data), "Data from original and compressed grid do not match"
+            assert gd_original.numberOfCellsX == gd_readback.numberOfCellsX, "numberOfCellsX mismatch"
+            assert gd_original.numberOfCellsY == gd_readback.numberOfCellsY, "numberOfCellsY mismatch"
+            assert gd_original.dataUnits == gd_readback.dataUnits, "dataUnits mismatch"
 
 
 if __name__ == "__main__":

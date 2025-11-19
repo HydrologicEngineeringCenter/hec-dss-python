@@ -332,6 +332,8 @@ class _Native:
     def hec_dss_gridStore(
             self,
             gd,
+            compressedData=None,
+            compressionSize=0,
     ):
         self.dll.hec_dss_pdStore.restype = c_int
         self.dll.hec_dss_pdStore.argtypes = [
@@ -348,6 +350,7 @@ class _Native:
             ctypes.c_int,  # timeZoneRawOffset
             ctypes.c_int,  # isInterval
             ctypes.c_int,  # isTimeStamped
+            ctypes.c_int,  # compressionSize
             ctypes.c_char_p,  # dataUnits
             ctypes.c_char_p,  # dataSource
             ctypes.c_char_p,  # srsName
@@ -378,6 +381,7 @@ class _Native:
         c_timeZoneRawOffset = c_int(gd.timeZoneRawOffset)
         c_isInterval = c_int(gd.isInterval)
         c_isTimeStamped = c_int(gd.isTimeStamped)
+        c_compressionSize = c_int(compressionSize)  # default compression
 
         c_dataUnits = c_char_p(gd.dataUnits.encode("utf-8"))
         c_dataSource = c_char_p(gd.dataSource.encode("utf-8"))
@@ -397,15 +401,19 @@ class _Native:
         c_numberEqualOrExceedingRangeLimit = (c_int * len(gd.numberEqualOrExceedingRangeLimit))(
             *gd.numberEqualOrExceedingRangeLimit)
 
-        arr = gd.data.astype('float32', copy=False)
-        c_data = arr.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+        if compressedData is not None and compressionSize:
+            # Treat compressed data as raw bytes, not float32
+            c_data = ctypes.cast(compressedData, ctypes.POINTER(ctypes.c_float))
+        else:
+            arr = gd.data.astype('float32', copy=False)
+            c_data = arr.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
 
         return self.dll.hec_dss_gridStore(self.handle, c_pathname, c_gridType, c_dataType,
                                           c_lowerLeftCellX, c_lowerLeftCellY,
                                           c_numberOfCellsX, c_numberOfCellsY,
                                           c_numberOfRanges, c_srsDefinitionType,
                                           c_timeZoneRawOffset, c_isInterval,
-                                          c_isTimeStamped,
+                                          c_isTimeStamped, c_compressionSize,
                                           c_dataUnits, c_dataSource,
                                           c_srsName, c_srsDefinition, c_timeZoneID,
                                           c_cellSize, c_xCoordOfGridCellZero,

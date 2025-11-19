@@ -36,7 +36,7 @@ def download_and_unzip(url, zip_file, destination_dir):
         print(f"Failed to download zip file. Status code: {response.status_code}")
 
 base_url = "https://www.hec.usace.army.mil/nexus/repository/maven-public/mil/army/usace/hec/hecdss/"
-version = "7-IW-4"
+version = "7-JA-4"
 
 destination_dir = Path(__file__).parent.joinpath("lib")
 zip_url = f"{base_url}{version}-win-x86_64/hecdss-{version}-win-x86_64.zip"

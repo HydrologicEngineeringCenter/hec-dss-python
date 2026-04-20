@@ -54,7 +54,7 @@ with HecDss(file_path) as dss:
   print(data)
   data.values = data.values * 2
   # Save changes to DSS file
-  dss.put(data_path)
+  dss.put(data)
 ```
 
 ### Irregular TimeSeries Data

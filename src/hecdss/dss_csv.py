@@ -4,7 +4,11 @@ from datetime import datetime, timedelta
 
 from .dsspath import DssPath
 from .irregular_timeseries import IrregularTimeSeries
+from .paired_data import PairedData
 from .regular_timeseries import RegularTimeSeries
+
+
+METADATA_ROWS: list[str] = ["A", "B", "C", "D", "E", "F"]  # Path of DSS object
 
 
 def timeseries_to_csv(
@@ -21,7 +25,6 @@ def timeseries_to_csv(
     if not isinstance(series, (RegularTimeSeries, IrregularTimeSeries)):
         raise TypeError("series must be a RegularTimeSeries or IrregularTimeSeries")
 
-    metadata_rows: list[str] = ["A", "B", "C", "D", "E", "F"]
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         if with_metadata:
@@ -29,8 +32,8 @@ def timeseries_to_csv(
                 id_components: list[str] = DssPath(series.id).path_to_list()
             else:
                 id_components: list[str] = [""] * 6
-            for i in range(len(metadata_rows)):
-                row: str = metadata_rows[i]
+            for i in range(len(METADATA_ROWS)):
+                row: str = METADATA_ROWS[i]
                 metadata_value: str = id_components[i]
                 if row == "D":  # Skip D by convention # ts pattern
                     if metadata_value == "ts-pattern":
@@ -144,6 +147,51 @@ def timeseries_read_csv(cls: type[RegularTimeSeries] | type[IrregularTimeSeries]
         interval=interval,
         path=id_path,
     )
+
+
+def paired_data_to_csv(paired_data: PairedData, path: str, with_metadata: bool) -> None:
+    """
+    Exports a PairedData object to a .csv file.
+
+    Parameters:
+        paired_data (PairedData): Paired Data object to convert to csv.
+        path: (str): file path to export csv to.
+        with_metadata (bool): whether or not to include metadata in the csv file.
+
+    Returns:
+        None
+    """
+    if not isinstance(paired_data, PairedData):
+        raise TypeError("paired_data must be a PairedData!")
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if with_metadata:
+            if paired_data.id:
+                id_components: dict[str, str] = DssPath(paired_data.id).path_to_dict()
+            else:
+                id_components: dict[str, str] = {
+                    'A': '', 'B': '', 'C': '', 'D': '', 'E': '', 'F': ''
+                }
+            for letter, value in id_components.items():
+                if letter == 'D':  # Skipping D by convention
+                    continue
+                writer.writerow([letter, "", value])  # Writing metadata rows
+            labels: list[str] = ["Labels", ""]
+            for label in paired_data.labels:
+                labels.append(label)
+            writer.writerow(labels)
+            writer.writerow(["Units", paired_data.units_independent, paired_data.units_dependent])
+            writer.writerow(["Type", paired_data.type_independent, paired_data.type_dependent])
+
+        counter: int = 1  # 1st column index
+        x: float  # x is the same as "ordinate"
+        y_row: list[float]  # Each y_row is one row of y_values, as paired_data.values is Row-Major
+        for x, y_row in zip(paired_data.ordinates, paired_data.values):
+            full_row: list[float] = [x] + [y for y in y_row]
+            writer.writerow([counter] + full_row)
+            counter += 1
+    return
 
 
 def _needs_second_precision(series: RegularTimeSeries | IrregularTimeSeries) -> bool:

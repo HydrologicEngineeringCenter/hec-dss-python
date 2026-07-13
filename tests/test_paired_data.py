@@ -63,6 +63,7 @@ class TestPairedData(unittest.TestCase):
         assert (pd.values[4][2] == 46), f"pd.values[4][2] should be 46. is {pd.values[4][2]}"
         assert (len(pd.ordinates) == 5), f"len(pd.ordinates) should be 5. is {len(pd.ordinates)}"
         assert (pd.labels[1] == "x plus 1"), f"pd.labels[1] should be 'x plus 1'. is {pd.labels[1]}"
+        assert (pd.curve_count() == 3)
 
     def test_paired_data_create_store(self):
         """

@@ -2,6 +2,7 @@ from .dateconverter import DateConverter
 from .dss_type import DssType
 from .record_type import RecordType
 
+
 class DssPath:
     """
     Manage parts of DSS path /A/B/C/D/E/F/
@@ -11,7 +12,7 @@ class DssPath:
     _timeSeriesFamily = [RecordType.IrregularTimeSeries, RecordType.RegularTimeSeries,
                          RecordType.RegularTimeSeriesProfile]
 
-    def __init__(self, path: str, recType = 0):
+    def __init__(self, path: str, recType=0):
         """
         Initialize a DssPath object.
 
@@ -96,3 +97,12 @@ class DssPath:
             list: A list containing the components of the DSS path.
         """
         return [self.A, self.B, self.C, self.D, self.E, self.F]
+
+    def path_to_dict(self) -> dict[str, str]:
+        """
+        Convert the DSS path to a dictionary of its components.
+
+        Returns:
+            dict[str, str]: A dictionary containing the components of the DSS path.
+        """
+        return {'A': self.A, 'B': self.B, 'C': self.C, 'D': self.D, 'E': self.E, 'F': self.F}

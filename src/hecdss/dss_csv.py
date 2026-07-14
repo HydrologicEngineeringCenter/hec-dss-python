@@ -1,3 +1,5 @@
+# THESE ARE ALL HELPER FUNCTIONS, MEANT TO BE TREATED AS PRIVATE. These functions are internally called in their respective classes.
+
 import csv
 import re
 from datetime import datetime, timedelta
@@ -9,6 +11,8 @@ from .regular_timeseries import RegularTimeSeries
 
 
 METADATA_ROWS: list[str] = ["A", "B", "C", "D", "E", "F"]  # Path of DSS object
+ROUND_PRECISION: int = 4
+NAN: float = 0.0
 
 
 def timeseries_to_csv(
@@ -125,7 +129,7 @@ def timeseries_read_csv(cls: type[RegularTimeSeries] | type[IrregularTimeSeries]
 
                 value_str: str = row[2].strip()
                 try:
-                    value: float = float(value_str) if value_str else 0.0
+                    value: float = float(value_str) if value_str else NAN
                 except ValueError:
                     continue  # Skip a malformed value
 
@@ -188,10 +192,90 @@ def paired_data_to_csv(paired_data: PairedData, path: str, with_metadata: bool) 
         x: float  # x is the same as "ordinate"
         y_row: list[float]  # Each y_row is one row of y_values, as paired_data.values is Row-Major
         for x, y_row in zip(paired_data.ordinates, paired_data.values):
-            full_row: list[float] = [x] + [y for y in y_row]
+            full_row: list[float] = [round(x, ROUND_PRECISION)] + \
+                [round(y, ROUND_PRECISION) for y in y_row]
             writer.writerow([counter] + full_row)
             counter += 1
     return
+
+
+def paired_data_read_csv(cls: type[PairedData], path: str) -> PairedData:
+    """
+    Reads a .csv file and builds a new paired data of the given type.
+
+    Parameters:
+        cls: the class to build - PairedData
+        path (str): File path to .csv that we are reading from
+
+    Returns:
+        An instance of cls populated from the .csv file.
+    """
+    if cls is not PairedData:
+        raise TypeError("cls must be PairedData")
+
+    x_values: list[float] = []
+    y_values: list[list[float]] = []
+    labels: list[str] = []
+    x_units: str = ""
+    x_type: str = ""
+    y_units: str = ""
+    y_type: str = ""
+    path_parts: dict[str, str] = {"A": "", "B": "", "C": "", "D": "", "E": "", "F": ""}
+
+    with open(path, "r", newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        row: list[str]
+        for row in reader:
+            if not row:
+                continue
+            # first item in the row we grabbed, the first column's item
+            first_column_item: str = row[0].strip()
+            # If the first column item is a path component (['A', 'B', 'C', 'D', 'E', 'F'])
+            if first_column_item in path_parts:
+                path_parts[first_column_item] = row[-1].strip()  # last cell in csv row (convention)
+            # TODO: Finish the read_csv function. After you do this and write many tests, consider looking into C code to incorporate text columns and switching y units and types to lists
+            elif first_column_item == "Labels":
+                for label in row[2:]:  # First two elements of row are not labels
+                    labels.append(label)
+            elif first_column_item == "Units":
+                x_units = row[1].strip()
+                y_units = row[2].strip()  # If units change to a list, will have to update this
+            elif first_column_item == "Type":
+                x_type = row[1].strip()
+                y_type = row[2].strip()  # If type changes to a list, will also have to update this
+            else:  # Data row
+                if len(row) < 3:
+                    continue  # csv is malformed, something is missing
+                x_str: str = row[1].strip()
+                try:
+                    x: float = float(x_str) if x_str else NAN
+                except ValueError:
+                    continue
+                x_values.append(x)
+
+                y_row: list[float] = []
+                y_row_str: list[str] = row[2:]
+                y_str: str
+                for y_str in y_row_str:
+                    try:
+                        y: float = float(y_str) if y_str else NAN
+                    except ValueError:
+                        continue
+                    y_row.append(y)
+                y_values.append(y_row)
+
+    id_path: str = f"/{path_parts['A']}/{path_parts['B']}/{path_parts['C']}/{path_parts['D']}/{path_parts['E']}/{path_parts['F']}/"
+
+    return cls.create(
+        x_values=x_values,
+        y_values=y_values,
+        labels=labels,
+        x_units=x_units,
+        x_type=x_type,
+        y_units=y_units,
+        y_type=y_type,
+        path=id_path,
+    )
 
 
 def _needs_second_precision(series: RegularTimeSeries | IrregularTimeSeries) -> bool:

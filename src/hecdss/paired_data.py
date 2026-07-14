@@ -12,11 +12,11 @@ class PairedData:
         # ROW-MAJOR, each sublist represents the values for each ordinate
         self.values: np.ndarray = np.empty(0)
         self.labels: list[str] = []
-        self.type_independent = ""
-        self.type_dependent = ""
-        self.units_independent = ""
-        self.units_dependent = ""
-        self.time_zone_name = ""
+        self.type_independent: str = ""
+        self.type_dependent: str = ""
+        self.units_independent: str = ""
+        self.units_dependent: str = ""
+        self.time_zone_name: str = ""
         self.location_info = None
 
     def curve_count(self):
@@ -59,6 +59,20 @@ class PairedData:
     #         data["index"] = list(range(1, len(self.ordinates) + 1))
     #
     #     return pd.DataFrame(data)
+
+    @staticmethod
+    def read_csv(file_path: str) -> "PairedData":
+        """
+        Reads a .csv file and creates an PairedData instance from the data.
+
+        Parameters:
+            file_path (str): The path to the .csv file to read
+
+        Returns:
+            PairedData: A new instance of PairedData populated with the data from the .csv file.
+        """
+        from .dss_csv import paired_data_read_csv
+        return paired_data_read_csv(PairedData, file_path)
 
     @staticmethod
     def create(x_values, y_values, labels=[], x_units="", x_type="", y_units="", y_type="", time_zone_name="", path=None):

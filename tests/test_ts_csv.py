@@ -174,7 +174,7 @@ class TestCSV(unittest.TestCase):
         self.assertEqual(rts.quality, [0, 5])
 
     def test_read_csv_with_partial_quality(self):
-        content: tuple[str] = (
+        content: str = (
             "Type,Date/Time,INST-VAL,Quality\n"
             "1,05Nov2004 0200,8,0\n"
             "2,05Nov2004 0300,9\n"  # missing quality!

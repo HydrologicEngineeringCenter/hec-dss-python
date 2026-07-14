@@ -225,7 +225,6 @@ def paired_data_read_csv(cls: type[PairedData], path: str) -> PairedData:
             # If the first column item is a path component (['A', 'B', 'C', 'D', 'E', 'F'])
             if first_column_item in path_parts:
                 path_parts[first_column_item] = row[-1].strip()  # last cell in csv row (convention)
-            # TODO: Finish the read_csv function. After you do this and write many tests, consider looking into C code to incorporate text columns and switching y units and types to lists
             elif first_column_item == "Labels":
                 for label in row[2:]:  # First two elements of row are not labels
                     labels.append(label)
@@ -334,7 +333,7 @@ def _get_time_format(raw_time: str) -> str | None:
     Given a raw DSS time string, detect and return the correct time format, whether it be minutes or seconds precision.
 
     Parameters:
-        raw_time (str): time in DSS string format (TODO: ISO)
+        raw_time (str): time in DSS string format
 
     Returns:
         str | None: time format to use to convert to datetime 
@@ -371,4 +370,3 @@ def _need_roll_day(time_format: str, raw_time: str) -> bool:
         return True
 
     return False
-

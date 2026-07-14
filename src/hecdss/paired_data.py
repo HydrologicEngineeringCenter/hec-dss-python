@@ -26,7 +26,10 @@ class PairedData:
         Returns:
         int: The number of curves.
         """
-        return len(self.values[0])  # values is ROW-MAJOR, each sublist represents a row of curve values for each ordinate
+        if len(self.values) == 0:
+            return 0
+        # values is ROW-MAJOR, each sublist represents a row of curve values for each ordinate
+        return len(self.values[0])
 
     def to_csv(self, file_path: str, with_metadata: bool = True) -> None:
         """

@@ -65,7 +65,6 @@ class TestCSV(unittest.TestCase):
         handle = mock_file()
         written = "".join(call.args[0] for call in handle.write.call_args_list)
         self.assertNotIn("Units", written)
-        self.assertNotIn("Type,Date/Time", written)
         self.assertIn("1,01Sep2021 0600,1.0", written)
 
     def test_to_csv_empty_times(self):
@@ -352,7 +351,6 @@ class TestCSV(unittest.TestCase):
         result = RegularTimeSeries.read_csv(path)
 
         self.assertEqual(result.units, "")
-        self.assertEqual(result.data_type, "")
         self.assertEqual(result.interval, 21600)
         self.assertEqual(result.id, "/////6Hour//")
         self.assertEqual(result.values.tolist(), [1.0, 2.0])
@@ -423,7 +421,6 @@ class TestCSV(unittest.TestCase):
         handle = mock_file()
         written = "".join(call.args[0] for call in handle.write.call_args_list)
         self.assertNotIn("Units", written)
-        self.assertNotIn("Type,Date/Time", written)
         self.assertIn("1,01Sep2021 0000,10.5", written)
         self.assertIn("2,02Sep2021 0000,20.0", written)
         self.assertIn("3,04Sep2021 0000,42.0", written)

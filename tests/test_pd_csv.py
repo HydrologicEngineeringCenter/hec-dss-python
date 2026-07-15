@@ -6,7 +6,11 @@ from unittest.mock import mock_open, patch
 from file_manager import FileManager
 
 from hecdss import HecDss
-from hecdss.dss_csv import paired_data_read_csv, paired_data_to_csv
+from hecdss.dss_csv import (
+    DEFAULT_MISSING_VALUE,
+    paired_data_read_csv,
+    paired_data_to_csv,
+)
 from hecdss.paired_data import PairedData
 from hecdss.regular_timeseries import RegularTimeSeries
 
@@ -314,7 +318,7 @@ class TestCSV(unittest.TestCase):
             "2,2,20,200\n"
         )
         pd = self.read_pd_from_string(content)
-        self.assertEqual(pd.ordinates.tolist(), [0.0, 2.0])
+        self.assertEqual(pd.ordinates.tolist(), [DEFAULT_MISSING_VALUE, 2.0])
         self.assertEqual(pd.values.tolist(), [[10.0, 100.0], [20.0, 200.0]])
 
     def test_read_csv_malformed_y_defaults_missing(self):
@@ -326,7 +330,7 @@ class TestCSV(unittest.TestCase):
             "2,2,5,6\n"
         )
         pd = self.read_pd_from_string(content)
-        self.assertEqual(pd.values.tolist(), [[0.0, 3.0], [5.0, 6.0]])
+        self.assertEqual(pd.values.tolist(), [[DEFAULT_MISSING_VALUE, 3.0], [5.0, 6.0]])
 
     def test_read_csv_empty_cells_default_missing(self):
         """Blank x and y cells become the missing-value default (0.0)."""
@@ -336,8 +340,8 @@ class TestCSV(unittest.TestCase):
             "2,2,\n"
         )
         pd = self.read_pd_from_string(content)
-        self.assertEqual(pd.ordinates.tolist(), [0.0, 2.0])
-        self.assertEqual(pd.values.tolist(), [[0.0], [0.0]])
+        self.assertEqual(pd.ordinates.tolist(), [DEFAULT_MISSING_VALUE, 2.0])
+        self.assertEqual(pd.values.tolist(), [[DEFAULT_MISSING_VALUE], [DEFAULT_MISSING_VALUE]])
 
     def test_read_csv_skips_short_rows(self):
         """A data row with fewer than 3 columns is malformed and skipped."""
@@ -516,7 +520,6 @@ class TestCSV(unittest.TestCase):
         self.assertEqual(result.ordinates.tolist(), [-1.0, 0.0, 1.0])
         self.assertEqual(result.values.tolist(), [[-5.5], [0.0], [5.5]])
 
-
     # ================================================================== #
     # weird / adversarial edge cases
     #
@@ -578,8 +581,8 @@ class TestCSV(unittest.TestCase):
             "1,   ,  \n"
         )
         pd = self.read_pd_from_string(content)
-        self.assertEqual(pd.ordinates.tolist(), [0.0])
-        self.assertEqual(pd.values.tolist(), [[0.0]])
+        self.assertEqual(pd.ordinates.tolist(), [DEFAULT_MISSING_VALUE])
+        self.assertEqual(pd.values.tolist(), [[DEFAULT_MISSING_VALUE]])
 
     def test_read_csv_inf_and_nan_parse_through(self):
         """float() accepts 'inf'/'nan', so these land in the array as real inf/NaN
@@ -609,8 +612,8 @@ class TestCSV(unittest.TestCase):
         # The real units were never captured...
         self.assertEqual(pd.units_independent, "")
         # ...and a bogus leading data point was manufactured from the keyword row.
-        self.assertEqual(pd.ordinates.tolist(), [0.0, 5.0])
-        self.assertEqual(pd.values.tolist(), [[0.0], [10.0]])
+        self.assertEqual(pd.ordinates.tolist(), [DEFAULT_MISSING_VALUE, 5.0])
+        self.assertEqual(pd.values.tolist(), [[DEFAULT_MISSING_VALUE], [10.0]])
 
     def test_read_csv_extra_metadata_column_grabs_last_cell(self):
         """FOOTGUN: path parts are read via the 'last cell' convention (row[-1]),

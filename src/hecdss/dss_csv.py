@@ -11,7 +11,7 @@ from .regular_timeseries import RegularTimeSeries
 
 
 ROUND_PRECISION: int = 4
-DEFAULT_MISSING_VALUE: float = 0.0
+DEFAULT_MISSING_VALUE = None
 
 
 def timeseries_to_csv(
@@ -125,7 +125,7 @@ def timeseries_read_csv(cls: type[RegularTimeSeries] | type[IrregularTimeSeries]
                 try:
                     value: float = float(value_str) if value_str else DEFAULT_MISSING_VALUE
                 except ValueError:
-                    continue  # Skip a malformed value
+                    value: float = DEFAULT_MISSING_VALUE  # If datetime is valid but not value, use DEFAULT_MISSING_VALUE
 
                 times.append(time)
                 values.append(value)

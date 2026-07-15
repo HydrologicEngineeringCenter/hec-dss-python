@@ -5,6 +5,7 @@ from unittest.mock import mock_open, patch
 from file_manager import FileManager
 
 from hecdss import HecDss
+from hecdss.dss_csv import DEFAULT_MISSING_VALUE
 from hecdss.irregular_timeseries import IrregularTimeSeries
 from hecdss.regular_timeseries import RegularTimeSeries
 
@@ -185,7 +186,7 @@ class TestCSV(unittest.TestCase):
         self.assertEqual(rts.quality[0], 0)
         self.assertEqual(rts.quality[2], 1)
 
-    def test_read_csv_skips_malformed_rows(self):
+    def test_read_csv_skips_malformed_date_rows(self):
         content = (
             "Type,Date/Time,INST-VAL\n"
             "1,01Sep2021 0600,10.5\n"
@@ -194,9 +195,10 @@ class TestCSV(unittest.TestCase):
             "4,01Sep2021 1800,30.0\n"
         )
         rts = self.read_rts_from_string(content)
-        self.assertEqual(rts.values.tolist(), [10.5, 30.0])
+        self.assertEqual(rts.values.tolist(), [10.5, DEFAULT_MISSING_VALUE, 30.0])
         self.assertEqual(
-            rts.times, [datetime(2021, 9, 1, 6, 0), datetime(2021, 9, 1, 18, 0)]
+            rts.times, [datetime(2021, 9, 1, 6, 0), datetime(
+                2021, 9, 1, 12, 0), datetime(2021, 9, 1, 18, 0)]
         )
 
     def test_read_csv_seconds_precision_basic(self):
@@ -538,6 +540,30 @@ class TestCSV(unittest.TestCase):
         self.assertEqual(its.data_type, "INST-VAL")
         self.assertEqual(its.values.tolist(), [1, 1])
         self.assertEqual(its.times, [datetime(2400, 9, 1, 0, 0, 0), datetime(2400, 9, 2, 0, 0, 0)])
+
+    def test_read_write_with_missing(self):
+        content = (
+            "Type,Date/Time,INST-VAL\n"
+            "1,01Sep2021 0600,10.5\n"
+            "2,not-a-date,20.0\n"
+            "3,01Sep2021 1200,not-a-number\n"
+            "4,01Sep2021 1800,30.0\n"
+        )
+        rts = self.read_rts_from_string(content)
+        self.assertEqual(rts.values.tolist(), [10.5, DEFAULT_MISSING_VALUE, 30.0])
+        self.assertEqual(
+            rts.times, [datetime(2021, 9, 1, 6, 0), datetime(
+                2021, 9, 1, 12, 0), datetime(2021, 9, 1, 18, 0)]
+        )
+
+        mock_file = mock_open()
+        with patch("builtins.open", mock_file):
+            rts.to_csv("fake_path.csv", with_metadata=True)
+
+        handle = mock_file()
+        written_data = "".join(call.args[0] for call in handle.write.call_args_list)
+        self.assertIn("Type,Date/Time,INST-VAL", written_data)
+        self.assertIn("2,01Sep2021 1200,\r\n", written_data)
 
 
 if __name__ == "__main__":

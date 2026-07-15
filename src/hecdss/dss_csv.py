@@ -184,8 +184,8 @@ def paired_data_to_csv(paired_data: PairedData, path: str, with_metadata: bool) 
         x: float  # x is the same as "ordinate"
         y_row: list[float]  # Each y_row is one row of y_values, as paired_data.values is Row-Major
         for x, y_row in zip(paired_data.ordinates, paired_data.values):
-            full_row: list[float] = [round(x, ROUND_PRECISION)] + \
-                [round(y, ROUND_PRECISION) for y in y_row]
+            full_row: list[float] = [_round_or_none(x)] + \
+                [_round_or_none(y) for y in y_row]
             writer.writerow([counter] + full_row)
             counter += 1
     return
@@ -275,6 +275,19 @@ def paired_data_read_csv(cls: type[PairedData], path: str) -> PairedData:
         y_type=y_type,
         path=id_path,
     )
+
+
+def _round_or_none(value: float | None) -> float | None:
+    """
+    Rounds a numeric value to ROUND_PRECISION, passing None through unchanged.
+
+    Parameters:
+        value (float | None): the value to round, or None if missing
+
+    Returns:
+        float | None: the rounded value, or None if value was None
+    """
+    return round(value, ROUND_PRECISION) if value is not None else None
 
 
 def _empty_path_parts() -> dict[str, str]:

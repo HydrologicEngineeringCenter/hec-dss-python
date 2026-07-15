@@ -640,6 +640,28 @@ class TestCSV(unittest.TestCase):
         pd = self.read_pd_from_string(content)
         self.assertEqual(pd.curve_count(), 0)
 
+    def test_to_csv_missing_value_does_not_crash(self):
+        """A blank/malformed numeric cell is read back as DEFAULT_MISSING_VALUE
+        (None), producing an object-dtype array. The writer must tolerate a None
+        ordinate/value (write an empty cell) rather than crash trying to round it."""
+        pd = self.read_pd_from_string(
+            "Type,TIME,POINTS\n"
+            "1,,10\n"       # blank ordinate -> None
+            "2,2,20\n"
+        )
+        written = self.write_pd_to_string(pd, with_metadata=True)
+        self.assertIn("1,,10.0", written)
+        self.assertIn("2,2.0,20.0", written)
+
+    def test_round_trip_nan_value_survives(self):
+        """A NaN dependent value is written as 'nan' and read back as a real NaN
+        (it is NOT collapsed into the missing-value default)."""
+        path = self.test_files.create_test_file(".csv")
+        pd = self.make_pd(x_values=[1.0], y_values=[[float("nan")]], labels=["a"])
+        pd.to_csv(path, with_metadata=True)
+        result = PairedData.read_csv(path)
+        self.assertTrue(math.isnan(result.values.tolist()[0][0]))
+
 
 if __name__ == "__main__":
     unittest.main()

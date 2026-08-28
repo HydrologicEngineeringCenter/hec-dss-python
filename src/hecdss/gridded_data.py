@@ -116,17 +116,34 @@ class GriddedData:
     def update_grid_info(self):
         """
         Update grid information based on the data array.
+
+        Undefined cells may be marked either with the null value or with NaN.
+        Both are treated the same, and are normalized to the null value here.
         """
-        self.data[self.data == self.nullValue] = np.nan
         self.numberOfCellsX = len(self.data[0])
         self.numberOfCellsY = len(self.data)
         n = np.size(self.data)
-        self.maxDataValue = np.nanmax(self.data)
-        self.minDataValue = np.nanmin(self.data)
-        bin_range = int(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
-        self.meanDataValue = np.nanmean(self.data)
 
-        self.data = np.nan_to_num(self.data, nan=self.nullValue)
+        # NaN is tested separately because it never compares equal to anything,
+        # itself included, so a NaN null value is covered by the first term.
+        undefined = np.isnan(self.data) | (self.data == self.nullValue)
+        defined = self.data[~undefined]
+
+        if defined.size == 0:
+            # Every cell is undefined (e.g. a grid warped entirely outside of the
+            # data coverage). A NaN null value is not storable, so fall back to zero.
+            empty_value = 0.0 if math.isnan(self.nullValue) else float(self.nullValue)
+            self.maxDataValue = empty_value
+            self.minDataValue = empty_value
+            self.meanDataValue = empty_value
+            bin_range = 0
+        else:
+            self.maxDataValue = defined.max()
+            self.minDataValue = defined.min()
+            self.meanDataValue = defined.mean()
+            bin_range = int(math.ceil(self.maxDataValue) - math.floor(self.minDataValue))
+
+        self.data[undefined] = self.nullValue
         if bin_range == 0:
             self.numberOfRanges = 2
         else:

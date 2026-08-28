@@ -150,6 +150,54 @@ class TestGriddedData(unittest.TestCase):
         assert (gd_nan.minDataValue == gd_zero.minDataValue)
 
 
+    def test_all_null_grid(self):
+        """
+        A grid whose cells are all null (e.g. warped entirely outside the data
+        coverage) must not raise when the grid info is computed.
+        """
+        for null_value in (NULL_INT, -9999, 0, np.nan):
+            gd = GriddedData.create(
+                data=[[null_value for _ in range(10)] for _ in range(10)],
+                nullValue=null_value,
+            )
+
+            assert gd.numberOfRanges == 2
+            assert not np.isnan(gd.minDataValue)
+            assert not np.isnan(gd.maxDataValue)
+            assert not np.isnan(gd.meanDataValue)
+            assert gd.minDataValue == gd.maxDataValue
+            assert np.all(gd.data == gd.nullValue) or np.all(np.isnan(gd.data))
+
+    def test_nan_and_null_value_are_equivalent(self):
+        """
+        Undefined cells may arrive marked with the null value or with NaN;
+        both conventions must produce the same grid.
+        """
+        base = np.arange(400, dtype=float).reshape(20, 20) % 50 + 1.0
+
+        for undefined_fraction in (0.0, 0.5, 1.0):
+            cut = int(400 * undefined_fraction)
+            marked_null = base.copy().reshape(-1)
+            marked_nan = base.copy().reshape(-1)
+            marked_null[:cut] = NULL_INT
+            marked_nan[:cut] = np.nan
+
+            gd_null = GriddedData.create(
+                data=marked_null.reshape(20, 20), nullValue=NULL_INT)
+            gd_nan = GriddedData.create(
+                data=marked_nan.reshape(20, 20), nullValue=NULL_INT)
+
+            assert gd_null.minDataValue == gd_nan.minDataValue
+            assert gd_null.maxDataValue == gd_nan.maxDataValue
+            assert gd_null.meanDataValue == gd_nan.meanDataValue
+            assert gd_null.numberOfRanges == gd_nan.numberOfRanges
+            assert np.array_equal(gd_null.rangeLimitTable, gd_nan.rangeLimitTable)
+            assert np.array_equal(gd_null.numberEqualOrExceedingRangeLimit,
+                                  gd_nan.numberEqualOrExceedingRangeLimit)
+            # NaN must never survive into the stored grid
+            assert not np.isnan(gd_nan.data).any()
+            assert np.array_equal(gd_null.data, gd_nan.data)
+
     def _create_half_nul_gd(self, default_value):
         gd_data = [[1 for _ in range(100)] for _ in range(50)]
         gd_data.extend([[default_value for _ in range(100)] for _ in range(50)])

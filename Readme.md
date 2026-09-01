@@ -15,7 +15,7 @@ pip install hecdss
 [API Documentation](https://hydrologicengineeringcenter.github.io/hec-dss-python/)
 
 ### DSS file methods
-1. `HecDss(file_path: str)`: Opens a DSS file located at the provided file path.
+1. `HecDss(file_path: str, access: OpenAccess = OpenAccess.GENERAL_ACCESS)`: Opens a DSS file located at the provided file path.  See [File Access Modes](#file-access-modes).
    
 2. `get(record_path: str)`: Retrieves the record data from the currently opened DSS file of the designated path.
 
@@ -149,6 +149,32 @@ This library uses (`hecdss.dll` on Windows and `libhecdss.so` on Unix/Linux).  h
    python tests\test_basics.py
    ```
 
+
+## File Access Modes
+
+`HecDss` takes an optional `access` argument that controls how the DSS file is opened.  These
+modes map directly to the `access` argument of `hec_dss_open_ex` in the HEC-DSS C library.
+
+| `OpenAccess` | Value | Description |
+| ----------- | ----- | ----------- |
+| `GENERAL_ACCESS` | 0 | Read, or read/write when the file allows it.  No error when the file does not have write permission.  This is the default. |
+| `READ_ACCESS` | 1 | Read only.  The file must already exist and is never written to, so several processes can read the same file at the same time. |
+| `MULTI_USER_ACCESS` | 2 | Read/write with full multi-user access.  Usually slow, but necessary when more than one process writes to the file. |
+| `SINGLE_USER_ADVISORY_ACCESS` | 3 | Read/write with multi-user advisory access.  Errors when the file is read only. |
+| `EXCLUSIVE_ACCESS` | 4 | Exclusive write, used for squeezing.  Errors when exclusive access is not available. |
+
+```python
+from hecdss import OpenAccess, HecDss
+
+# open a file read only; several processes can do this at the same time
+with HecDss("example.dss", OpenAccess.READ_ACCESS) as dss:
+    data = dss.get("/example/data/////")
+    print(dss.access, dss.readonly)  # OpenAccess.READ_ACCESS True
+```
+
+A file opened with `READ_ACCESS` must already exist; opening a missing file raises `FileNotFoundError`
+instead of creating it.  Methods that modify the file (`put`, `delete`, `writePrecompressedGrid`)
+raise `PermissionError` on a `READ_ACCESS` file.
 
 ## Message Levels
 

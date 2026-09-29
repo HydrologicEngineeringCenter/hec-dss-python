@@ -793,13 +793,14 @@ class HecDss:
             if enddatetime:
                 newEndDateTime = enddatetime
 
-            IRTS = IrregularTimeSeries()
-            IRTS.values = [DSS_UNDEFINED_VALUE, DSS_UNDEFINED_VALUE]
-            IRTS.times = [newStartDateTime, newEndDateTime]
-            IRTS.start_date = startdatetime
-            IRTS.id = pathname
+            IRTS = IrregularTimeSeries.create(
+                [DSS_UNDEFINED_VALUE, DSS_UNDEFINED_VALUE],
+                [newStartDateTime, newEndDateTime],
+                start_date=startdatetime,
+                path=pathname,
+            )
 
-            dss.put(IRTS)
+            status = self.put(IRTS)
         else:
             status = self._native.hec_dss_delete(pathname)
             if status == 0:

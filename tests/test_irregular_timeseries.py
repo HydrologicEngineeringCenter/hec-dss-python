@@ -240,6 +240,22 @@ class TestRegularTimeSeries(unittest.TestCase):
         assert (irts.interval == irts_modified.interval), f"irts.interval is not equal to irts_modified.interval." \
             f" irts.interval is {irts.interval}, irts_modified.interval is {irts_modified.interval}"
 
+    def test_irregular_timeseries_delete_time_window(self):
+        """
+        delete a time window from an irregular time series; points inside the window are removed
+        """
+        path = "/a/b/stage//IR-Year/delete-window/"
+        times = [datetime(2020, 1, 1, h) for h in (1, 3, 5, 7)]
+        with HecDss(self.test_files.create_test_file(".dss")) as dss:
+            dss.put(IrregularTimeSeries.create([1.0, 2.0, 3.0, 4.0], times, path=path))
+            status = dss.delete(path, startdatetime=datetime(2020, 1, 1, 2), enddatetime=datetime(2020, 1, 1, 6))
+            irts = dss.get(path, datetime(2020, 1, 1), datetime(2020, 1, 2))
+        self.assertEqual(0, status)
+        self.assertNotIn(datetime(2020, 1, 1, 3), irts.times)
+        self.assertNotIn(datetime(2020, 1, 1, 5), irts.times)
+        self.assertEqual(1.0, irts.values[0])
+        self.assertEqual(4.0, irts.values[-1])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,6 +19,8 @@ from typing import List
 
 import numpy as np
 
+from hecdss.dss_access import OpenAccess
+
 
 # from hecdss.location_info import LocationInfo
 
@@ -76,25 +78,49 @@ class _Native:
         else:
             self.dll = self.load_hecdss_library("libhecdss.so")
 
-    def hec_dss_open(self, dss_filename: str) -> int:
+    def hec_dss_open(self, dss_filename: str, access: int = OpenAccess.GENERAL_ACCESS) -> int:
         """opens a DSS file and gets a handle
 
         Args:
-            dss_filename (str): filename to open
+            dss_filename (str): filename to open; it is created if it doesn't
+                exist, except when access is READ_ACCESS.
+            access (int): read/write access used to open the file, see OpenAccess
+                0 - GENERAL_ACCESS: Doesn't matter (no error if file doesn't have write permission)
+                1 - READ_ACCESS: Read only (will not allow writing to file)
+                2 - MULTI_USER_ACCESS: Read/Write permission with full multi-user access
+                    (usually slow, but necessary for multiple processes)
+                3 - SINGLE_USER_ADVISORY_ACCESS: Read/Write permission with multi-user advisory
+                    access (throws an error if file is read only)
+                4 - EXCLUSIVE_ACCESS: Exclusive write (used for squeezing).
+                    Throws an error if not available.
 
         Returns:
             int: status of zero when successful, non-zero on error.
+
+        Raises:
+            ValueError: access is not one of the OpenAccess values.
+            FileNotFoundError: READ_ACCESS was requested and the file is missing.
+            Exception: the file could not be opened.
         """
-        f = self.dll.hec_dss_open
+        access = OpenAccess(access)
+
+        if access == OpenAccess.READ_ACCESS and not os.path.exists(dss_filename):
+            raise FileNotFoundError(
+                f"DSS file not found: '{dss_filename}'. "
+                f"A file must already exist to be opened with {access.name}."
+            )
+
+        f = self.dll.hec_dss_open_ex
         f.argtypes = [
             c_char_p,
             POINTER(c_void_p),
+            c_int,
         ]
         f.restype = c_int
         self.handle = c_void_p()
-        rval = f(dss_filename.encode("utf-8"), ctypes.byref(self.handle))
+        rval = f(dss_filename.encode("utf-8"), byref(self.handle), c_int(access))
         if rval != 0:
-            raise Exception("Error opening DSS file.")
+            raise Exception(f"Error opening DSS file. status = {rval}")
         return rval
 
     def hec_dss_close(self):

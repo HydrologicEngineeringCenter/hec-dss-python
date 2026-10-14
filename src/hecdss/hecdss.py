@@ -8,6 +8,7 @@ import hecdss.record_type
 from hecdss.array_container import ArrayContainer
 from hecdss.catalog import Catalog
 from hecdss.dateconverter import DateConverter
+from hecdss.dss_access import OpenAccess
 from hecdss.dsspath import DssPath
 from hecdss.gridded_data import GriddedData
 from hecdss.irregular_timeseries import IrregularTimeSeries
@@ -27,18 +28,51 @@ class HecDss:
     """ Main class for working with DSS files
     """
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, access: OpenAccess = OpenAccess.GENERAL_ACCESS):
         """constructor for HecDSS
 
         Args:
-            filename (str): DSS filename to be opened; it will be created if it doesn't exist.
+            filename (str): DSS filename to be opened; it will be created if it
+                doesn't exist, unless access is OpenAccess.READ_ACCESS.
+            access (OpenAccess): how the file is opened. dss_access.py defines access modes
+
+        Raises:
+            ValueError: access is not one of the OpenAccess values.
+            FileNotFoundError: access is READ_ACCESS and the file does not exist.
         """
 
+        self._access = OpenAccess(access)
         self._native = _Native()
-        self._native.hec_dss_open(filename)
+        self._native.hec_dss_open(filename, self._access)
         self._catalog = None
         self._filename = filename
         self._closed = False
+
+    @property
+    def access(self) -> OpenAccess:
+        """OpenAccess: the access mode this file was opened with"""
+        return self._access
+
+    @property
+    def readonly(self) -> bool:
+        """bool: True when this file was opened with OpenAccess.READ_ACCESS"""
+        return self._access == OpenAccess.READ_ACCESS
+
+    def _assert_writable(self, operation: str) -> None:
+        """raises if this file was opened read only
+
+        Args:
+            operation (str): name of the method being attempted, used in the message.
+
+        Raises:
+            PermissionError: the file was opened with OpenAccess.READ_ACCESS.
+        """
+        if self.readonly:
+            raise PermissionError(
+                f"cannot {operation}: '{self._filename}' was opened with "
+                f"{self._access.name}. Reopen it with a read/write access mode "
+                "to modify it."
+            )
 
     def __enter__(self):
         """
@@ -609,10 +643,12 @@ class HecDss:
 
         Raises:
             NotImplementedError: if saving the type of container is not supported.
+            PermissionError: if the file was opened with OpenAccess.READ_ACCESS.
 
         Returns:
             int: status of zero when successful. Non zero for errors.
         """
+        self._assert_writable("put")
         # TODO. is timezone needed?
         status = 0
         if type(container) is RegularTimeSeries:
@@ -712,9 +748,12 @@ class HecDss:
         Args
             compressedData (bytes): Compressed data.
             CompressionSize (int): Size of the compressed data.
+        Raises:
+            PermissionError: if the file was opened with OpenAccess.READ_ACCESS.
         Returns:
             int: 0 if successful, -1 otherwise.
         """
+        self._assert_writable("writePrecompressedGrid")
 
         if compressedData and CompressionSize > 0:
             status = self._native.hec_dss_gridStore(gd, compressedData, CompressionSize)
@@ -729,9 +768,12 @@ class HecDss:
             allRecords (bool): if True, delete all records with this pathname that have different dates
             startdatetime (datetime): start date for query, if only start date is provided, delete all records at or after this date
             enddatetime (datetime): end date for the query, if only end date is provided, delete all records at or before this date
+        Raises:
+            PermissionError: if the file was opened with OpenAccess.READ_ACCESS.
         Returns:
             int: status of zero when successful. Non zero for errors.
         """
+        self._assert_writable("delete")
         rt = self.get_record_type(pathname)
         delete_path = DssPath(pathname)
         if (rt == RecordType.RegularTimeSeries or rt == RecordType.IrregularTimeSeries) and allrecords:
